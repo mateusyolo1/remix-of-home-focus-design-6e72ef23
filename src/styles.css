@@ -136,6 +136,12 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+@keyframes nudge-x {
+  0%, 100% { transform: translateX(0); opacity: 0.55; }
+  50% { transform: translateX(5px); opacity: 1; }
+}
+.animate-nudge-x { animation: nudge-x 1.3s ease-in-out infinite; }
+
 /* ============================================
    Palette presets — override tokens via [data-palette]
    Each preset defines light (:root) and dark (.dark) values

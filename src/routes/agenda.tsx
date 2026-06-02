@@ -117,7 +117,7 @@ function AgendaPage() {
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               Blocos hoje
             </p>
-            <p className="text-3xl font-semibold tabular-nums mt-1">{blocks.length}</p>
+            <p className="text-3xl font-semibold tabular-nums mt-1">{visibleBlocks.length}</p>
           </div>
           <button className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform">
             <Plus className="size-4" /> Novo bloco
@@ -125,7 +125,7 @@ function AgendaPage() {
         </section>
 
         <section className="space-y-3">
-          {blocks.map((b) => {
+          {visibleBlocks.map((b) => {
             const open = openTime === b.time;
             return (
               <article key={b.time} className="flex gap-4 items-start">
