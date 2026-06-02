@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { PalettePicker } from "@/components/PalettePicker";
 import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/perfil")({
@@ -22,7 +20,7 @@ const stats = [
 
 const items = [
   { icon: Bell, label: "Lembretes", to: "/perfil" },
-  { icon: Settings, label: "Configurações", to: "/perfil" },
+  { icon: Settings, label: "Configurações", to: "/configuracoes" },
   { icon: ShieldCheck, label: "Privacidade", to: "/perfil" },
   { icon: Moon, label: "Modo silencioso", to: "/perfil" },
 ] as const;
@@ -43,8 +41,6 @@ function PerfilPage() {
           ))}
         </section>
 
-        <ThemeToggle />
-        <PalettePicker />
 
         <section className="bg-card rounded-2xl ring-1 ring-black/5 overflow-hidden">
           {items.map(({ icon: Icon, label, to }, i) => (
