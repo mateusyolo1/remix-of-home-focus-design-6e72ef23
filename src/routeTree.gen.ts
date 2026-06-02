@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TimerRouteImport } from './routes/timer'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +24,11 @@ const TimerRoute = TimerRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/chat': typeof ChatRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/chat': typeof ChatRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
 }
@@ -60,21 +68,30 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
   '/chat': typeof ChatRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agenda' | '/chat' | '/perfil' | '/timer'
+  fullPaths: '/' | '/agenda' | '/chat' | '/configuracoes' | '/perfil' | '/timer'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agenda' | '/chat' | '/perfil' | '/timer'
-  id: '__root__' | '/' | '/agenda' | '/chat' | '/perfil' | '/timer'
+  to: '/' | '/agenda' | '/chat' | '/configuracoes' | '/perfil' | '/timer'
+  id:
+    | '__root__'
+    | '/'
+    | '/agenda'
+    | '/chat'
+    | '/configuracoes'
+    | '/perfil'
+    | '/timer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
   ChatRoute: typeof ChatRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   PerfilRoute: typeof PerfilRoute
   TimerRoute: typeof TimerRoute
 }
@@ -93,6 +110,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -123,9 +147,20 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
   ChatRoute: ChatRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   PerfilRoute: PerfilRoute,
   TimerRoute: TimerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
