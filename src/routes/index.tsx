@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, Mic, Plus } from "lucide-react";
+import { ArrowUpRight, CloudSun, Mic } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +37,30 @@ function Index() {
       <PageHeader eyebrow="14 de Outubro" title="Olá, Tiago" streak={12} />
 
       <main className="px-6 space-y-8">
+        {/* Resumo do dia */}
+        <section className="grid grid-cols-3 gap-2">
+          {[
+            { label: "Foco", value: "2h 15m" },
+            { label: "Tarefas", value: "3/7" },
+            { label: "Blocos", value: "6" },
+          ].map((s) => (
+            <div key={s.label} className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center">
+              <p className="text-base font-semibold tabular-nums">{s.value}</p>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <div className="flex items-center justify-between bg-secondary/60 rounded-xl px-4 py-2.5 ring-1 ring-black/5">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <CloudSun className="size-4" />
+            <span>São Paulo · 23°C · Parcialmente nublado</span>
+          </div>
+          <span className="text-[10px] uppercase tracking-widest text-accent">Calmo</span>
+        </div>
+
         {/* Hero Focus Card */}
         <section className="bg-card rounded-2xl p-6 ring-1 ring-black/5 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)]">
           <div className="flex justify-between items-start mb-6">
@@ -75,9 +99,26 @@ function Index() {
 
         {/* Próxima Tarefa */}
         <section className="space-y-4">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">
-            Próxima Tarefa
-          </h3>
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              Tarefas
+            </h3>
+            <div className="flex gap-1.5">
+              {["Hoje", "Semana", "Todas"].map((f, i) => (
+                <button
+                  key={f}
+                  className={[
+                    "px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ring-1 transition-transform active:scale-95",
+                    i === 0
+                      ? "bg-foreground text-background ring-foreground"
+                      : "bg-card text-muted-foreground ring-black/5",
+                  ].join(" ")}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5">
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-1">
