@@ -2,9 +2,9 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { CalendarDays, Home, MessageSquareText, Timer, User, Sparkles } from "lucide-react";
 
 const tabs = [
-  { to: "/", label: "Home", icon: Home },
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
   { to: "/timer", label: "Timer", icon: Timer },
+  { to: "/", label: "Home", icon: Home },
   { to: "/chat", label: "Chat", icon: MessageSquareText },
   { to: "/perfil", label: "Perfil", icon: User },
 ] as const;
