@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { Plus, Search, StickyNote } from "lucide-react";
+import { ChevronRight, Plus, Search, StickyNote } from "lucide-react";
 
 export const Route = createFileRoute("/agenda")({
   head: () => ({
@@ -63,6 +63,10 @@ const filters = ["Tudo", "Foco", "Reunião", "Pausa", "Ritual"] as const;
 
 function AgendaPage() {
   const [openTime, setOpenTime] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>("Tudo");
+
+  const visibleBlocks =
+    activeFilter === "Tudo" ? blocks : blocks.filter((b) => b.tag === activeFilter);
 
   return (
     <>
@@ -77,23 +81,36 @@ function AgendaPage() {
           />
         </div>
 
-        <div className="-mx-6 px-6 overflow-x-auto">
-          <div className="flex gap-2 w-max">
-            {filters.map((f, i) => (
-              <button
-                key={f}
-                className={[
-                  "px-4 py-2 rounded-full text-xs font-medium ring-1 transition-transform active:scale-95 whitespace-nowrap",
-                  i === 0
-                    ? "bg-foreground text-background ring-foreground"
-                    : "bg-card text-muted-foreground ring-black/5",
-                ].join(" ")}
-              >
-                {f}
-              </button>
-            ))}
+        <div className="relative -mx-6">
+          <div className="px-6 py-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex gap-2 w-max pr-10">
+              {filters.map((f) => {
+                const active = activeFilter === f;
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setActiveFilter(f)}
+                    className={[
+                      "px-4 py-2 rounded-full text-xs font-medium ring-1 transition-transform active:scale-95 whitespace-nowrap",
+                      active
+                        ? "bg-foreground text-background ring-foreground"
+                        : "bg-card text-muted-foreground ring-black/10",
+                    ].join(" ")}
+                  >
+                    {f}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 flex items-center justify-end pr-2 bg-gradient-to-l from-background via-background/80 to-transparent"
+          >
+            <ChevronRight className="size-4 text-muted-foreground animate-nudge-x" />
           </div>
         </div>
+
 
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 flex items-center justify-between">
           <div>
