@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { ChevronRight, Plus, Search, StickyNote } from "lucide-react";
 
@@ -64,9 +64,28 @@ const filters = ["Tudo", "Foco", "Reunião", "Pausa", "Ritual"] as const;
 function AgendaPage() {
   const [openTime, setOpenTime] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>("Tudo");
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [hasMoreRight, setHasMoreRight] = useState(false);
 
   const visibleBlocks =
     activeFilter === "Tudo" ? blocks : blocks.filter((b) => b.tag === activeFilter);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const update = () => {
+      setHasMoreRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      ro.disconnect();
+    };
+  }, []);
+
 
   return (
     <>
@@ -82,7 +101,10 @@ function AgendaPage() {
         </div>
 
         <div className="relative -mx-6">
-          <div className="px-6 py-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div
+            ref={scrollerRef}
+            className="px-6 py-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             <div className="flex gap-2 w-max pr-10">
               {filters.map((f) => {
                 const active = activeFilter === f;
@@ -105,7 +127,10 @@ function AgendaPage() {
           </div>
           <div
             aria-hidden
-            className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 flex items-center justify-end pr-2 bg-gradient-to-l from-background via-background/80 to-transparent"
+            className={[
+              "pointer-events-none absolute right-0 top-0 bottom-0 w-12 flex items-center justify-end pr-2 bg-gradient-to-l from-background via-background/80 to-transparent transition-opacity duration-200",
+              hasMoreRight ? "opacity-100" : "opacity-0",
+            ].join(" ")}
           >
             <ChevronRight className="size-4 text-muted-foreground animate-nudge-x" />
           </div>
