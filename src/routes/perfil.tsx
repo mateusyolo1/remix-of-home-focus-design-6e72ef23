@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { PalettePicker } from "@/components/PalettePicker";
 import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/perfil")({
