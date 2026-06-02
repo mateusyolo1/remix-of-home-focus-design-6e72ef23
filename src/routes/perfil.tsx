@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/perfil")({
@@ -40,6 +41,8 @@ function PerfilPage() {
             </div>
           ))}
         </section>
+
+        <ThemeToggle />
 
         <section className="bg-card rounded-2xl ring-1 ring-black/5 overflow-hidden">
           {items.map(({ icon: Icon, label, to }, i) => (
