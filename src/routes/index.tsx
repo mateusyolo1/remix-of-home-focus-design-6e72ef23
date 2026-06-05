@@ -2,7 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { ArrowUpRight, CloudSun, Mic, Target } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useActiveTask } from "@/lib/focus-store";
+import { useProfile, useCheckins } from "@/lib/profile-store";
+import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,9 +37,38 @@ const recentNotes = [
 
 function Index() {
   const [active] = useActiveTask();
+  const [profile] = useProfile();
+  const { mark } = useCheckins();
+  const [weather, setWeather] = useState<CurrentWeather | null>(null);
+
+  // Registrar check-in diário ao abrir a Home
+  useEffect(() => {
+    mark();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Buscar clima quando a cidade do perfil muda
+  useEffect(() => {
+    let cancelled = false;
+    if (!profile.city) {
+      setWeather(null);
+      return;
+    }
+    fetchWeather(profile.city.latitude, profile.city.longitude).then((w) => {
+      if (!cancelled) setWeather(w);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [profile.city?.latitude, profile.city?.longitude]);
+
+  const cityLabel = profile.city
+    ? `${profile.city.name}${profile.city.state ? " · " + profile.city.state : ""}`
+    : "Defina sua cidade";
+
   return (
     <>
-      <PageHeader eyebrow="14 de Outubro" title="Olá, Tiago" streak={12} />
+      <PageHeader eyebrow="14 de Outubro" title={`Olá, ${profile.name.split(" ")[0]}`} streak={12} />
 
       <main className="px-6 space-y-8">
         {/* Resumo do dia */}
@@ -55,51 +87,21 @@ function Index() {
           ))}
         </section>
 
-        <div className="flex items-center justify-between bg-secondary/60 rounded-xl px-4 py-2.5 ring-1 ring-black/5">
+        <Link
+          to="/perfil/editar"
+          className="flex items-center justify-between bg-secondary/60 rounded-xl px-4 py-2.5 ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+        >
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CloudSun className="size-4" />
-            <span>São Paulo · 23°C · Parcialmente nublado</span>
-          </div>
-          <span className="text-[10px] uppercase tracking-widest text-accent">Calmo</span>
-        </div>
-
-        {/* Hero Focus Card */}
-        <section className="bg-card rounded-2xl p-6 ring-1 ring-black/5 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)]">
-          <div className="flex justify-between items-start mb-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-              Foco Atual
-            </h3>
-            <Link to="/timer" className="text-xs font-medium text-accent inline-flex items-center gap-1">
-              Ajustar <ArrowUpRight className="size-3" />
-            </Link>
-          </div>
-
-          <div className="flex flex-col items-center py-2">
-            <span className="text-6xl font-medium tracking-tighter tabular-nums mb-8 text-foreground">
-              25:00
+            <span>
+              {cityLabel}
+              {weather ? ` · ${weather.temperature}°C · ${weather.label}` : profile.city ? " · carregando…" : ""}
             </span>
-
-            <div className="flex gap-2 mb-8">
-              {["25m", "45m", "90m"].map((d, i) => (
-                <button
-                  key={d}
-                  className={[
-                    "px-4 py-2 rounded-full text-xs font-medium ring-1 ring-black/5 transition-transform active:scale-95",
-                    i === 0 ? "bg-foreground text-background" : "bg-secondary text-foreground",
-                  ].join(" ")}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-
-            <button className="w-full bg-foreground text-background py-4 rounded-xl font-medium text-base ring-1 ring-black/10 transition-transform active:scale-[0.98] shadow-sm">
-              Iniciar Sessão
-            </button>
           </div>
-        </section>
+          <span className="text-[10px] uppercase tracking-widest text-accent">Editar</span>
+        </Link>
 
-        {/* Próxima Tarefa */}
+        {/* Próxima ação + checklist (TOPO) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
@@ -206,6 +208,47 @@ function Index() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        {/* Cronômetro (FINAL) */}
+        <section className="bg-card rounded-2xl p-6 ring-1 ring-black/5 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)]">
+          <div className="flex justify-between items-start mb-6">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              Foco Atual
+            </h3>
+            <Link to="/timer" className="text-xs font-medium text-accent inline-flex items-center gap-1">
+              Ajustar <ArrowUpRight className="size-3" />
+            </Link>
+          </div>
+
+          <div className="flex flex-col items-center py-2">
+            <span className="text-6xl font-medium tracking-tighter tabular-nums mb-8 text-foreground">
+              {active ? `${String(active.minutes).padStart(2, "0")}:00` : "25:00"}
+            </span>
+
+            <div className="flex gap-2 mb-8">
+              {[25, 45, 90].map((d, i) => (
+                <span
+                  key={d}
+                  className={[
+                    "px-4 py-2 rounded-full text-xs font-medium ring-1 ring-black/5",
+                    (active?.minutes ?? 25) === d || (!active && i === 0)
+                      ? "bg-foreground text-background"
+                      : "bg-secondary text-foreground",
+                  ].join(" ")}
+                >
+                  {d}m
+                </span>
+              ))}
+            </div>
+
+            <Link
+              to="/timer"
+              className="w-full text-center bg-foreground text-background py-4 rounded-xl font-medium text-base ring-1 ring-black/10 transition-transform active:scale-[0.98] shadow-sm"
+            >
+              Iniciar Sessão
+            </Link>
           </div>
         </section>
 

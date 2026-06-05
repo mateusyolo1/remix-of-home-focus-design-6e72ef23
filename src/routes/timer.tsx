@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { Pause, RotateCcw, SkipForward, Target, X } from "lucide-react";
+import { ChevronRight, Pause, RotateCcw, SkipForward, Target, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveTask } from "@/lib/focus-store";
+import { agendaBlocks } from "./agenda";
 
 export const Route = createFileRoute("/timer")({
   head: () => ({
@@ -19,8 +20,8 @@ function TimerPage() {
   const [minutes, setMinutes] = useState(active?.minutes ?? 25);
   const [seconds, setSeconds] = useState(0);
   const [open, setOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
-  // Sync session length when active task changes
   useEffect(() => {
     if (active?.minutes) {
       setMinutes(active.minutes);
@@ -49,12 +50,17 @@ function TimerPage() {
         {active ? (
           <section className="bg-foreground text-background rounded-2xl p-5 ring-1 ring-black/10">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <button
+                type="button"
+                onClick={() => setPickerOpen(true)}
+                className="min-w-0 text-left flex-1 active:scale-[0.99] transition-transform"
+              >
                 <p className="text-[10px] font-semibold uppercase tracking-widest opacity-60">
                   Foco atual · {active.tag} · {active.time}
                 </p>
                 <h2 className="text-lg font-semibold mt-1 leading-snug">{active.title}</h2>
-              </div>
+                <p className="text-[10px] mt-1 opacity-60">Toque para trocar de tarefa</p>
+              </button>
               <button
                 onClick={() => setActive(null)}
                 aria-label="Encerrar foco"
@@ -77,16 +83,17 @@ function TimerPage() {
             </div>
           </section>
         ) : (
-          <Link
-            to="/agenda"
-            className="block bg-card rounded-2xl p-5 ring-1 ring-black/5 ring-dashed text-center active:scale-[0.99] transition-transform"
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className="block w-full bg-card rounded-2xl p-5 ring-1 ring-black/5 ring-dashed text-center active:scale-[0.99] transition-transform"
           >
             <Target className="size-5 mx-auto text-muted-foreground" />
-            <p className="text-sm font-medium mt-2">Conecte uma tarefa</p>
+            <p className="text-sm font-medium mt-2">Conectar a uma tarefa</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Escolha um bloco na Agenda e toque em <strong>Focar</strong>.
+              Escolha um bloco da sua agenda
             </p>
-          </Link>
+          </button>
         )}
 
         <section className="bg-card rounded-3xl p-8 ring-1 ring-black/5 flex flex-col items-center">
@@ -175,7 +182,78 @@ function TimerPage() {
           setOpen(false);
         }}
       />
+
+      {pickerOpen && (
+        <TaskPickerSheet
+          onClose={() => setPickerOpen(false)}
+          onPick={(b) => {
+            setActive({
+              time: b.time,
+              title: b.title,
+              tag: b.tag,
+              goal: active?.goal ?? "",
+              minutes: active?.minutes ?? minutes,
+            });
+            setPickerOpen(false);
+          }}
+        />
+      )}
     </>
+  );
+}
+
+function TaskPickerSheet({
+  onClose,
+  onPick,
+}: {
+  onClose: () => void;
+  onPick: (b: (typeof agendaBlocks)[number]) => void;
+}) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 p-5 pb-7 animate-in slide-in-from-bottom duration-200">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold">Escolher tarefa</p>
+          <button onClick={onClose} aria-label="Fechar" className="size-8 rounded-full bg-secondary grid place-items-center">
+            <X className="size-4" />
+          </button>
+        </div>
+        <ul className="space-y-2 max-h-[60dvh] overflow-y-auto">
+          {agendaBlocks.map((b) => (
+            <li key={b.time}>
+              <button
+                type="button"
+                onClick={() => onPick(b)}
+                className="w-full text-left flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary active:scale-[0.99] transition-transform"
+              >
+                <span className="text-xs font-medium text-muted-foreground w-12 tabular-nums">
+                  {b.time}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={[
+                      "text-[10px] font-semibold uppercase tracking-widest",
+                      b.priority === "important" ? "text-destructive" : "text-accent",
+                    ].join(" ")}
+                  >
+                    {b.tag}
+                  </p>
+                  <p className="text-sm font-medium truncate">{b.title}</p>
+                </div>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
