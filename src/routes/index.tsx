@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, CloudSun, Mic } from "lucide-react";
+import { ArrowUpRight, CloudSun, Mic, Target } from "lucide-react";
+import { useActiveTask } from "@/lib/focus-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,6 +33,7 @@ const recentNotes = [
 ];
 
 function Index() {
+  const [active] = useActiveTask();
   return (
     <>
       <PageHeader eyebrow="14 de Outubro" title="Olá, Tiago" streak={12} />
@@ -119,17 +121,26 @@ function Index() {
               ))}
             </div>
           </div>
-          <div className="bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5">
+          <Link
+            to={active ? "/foco" : "/agenda"}
+            className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+          >
             <div className="flex justify-between items-start gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-zinc-400 font-medium">Projeto Aurora</p>
+              <div className="space-y-1 min-w-0">
+                <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
+                  <Target className="size-3" />
+                  {active ? `Foco · ${active.tag}` : "Próxima ação"}
+                </p>
                 <h4 className="text-lg font-medium leading-tight text-balance">
-                  Finalizar arquitetura de dados e fluxos
+                  {active?.title ?? "Finalizar arquitetura de dados e fluxos"}
                 </h4>
+                {active?.goal && (
+                  <p className="text-xs text-zinc-400 italic mt-1">“{active.goal}”</p>
+                )}
               </div>
-              <div className="size-5 rounded border border-zinc-700 flex-shrink-0 mt-1" />
+              <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
             </div>
-          </div>
+          </Link>
 
           <ul className="space-y-2">
             {todayTasks.map((t) => (
