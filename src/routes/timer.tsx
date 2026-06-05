@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { Pause, RotateCcw, SkipForward, X } from "lucide-react";
+import { Pause, RotateCcw, SkipForward, Target, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useActiveTask } from "@/lib/focus-store";
 
 export const Route = createFileRoute("/timer")({
   head: () => ({
@@ -14,16 +15,80 @@ export const Route = createFileRoute("/timer")({
 });
 
 function TimerPage() {
-  const [minutes, setMinutes] = useState(17);
-  const [seconds, setSeconds] = useState(42);
+  const [active, setActive] = useActiveTask();
+  const [minutes, setMinutes] = useState(active?.minutes ?? 25);
+  const [seconds, setSeconds] = useState(0);
   const [open, setOpen] = useState(false);
+
+  // Sync session length when active task changes
+  useEffect(() => {
+    if (active?.minutes) {
+      setMinutes(active.minutes);
+      setSeconds(0);
+    }
+  }, [active?.time, active?.minutes]);
 
   const display = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
+  const updateGoal = (goal: string) => {
+    if (!active) return;
+    setActive({ ...active, goal });
+  };
+
+  const updateMinutes = (m: number) => {
+    setMinutes(m);
+    setSeconds(0);
+    if (active) setActive({ ...active, minutes: m });
+  };
+
   return (
     <>
-      <PageHeader eyebrow="Sessão 02 de 04" title="Foco profundo" />
-      <main className="px-6 space-y-8">
+      <PageHeader eyebrow="Sessão de foco" title="Timer" />
+      <main className="px-6 space-y-6">
+        {/* Foco atual conectado à tarefa */}
+        {active ? (
+          <section className="bg-foreground text-background rounded-2xl p-5 ring-1 ring-black/10">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-widest opacity-60">
+                  Foco atual · {active.tag} · {active.time}
+                </p>
+                <h2 className="text-lg font-semibold mt-1 leading-snug">{active.title}</h2>
+              </div>
+              <button
+                onClick={() => setActive(null)}
+                aria-label="Encerrar foco"
+                className="size-8 -mr-1 shrink-0 rounded-full bg-background/15 grid place-items-center active:scale-95 transition-transform"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <div className="mt-4">
+              <p className="text-[10px] font-semibold uppercase tracking-widest opacity-60 mb-1.5">
+                Meta da sessão
+              </p>
+              <input
+                type="text"
+                value={active.goal}
+                onChange={(e) => updateGoal(e.target.value)}
+                placeholder="Ex.: revisar apenas o feedback do cliente"
+                className="w-full bg-background/10 placeholder:text-background/50 text-sm rounded-lg px-3 py-2.5 outline-none ring-1 ring-background/15 focus:ring-background/40"
+              />
+            </div>
+          </section>
+        ) : (
+          <Link
+            to="/agenda"
+            className="block bg-card rounded-2xl p-5 ring-1 ring-black/5 ring-dashed text-center active:scale-[0.99] transition-transform"
+          >
+            <Target className="size-5 mx-auto text-muted-foreground" />
+            <p className="text-sm font-medium mt-2">Conecte uma tarefa</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Escolha um bloco na Agenda e toque em <strong>Focar</strong>.
+            </p>
+          </Link>
+        )}
+
         <section className="bg-card rounded-3xl p-8 ring-1 ring-black/5 flex flex-col items-center">
           <div className="relative size-64 grid place-items-center">
             <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
@@ -42,7 +107,9 @@ function TimerPage() {
             >
               <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Restante</p>
               <p className="text-6xl font-medium tracking-tighter tabular-nums mt-1">{display}</p>
-              <p className="text-xs text-muted-foreground mt-2">Projeto Aurora</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {active ? active.title : "Sessão livre"}
+              </p>
             </button>
           </div>
 
@@ -71,7 +138,7 @@ function TimerPage() {
             ].map((p) => (
               <button
                 key={p.label}
-                onClick={() => { setMinutes(p.val); setSeconds(0); }}
+                onClick={() => updateMinutes(p.val)}
                 className="bg-card rounded-2xl p-4 ring-1 ring-black/5 text-left active:scale-95 transition-transform"
               >
                 <p className="text-xs text-muted-foreground">{p.label}</p>
@@ -80,6 +147,19 @@ function TimerPage() {
             ))}
           </div>
         </section>
+
+        {active && (
+          <Link
+            to="/foco"
+            className="block text-center bg-secondary rounded-2xl p-4 ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+          >
+            <p className="text-sm font-medium">Entrar no modo Uma Tarefa</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Tela limpa só com esta tarefa
+            </p>
+          </Link>
+        )}
+
         <div className="h-4" />
       </main>
 
@@ -88,7 +168,12 @@ function TimerPage() {
         initialMinutes={minutes}
         initialSeconds={seconds}
         onClose={() => setOpen(false)}
-        onConfirm={(m, s) => { setMinutes(m); setSeconds(s); setOpen(false); }}
+        onConfirm={(m, s) => {
+          setMinutes(m);
+          setSeconds(s);
+          if (active) setActive({ ...active, minutes: m });
+          setOpen(false);
+        }}
       />
     </>
   );
@@ -130,25 +215,14 @@ function TimePickerSheet({
         </div>
 
         <div className="relative">
-          {/* selection highlight */}
           <div
             className="pointer-events-none absolute left-0 right-0 top-1/2 -translate-y-1/2 bg-secondary rounded-xl"
             style={{ height: ITEM_H }}
           />
           <div className="flex items-center justify-center gap-2 relative">
-            <WheelColumn
-              count={181}
-              value={m}
-              onChange={setM}
-              suffix="min"
-            />
+            <WheelColumn count={181} value={m} onChange={setM} suffix="min" />
             <p className="text-2xl font-semibold tabular-nums">:</p>
-            <WheelColumn
-              count={60}
-              value={s}
-              onChange={setS}
-              suffix="seg"
-            />
+            <WheelColumn count={60} value={s} onChange={setS} suffix="seg" />
           </div>
         </div>
 
@@ -178,7 +252,6 @@ function WheelColumn({
   const items = useMemo(() => Array.from({ length: count }, (_, i) => i), [count]);
   const timer = useRef<number | null>(null);
 
-  // Sync scroll position to value when value changes externally (e.g. open)
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
