@@ -3,7 +3,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import {
   Bold,
+  CalendarDays,
   ChevronRight,
+  Heading1,
+  Heading2,
+  Heading3,
   Italic,
   List,
   ListOrdered,
@@ -14,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useActiveTask, useNotes } from "@/lib/focus-store";
+import { Calendar } from "@/components/ui/calendar";
 
 export const Route = createFileRoute("/agenda")({
   head: () => ({
@@ -30,21 +35,38 @@ type Block = {
   title: string;
   tag: string;
   notes: string;
+  priority?: "important";
 };
 
 const blocks: Block[] = [
   { time: "08:30", title: "Planejamento do dia", tag: "Ritual", notes: "Revisar prioridades, definir 3 tarefas-chave e checar a agenda da semana." },
   { time: "09:00", title: "Daily Standup", tag: "Reunião", notes: "Time de produto. Trazer status do onboarding e bloqueios atuais." },
-  { time: "10:00", title: "Deep Work — Design", tag: "Foco", notes: "Fechar wireframes do fluxo de notas. Sem notificações." },
+  { time: "10:00", title: "Deep Work — Design", tag: "Foco", notes: "Fechar wireframes do fluxo de notas. Sem notificações.", priority: "important" },
   { time: "12:30", title: "Almoço sem tela", tag: "Pausa", notes: "Deixar o celular longe. Caminhada curta depois, se possível." },
-  { time: "14:00", title: "Sincronização Mensal", tag: "Reunião", notes: "Métricas do mês, OKRs e roadmap do próximo ciclo." },
+  { time: "14:00", title: "Sincronização Mensal", tag: "Reunião", notes: "Métricas do mês, OKRs e roadmap do próximo ciclo.", priority: "important" },
   { time: "16:00", title: "Revisões finais", tag: "Foco", notes: "Code review pendente + responder e-mails marcados como importantes." },
 ];
 
 const filters = ["Tudo", "Foco", "Reunião", "Pausa", "Ritual"] as const;
 
+// Datas com tarefas importantes (mock). Inclui hoje + alguns dias futuros.
+function getImportantDates(): Date[] {
+  const now = new Date();
+  const offsets = [0, 2, 5, 9, 14];
+  return offsets.map((d) => {
+    const x = new Date(now);
+    x.setDate(now.getDate() + d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  });
+}
+
+function sameDay(a: Date, b: Date) {
+  return a.toDateString() === b.toDateString();
+}
+
 function getWeekDays(base: Date) {
-  const day = base.getDay(); // 0 sun
+  const day = base.getDay();
   const monday = new Date(base);
   monday.setDate(base.getDate() - ((day + 6) % 7));
   return Array.from({ length: 7 }, (_, i) => {
@@ -60,8 +82,10 @@ function AgendaPage() {
   const [editing, setEditing] = useState<Block | null>(null);
   const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>("Tudo");
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [hasMoreRight, setHasMoreRight] = useState(false);
+  const importantDates = useMemo(() => getImportantDates(), []);
 
   const visibleBlocks =
     activeFilter === "Tudo" ? blocks : blocks.filter((b) => b.tag === activeFilter);
@@ -84,20 +108,64 @@ function AgendaPage() {
     };
   }, []);
 
+  // Long-press para abrir calendário completo
+  const lpTimer = useRef<number | null>(null);
+  const lpFired = useRef(false);
+  const startLP = () => {
+    lpFired.current = false;
+    if (lpTimer.current) window.clearTimeout(lpTimer.current);
+    lpTimer.current = window.setTimeout(() => {
+      lpFired.current = true;
+      setCalendarOpen(true);
+    }, 450);
+  };
+  const cancelLP = () => {
+    if (lpTimer.current) {
+      window.clearTimeout(lpTimer.current);
+      lpTimer.current = null;
+    }
+  };
+
   return (
     <>
       <PageHeader eyebrow="Sua semana" title="Agenda" />
       <main className="px-6 space-y-6">
-        {/* Mini calendário semanal */}
-        <section className="bg-card rounded-2xl p-3 ring-1 ring-black/5">
+        {/* Mini calendário semanal — segure para abrir mês completo */}
+        <section
+          className="bg-card rounded-2xl p-3 ring-1 ring-black/5 select-none"
+          onPointerDown={startLP}
+          onPointerUp={cancelLP}
+          onPointerLeave={cancelLP}
+          onPointerCancel={cancelLP}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <div className="flex items-center justify-between px-1 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              {selectedDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+            </p>
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => setCalendarOpen(true)}
+              className="text-[10px] font-medium text-accent inline-flex items-center gap-1 active:scale-95"
+              aria-label="Abrir calendário completo"
+            >
+              <CalendarDays className="size-3.5" /> Mês
+            </button>
+          </div>
           <div className="grid grid-cols-7 gap-1">
             {weekDays.map((d, i) => {
-              const isSelected = d.toDateString() === selectedDate.toDateString();
-              const isToday = d.toDateString() === new Date().toDateString();
+              const isSelected = sameDay(d, selectedDate);
+              const isToday = sameDay(d, new Date());
+              const isImportant = importantDates.some((x) => sameDay(x, d));
               return (
                 <button
                   key={d.toISOString()}
-                  onClick={() => setSelectedDate(d)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={() => {
+                    if (lpFired.current) return;
+                    setSelectedDate(d);
+                  }}
                   className={[
                     "flex flex-col items-center py-2 rounded-xl transition-colors",
                     isSelected
@@ -108,16 +176,32 @@ function AgendaPage() {
                   <span className="text-[10px] uppercase tracking-wider opacity-70">
                     {DAY_LABELS[i]}
                   </span>
-                  <span className="text-base font-semibold tabular-nums mt-0.5">
+                  <span
+                    className={[
+                      "text-base font-semibold tabular-nums mt-0.5",
+                      isImportant && !isSelected ? "text-destructive" : "",
+                    ].join(" ")}
+                  >
                     {d.getDate()}
                   </span>
                   {isToday && !isSelected && (
-                    <span className="size-1 rounded-full bg-foreground mt-0.5" />
+                    <span
+                      className={[
+                        "size-1 rounded-full mt-0.5",
+                        isImportant ? "bg-destructive" : "bg-foreground",
+                      ].join(" ")}
+                    />
+                  )}
+                  {isImportant && !isToday && !isSelected && (
+                    <span className="size-1 rounded-full bg-destructive mt-0.5" />
                   )}
                 </button>
               );
             })}
           </div>
+          <p className="text-[10px] text-muted-foreground text-center mt-2 opacity-70">
+            Segure para abrir o mês inteiro
+          </p>
         </section>
 
         <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
@@ -187,12 +271,21 @@ function AgendaPage() {
                 type="button"
                 aria-label={`Abrir notas de ${b.title}`}
                 onClick={() => setEditing(b)}
-                className="flex-1 text-left p-4 bg-card rounded-xl ring-1 ring-black/5 border-l-2 border-foreground/70 active:scale-[0.99] transition-transform"
+                className={[
+                  "flex-1 text-left p-4 bg-card rounded-xl ring-1 ring-black/5 border-l-2 active:scale-[0.99] transition-transform",
+                  b.priority === "important" ? "border-destructive" : "border-foreground/70",
+                ].join(" ")}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-accent">
+                    <p
+                      className={[
+                        "text-[10px] font-semibold uppercase tracking-widest",
+                        b.priority === "important" ? "text-destructive" : "text-accent",
+                      ].join(" ")}
+                    >
                       {b.tag}
+                      {b.priority === "important" ? " · importante" : ""}
                     </p>
                     <p className="text-sm font-medium text-foreground mt-0.5">{b.title}</p>
                   </div>
@@ -208,7 +301,64 @@ function AgendaPage() {
       </main>
 
       {editing && <NoteEditor block={editing} onClose={() => setEditing(null)} />}
+
+      {calendarOpen && (
+        <FullCalendarModal
+          selected={selectedDate}
+          importantDates={importantDates}
+          onSelect={(d) => {
+            setSelectedDate(d);
+            setCalendarOpen(false);
+          }}
+          onClose={() => setCalendarOpen(false)}
+        />
+      )}
     </>
+  );
+}
+
+function FullCalendarModal({
+  selected,
+  importantDates,
+  onSelect,
+  onClose,
+}: {
+  selected: Date;
+  importantDates: Date[];
+  onSelect: (d: Date) => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl p-3 animate-in slide-in-from-bottom duration-200">
+        <div className="flex items-center justify-between px-2 py-1">
+          <p className="text-sm font-semibold">Calendário</p>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="size-9 rounded-full bg-secondary grid place-items-center active:scale-95"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <Calendar
+          mode="single"
+          selected={selected}
+          onSelect={(d) => d && onSelect(d)}
+          modifiers={{ important: importantDates }}
+          modifiersClassNames={{ important: "text-destructive font-semibold" }}
+          className="pointer-events-auto mx-auto"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -243,9 +393,9 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
     onClose();
   };
 
-  const exec = (cmd: string) => {
+  const exec = (cmd: string, value?: string) => {
     ref.current?.focus();
-    document.execCommand(cmd, false);
+    document.execCommand(cmd, false, value);
   };
 
   const setFocus = () => {
@@ -287,7 +437,17 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-secondary/40">
+        <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-secondary/40 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ToolbarBtn onClick={() => exec("formatBlock", "H1")} label="Título 1">
+            <Heading1 className="size-4" />
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => exec("formatBlock", "H2")} label="Título 2">
+            <Heading2 className="size-4" />
+          </ToolbarBtn>
+          <ToolbarBtn onClick={() => exec("formatBlock", "H3")} label="Título 3">
+            <Heading3 className="size-4" />
+          </ToolbarBtn>
+          <span className="w-px h-5 bg-border mx-1" />
           <ToolbarBtn onClick={() => exec("bold")} label="Negrito">
             <Bold className="size-4" />
           </ToolbarBtn>
@@ -307,7 +467,11 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
           ref={ref}
           contentEditable
           suppressContentEditableWarning
-          className="flex-1 overflow-y-auto p-5 text-[15px] leading-relaxed text-foreground outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-semibold"
+          className="flex-1 overflow-y-auto p-5 text-[15px] leading-relaxed text-foreground outline-none
+            [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-semibold
+            [&_h1]:text-2xl sm:[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h1]:mt-3 [&_h1]:mb-2
+            [&_h2]:text-xl sm:[&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-snug [&_h2]:mt-3 [&_h2]:mb-1.5
+            [&_h3]:text-lg sm:[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1"
         />
 
         {/* Footer */}
@@ -346,7 +510,7 @@ function ToolbarBtn({
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       aria-label={label}
-      className="size-9 rounded-lg grid place-items-center text-muted-foreground hover:bg-card hover:text-foreground transition-colors active:scale-95"
+      className="size-9 shrink-0 rounded-lg grid place-items-center text-muted-foreground hover:bg-card hover:text-foreground transition-colors active:scale-95"
     >
       {children}
     </button>
@@ -356,3 +520,6 @@ function ToolbarBtn({
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
 }
+
+export { blocks as agendaBlocks };
+export type { Block as AgendaBlock };
