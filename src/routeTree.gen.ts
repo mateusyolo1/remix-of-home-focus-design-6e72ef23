@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TimerRouteImport } from './routes/timer'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as FocoRouteImport } from './routes/foco'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AgendaRouteImport } from './routes/agenda'
@@ -24,6 +25,11 @@ const TimerRoute = TimerRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FocoRoute = FocoRouteImport.update({
+  id: '/foco',
+  path: '/foco',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AgendaRoute
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/foco': typeof FocoRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/agenda': typeof AgendaRoute
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/foco': typeof FocoRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
 }
@@ -69,20 +77,36 @@ export interface FileRoutesById {
   '/agenda': typeof AgendaRoute
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/foco': typeof FocoRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agenda' | '/chat' | '/configuracoes' | '/perfil' | '/timer'
+  fullPaths:
+    | '/'
+    | '/agenda'
+    | '/chat'
+    | '/configuracoes'
+    | '/foco'
+    | '/perfil'
+    | '/timer'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agenda' | '/chat' | '/configuracoes' | '/perfil' | '/timer'
+  to:
+    | '/'
+    | '/agenda'
+    | '/chat'
+    | '/configuracoes'
+    | '/foco'
+    | '/perfil'
+    | '/timer'
   id:
     | '__root__'
     | '/'
     | '/agenda'
     | '/chat'
     | '/configuracoes'
+    | '/foco'
     | '/perfil'
     | '/timer'
   fileRoutesById: FileRoutesById
@@ -92,6 +116,7 @@ export interface RootRouteChildren {
   AgendaRoute: typeof AgendaRoute
   ChatRoute: typeof ChatRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
+  FocoRoute: typeof FocoRoute
   PerfilRoute: typeof PerfilRoute
   TimerRoute: typeof TimerRoute
 }
@@ -110,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/foco': {
+      id: '/foco'
+      path: '/foco'
+      fullPath: '/foco'
+      preLoaderRoute: typeof FocoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracoes': {
@@ -148,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgendaRoute: AgendaRoute,
   ChatRoute: ChatRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
+  FocoRoute: FocoRoute,
   PerfilRoute: PerfilRoute,
   TimerRoute: TimerRoute,
 }
