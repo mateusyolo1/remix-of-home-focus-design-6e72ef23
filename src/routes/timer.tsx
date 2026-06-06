@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ChevronRight, Pause, RotateCcw, SkipForward, Target, X } from "lucide-react";
+import { Check, ChevronRight, Pause, Play, RotateCcw, SkipForward, Target, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useActiveTask } from "@/lib/focus-store";
-import { agendaBlocks } from "./agenda";
+import { useActiveTask, useBlocks, useTasks, type Block } from "@/lib/focus-store";
 
 export const Route = createFileRoute("/timer")({
   head: () => ({
@@ -17,19 +16,57 @@ export const Route = createFileRoute("/timer")({
 
 function TimerPage() {
   const [active, setActive] = useActiveTask();
+  const { tasks, toggle } = useTasks();
   const [minutes, setMinutes] = useState(active?.minutes ?? 25);
   const [seconds, setSeconds] = useState(0);
+  const [running, setRunning] = useState(false);
   const [open, setOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  // Sync minutes when active task changes
   useEffect(() => {
     if (active?.minutes) {
       setMinutes(active.minutes);
       setSeconds(0);
+      setRunning(false);
     }
   }, [active?.time, active?.minutes]);
 
+  // Countdown
+  useEffect(() => {
+    if (!running) return;
+    const id = window.setInterval(() => {
+      setSeconds((s) => {
+        if (s > 0) return s - 1;
+        // s === 0
+        return 59;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [running]);
+
+  // Decrement minute when seconds wrap
+  useEffect(() => {
+    if (!running) return;
+    if (seconds === 59) {
+      setMinutes((m) => {
+        if (m <= 0) {
+          setRunning(false);
+          setSeconds(0);
+          return 0;
+        }
+        return m - 1;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds]);
+
   const display = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+  const totalSecs = (active?.minutes ?? 25) * 60;
+  const remaining = minutes * 60 + seconds;
+  const progress = Math.max(0, Math.min(1, 1 - remaining / totalSecs));
+  const dashOffset = 289 * (1 - progress);
 
   const updateGoal = (goal: string) => {
     if (!active) return;
@@ -39,14 +76,28 @@ function TimerPage() {
   const updateMinutes = (m: number) => {
     setMinutes(m);
     setSeconds(0);
+    setRunning(false);
     if (active) setActive({ ...active, minutes: m });
   };
+
+  const reset = () => {
+    setRunning(false);
+    setMinutes(active?.minutes ?? 25);
+    setSeconds(0);
+  };
+
+  const complete = () => {
+    setRunning(false);
+    setMinutes(0);
+    setSeconds(0);
+  };
+
+  const linkedTasks = active ? tasks.filter((t) => t.blockTime === active.time) : [];
 
   return (
     <>
       <PageHeader eyebrow="Sessão de foco" title="Timer" />
       <main className="px-6 space-y-6">
-        {/* Foco atual conectado à tarefa */}
         {active ? (
           <section className="bg-foreground text-background rounded-2xl p-5 ring-1 ring-black/10">
             <div className="flex items-start justify-between gap-3">
@@ -91,7 +142,7 @@ function TimerPage() {
             <Target className="size-5 mx-auto text-muted-foreground" />
             <p className="text-sm font-medium mt-2">Conectar a uma tarefa</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Escolha um bloco da sua agenda
+              Opcional — escolha um bloco da sua agenda
             </p>
           </button>
         )}
@@ -102,8 +153,8 @@ function TimerPage() {
               <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="2" className="text-border" />
               <circle
                 cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="2"
-                strokeDasharray="289" strokeDashoffset="80" strokeLinecap="round"
-                className="text-foreground"
+                strokeDasharray="289" strokeDashoffset={dashOffset} strokeLinecap="round"
+                className="text-foreground transition-[stroke-dashoffset] duration-700"
               />
             </svg>
             <button
@@ -121,17 +172,65 @@ function TimerPage() {
           </div>
 
           <div className="mt-8 flex items-center gap-4">
-            <button aria-label="Reiniciar" className="size-12 rounded-full bg-secondary grid place-items-center ring-1 ring-black/5 active:scale-95 transition-transform">
+            <button
+              onClick={reset}
+              aria-label="Reiniciar"
+              className="size-12 rounded-full bg-secondary grid place-items-center ring-1 ring-black/5 active:scale-95 transition-transform"
+            >
               <RotateCcw className="size-4" />
             </button>
-            <button className="px-8 h-14 rounded-full bg-foreground text-background font-medium inline-flex items-center gap-2 active:scale-95 transition-transform">
-              <Pause className="size-4" /> Pausar
+            <button
+              onClick={() => setRunning((r) => !r)}
+              className="px-8 h-14 rounded-full bg-foreground text-background font-medium inline-flex items-center gap-2 active:scale-95 transition-transform"
+            >
+              {running ? <Pause className="size-4" /> : <Play className="size-4" />}
+              {running ? "Pausar" : "Iniciar"}
             </button>
-            <button aria-label="Próxima" className="size-12 rounded-full bg-secondary grid place-items-center ring-1 ring-black/5 active:scale-95 transition-transform">
+            <button
+              onClick={complete}
+              aria-label="Concluir sessão"
+              className="size-12 rounded-full bg-secondary grid place-items-center ring-1 ring-black/5 active:scale-95 transition-transform"
+            >
               <SkipForward className="size-4" />
             </button>
           </div>
         </section>
+
+        {/* Tarefas vinculadas ao bloco em foco */}
+        {active && linkedTasks.length > 0 && (
+          <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              Tarefas deste bloco
+            </p>
+            <ul className="space-y-2">
+              {linkedTasks.map((t) => (
+                <li key={t.id}>
+                  <button
+                    onClick={() => toggle(t.id)}
+                    className="w-full text-left flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/60 active:scale-[0.99] transition-transform"
+                  >
+                    <span
+                      className={[
+                        "size-5 shrink-0 rounded-md grid place-items-center ring-1",
+                        t.done ? "bg-foreground text-background ring-foreground" : "bg-background ring-border",
+                      ].join(" ")}
+                    >
+                      {t.done && <Check className="size-3" />}
+                    </span>
+                    <span
+                      className={[
+                        "text-sm",
+                        t.done ? "line-through text-muted-foreground" : "text-foreground",
+                      ].join(" ")}
+                    >
+                      {t.title}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section>
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1 mb-3">
@@ -142,16 +241,22 @@ function TimerPage() {
               { label: "Pomodoro", val: 25 },
               { label: "Deep work", val: 45 },
               { label: "Maratona", val: 90 },
-            ].map((p) => (
-              <button
-                key={p.label}
-                onClick={() => updateMinutes(p.val)}
-                className="bg-card rounded-2xl p-4 ring-1 ring-black/5 text-left active:scale-95 transition-transform"
-              >
-                <p className="text-xs text-muted-foreground">{p.label}</p>
-                <p className="text-xl font-semibold tabular-nums mt-1">{p.val}m</p>
-              </button>
-            ))}
+            ].map((p) => {
+              const isActive = (active?.minutes ?? minutes) === p.val;
+              return (
+                <button
+                  key={p.label}
+                  onClick={() => updateMinutes(p.val)}
+                  className={[
+                    "rounded-2xl p-4 ring-1 ring-black/5 text-left active:scale-95 transition-transform",
+                    isActive ? "bg-foreground text-background" : "bg-card",
+                  ].join(" ")}
+                >
+                  <p className={["text-xs", isActive ? "opacity-70" : "text-muted-foreground"].join(" ")}>{p.label}</p>
+                  <p className="text-xl font-semibold tabular-nums mt-1">{p.val}m</p>
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -207,8 +312,9 @@ function TaskPickerSheet({
   onPick,
 }: {
   onClose: () => void;
-  onPick: (b: (typeof agendaBlocks)[number]) => void;
+  onPick: (b: Block) => void;
 }) {
+  const { blocks } = useBlocks();
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -226,7 +332,7 @@ function TaskPickerSheet({
           </button>
         </div>
         <ul className="space-y-2 max-h-[60dvh] overflow-y-auto">
-          {agendaBlocks.map((b) => (
+          {blocks.map((b) => (
             <li key={b.time}>
               <button
                 type="button"
