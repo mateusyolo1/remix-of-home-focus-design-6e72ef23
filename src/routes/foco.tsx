@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowLeft, Check, Plus, Sparkles, Target } from "lucide-react";
-import { useActiveTask, useSteps, type Subtask } from "@/lib/focus-store";
+import { useActiveTask, useSteps, useTasks, type Subtask } from "@/lib/focus-store";
 
 export const Route = createFileRoute("/foco")({
   head: () => ({
@@ -17,7 +17,6 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-// Sugestões genéricas para quebrar uma tarefa em passos menores
 function suggestSteps(title: string): Subtask[] {
   const t = title.trim() || "esta tarefa";
   return [
@@ -32,6 +31,7 @@ function suggestSteps(title: string): Subtask[] {
 function FocoPage() {
   const [active] = useActiveTask();
   const [steps, setSteps] = useSteps(active?.time ?? null);
+  const { tasks, toggle: toggleTask } = useTasks();
   const [newStep, setNewStep] = useState("");
 
   if (!active) {
@@ -54,6 +54,8 @@ function FocoPage() {
       </main>
     );
   }
+
+  const linkedTasks = tasks.filter((t) => t.blockTime === active.time);
 
   const toggle = (id: string) =>
     setSteps(steps.map((s) => (s.id === id ? { ...s, done: !s.done } : s)));
@@ -103,10 +105,41 @@ function FocoPage() {
         )}
       </section>
 
+      {/* Tarefas vinculadas a este bloco */}
+      {linkedTasks.length > 0 && (
+        <section className="mt-5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2 px-1">
+            Tarefas deste bloco
+          </p>
+          <ul className="space-y-1.5">
+            {linkedTasks.map((t) => (
+              <li key={t.id}>
+                <button
+                  onClick={() => toggleTask(t.id)}
+                  className="w-full text-left flex items-center gap-3 p-3 bg-card rounded-xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+                >
+                  <span
+                    className={[
+                      "size-5 shrink-0 rounded-md grid place-items-center ring-1",
+                      t.done ? "bg-foreground text-background ring-foreground" : "bg-background ring-border",
+                    ].join(" ")}
+                  >
+                    {t.done && <Check className="size-3" />}
+                  </span>
+                  <span className={["text-sm flex-1", t.done ? "line-through text-muted-foreground" : ""].join(" ")}>
+                    {t.title}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {steps.length > 0 && (
         <div className="mt-5">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-2 px-1">
-            <span>Progresso</span>
+            <span>Progresso (passos)</span>
             <span className="tabular-nums font-medium text-foreground">
               {done}/{steps.length}
             </span>

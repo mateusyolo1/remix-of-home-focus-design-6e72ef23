@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck, UserCog } from "lucide-react";
 import { useMemo } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -14,13 +15,20 @@ export const Route = createFileRoute("/perfil")({
   component: PerfilPage,
 });
 
-const items = [
+type Item = {
+  icon: typeof UserCog;
+  label: string;
+  to?: "/perfil/editar" | "/configuracoes";
+  onClick?: () => void;
+};
+
+const items: Item[] = [
   { icon: UserCog, label: "Editar perfil", to: "/perfil/editar" },
-  { icon: Bell, label: "Lembretes", to: "/perfil" },
+  { icon: Bell, label: "Lembretes", onClick: () => toast("Lembretes em breve — vamos enviar notificações nos seus horários da agenda.") },
   { icon: Settings, label: "Configurações", to: "/configuracoes" },
-  { icon: ShieldCheck, label: "Privacidade", to: "/perfil" },
-  { icon: Moon, label: "Modo silencioso", to: "/perfil" },
-] as const;
+  { icon: ShieldCheck, label: "Privacidade", onClick: () => toast("Privacidade — seus dados ficam apenas neste dispositivo (localStorage).") },
+  { icon: Moon, label: "Modo silencioso", onClick: () => toast.success("Modo silencioso ativado") },
+];
 
 function PerfilPage() {
   const [profile] = useProfile();
@@ -123,25 +131,39 @@ function PerfilPage() {
         </section>
 
         <section className="bg-card rounded-2xl ring-1 ring-black/5 overflow-hidden">
-          {items.map(({ icon: Icon, label, to }, i) => (
-            <Link
-              key={label}
-              to={to}
-              className={[
-                "flex items-center gap-3 px-4 py-4 text-sm",
-                i !== items.length - 1 ? "border-b border-border" : "",
-              ].join(" ")}
-            >
-              <span className="size-9 rounded-xl bg-secondary grid place-items-center">
-                <Icon className="size-4 text-foreground" />
-              </span>
-              <span className="flex-1 font-medium">{label}</span>
-              <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
-          ))}
+          {items.map(({ icon: Icon, label, to, onClick }, i) => {
+            const cls = [
+              "flex items-center gap-3 px-4 py-4 text-sm w-full text-left",
+              i !== items.length - 1 ? "border-b border-border" : "",
+            ].join(" ");
+            const inner = (
+              <>
+                <span className="size-9 rounded-xl bg-secondary grid place-items-center">
+                  <Icon className="size-4 text-foreground" />
+                </span>
+                <span className="flex-1 font-medium">{label}</span>
+                <ChevronRight className="size-4 text-muted-foreground" />
+              </>
+            );
+            if (to) {
+              return (
+                <Link key={label} to={to} className={cls}>
+                  {inner}
+                </Link>
+              );
+            }
+            return (
+              <button key={label} type="button" onClick={onClick} className={cls}>
+                {inner}
+              </button>
+            );
+          })}
         </section>
 
-        <button className="w-full inline-flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground py-4">
+        <button
+          onClick={() => toast("Sessão encerrada (demo)")}
+          className="w-full inline-flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground py-4"
+        >
           <LogOut className="size-4" /> Encerrar sessão
         </button>
         <div className="h-4" />
