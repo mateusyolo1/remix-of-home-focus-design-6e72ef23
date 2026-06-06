@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import {
   Bold,
   CalendarDays,
+  Check,
   ChevronRight,
   Heading1,
   Heading2,
@@ -15,9 +16,16 @@ import {
   Search,
   StickyNote,
   Target,
+  Trash2,
   X,
 } from "lucide-react";
-import { useActiveTask, useNotes } from "@/lib/focus-store";
+import {
+  useActiveTask,
+  useBlocks,
+  useNotes,
+  useTasks,
+  type Block,
+} from "@/lib/focus-store";
 import { Calendar } from "@/components/ui/calendar";
 
 export const Route = createFileRoute("/agenda")({
@@ -30,35 +38,27 @@ export const Route = createFileRoute("/agenda")({
   component: AgendaPage,
 });
 
-type Block = {
-  time: string;
-  title: string;
-  tag: string;
-  notes: string;
-  priority?: "important";
-};
-
-const blocks: Block[] = [
-  { time: "08:30", title: "Planejamento do dia", tag: "Ritual", notes: "Revisar prioridades, definir 3 tarefas-chave e checar a agenda da semana." },
-  { time: "09:00", title: "Daily Standup", tag: "Reunião", notes: "Time de produto. Trazer status do onboarding e bloqueios atuais." },
-  { time: "10:00", title: "Deep Work — Design", tag: "Foco", notes: "Fechar wireframes do fluxo de notas. Sem notificações.", priority: "important" },
-  { time: "12:30", title: "Almoço sem tela", tag: "Pausa", notes: "Deixar o celular longe. Caminhada curta depois, se possível." },
-  { time: "14:00", title: "Sincronização Mensal", tag: "Reunião", notes: "Métricas do mês, OKRs e roadmap do próximo ciclo.", priority: "important" },
-  { time: "16:00", title: "Revisões finais", tag: "Foco", notes: "Code review pendente + responder e-mails marcados como importantes." },
-];
-
 const filters = ["Tudo", "Foco", "Reunião", "Pausa", "Ritual"] as const;
+const tagOptions = ["Foco", "Reunião", "Pausa", "Ritual"] as const;
 
-// Datas com tarefas importantes (mock). Inclui hoje + alguns dias futuros.
-function getImportantDates(): Date[] {
+function getImportantDates(blocks: Block[]): Date[] {
+  // Hoje recebe destaque se houver bloco "important". Demais offsets são exemplos
+  // de marcações futuras (poderia vir de uma data real associada por bloco).
   const now = new Date();
-  const offsets = [0, 2, 5, 9, 14];
-  return offsets.map((d) => {
+  const hasImportant = blocks.some((b) => b.priority === "important");
+  const out: Date[] = [];
+  if (hasImportant) {
+    const t = new Date(now);
+    t.setHours(0, 0, 0, 0);
+    out.push(t);
+  }
+  [2, 5, 9, 14].forEach((d) => {
     const x = new Date(now);
     x.setDate(now.getDate() + d);
     x.setHours(0, 0, 0, 0);
-    return x;
+    out.push(x);
   });
+  return out;
 }
 
 function sameDay(a: Date, b: Date) {
@@ -79,16 +79,25 @@ function getWeekDays(base: Date) {
 const DAY_LABELS = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"];
 
 function AgendaPage() {
+  const { blocks, add: addBlock } = useBlocks();
   const [editing, setEditing] = useState<Block | null>(null);
   const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>("Tudo");
+  const [query, setQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [hasMoreRight, setHasMoreRight] = useState(false);
-  const importantDates = useMemo(() => getImportantDates(), []);
+  const importantDates = useMemo(() => getImportantDates(blocks), [blocks]);
 
-  const visibleBlocks =
-    activeFilter === "Tudo" ? blocks : blocks.filter((b) => b.tag === activeFilter);
+  const visibleBlocks = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return blocks.filter((b) => {
+      if (activeFilter !== "Tudo" && b.tag !== activeFilter) return false;
+      if (q && !`${b.title} ${b.tag} ${b.time}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [blocks, activeFilter, query]);
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
 
@@ -108,7 +117,6 @@ function AgendaPage() {
     };
   }, []);
 
-  // Long-press para abrir calendário completo
   const lpTimer = useRef<number | null>(null);
   const lpFired = useRef(false);
   const startLP = () => {
@@ -130,7 +138,6 @@ function AgendaPage() {
     <>
       <PageHeader eyebrow="Sua semana" title="Agenda" />
       <main className="px-6 space-y-6">
-        {/* Mini calendário semanal — segure para abrir mês completo */}
         <section
           className="bg-card rounded-2xl p-3 ring-1 ring-black/5 select-none"
           onPointerDown={startLP}
@@ -208,9 +215,20 @@ function AgendaPage() {
           <Search className="size-4 ml-2 text-muted-foreground" />
           <input
             type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar bloco, tag ou pessoa…"
             className="flex-1 bg-transparent text-sm outline-none py-2 placeholder:text-muted-foreground"
           />
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              aria-label="Limpar busca"
+              className="size-7 mr-1 rounded-full bg-secondary grid place-items-center active:scale-95"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="relative -mx-6">
@@ -256,12 +274,20 @@ function AgendaPage() {
             </p>
             <p className="text-3xl font-semibold tabular-nums mt-1">{visibleBlocks.length}</p>
           </div>
-          <button className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform">
+          <button
+            onClick={() => setNewOpen(true)}
+            className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2.5 rounded-xl text-sm font-medium active:scale-95 transition-transform"
+          >
             <Plus className="size-4" /> Novo bloco
           </button>
         </section>
 
         <section className="space-y-3">
+          {visibleBlocks.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-8">
+              Nenhum bloco encontrado.
+            </p>
+          )}
           {visibleBlocks.map((b) => (
             <article key={b.time} className="flex gap-4 items-start">
               <span className="text-xs font-medium text-muted-foreground w-12 pt-1 tabular-nums">
@@ -313,6 +339,16 @@ function AgendaPage() {
           onClose={() => setCalendarOpen(false)}
         />
       )}
+
+      {newOpen && (
+        <NewBlockModal
+          onClose={() => setNewOpen(false)}
+          onCreate={(b) => {
+            addBlock(b);
+            setNewOpen(false);
+          }}
+        />
+      )}
     </>
   );
 }
@@ -362,11 +398,109 @@ function FullCalendarModal({
   );
 }
 
+function NewBlockModal({
+  onClose,
+  onCreate,
+}: {
+  onClose: () => void;
+  onCreate: (b: { time: string; title: string; tag: string; priority?: "important" }) => void;
+}) {
+  const [time, setTime] = useState("09:00");
+  const [title, setTitle] = useState("");
+  const [tag, setTag] = useState<(typeof tagOptions)[number]>("Foco");
+  const [important, setImportant] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const canSave = title.trim() && /^\d{2}:\d{2}$/.test(time);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl p-5 animate-in slide-in-from-bottom duration-200">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-semibold">Novo bloco</p>
+          <button onClick={onClose} aria-label="Fechar" className="size-8 rounded-full bg-secondary grid place-items-center active:scale-95">
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="space-y-3">
+          <label className="block">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Título</span>
+            <input
+              autoFocus
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex.: Revisar wireframes"
+              className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Horário</span>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+            />
+          </label>
+          <div>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tag</span>
+            <div className="mt-1 flex flex-wrap gap-2">
+              {tagOptions.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTag(t)}
+                  className={[
+                    "px-3 py-1.5 rounded-full text-xs font-medium ring-1",
+                    tag === t
+                      ? "bg-foreground text-background ring-foreground"
+                      : "bg-card text-muted-foreground ring-black/10",
+                  ].join(" ")}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+          <label className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              checked={important}
+              onChange={(e) => setImportant(e.target.checked)}
+              className="accent-destructive"
+            />
+            <span className="text-sm">Marcar como importante</span>
+          </label>
+        </div>
+        <button
+          disabled={!canSave}
+          onClick={() => onCreate({ time, title: title.trim(), tag, priority: important ? "important" : undefined })}
+          className="mt-5 w-full h-12 rounded-xl bg-foreground text-background font-medium text-sm disabled:opacity-40 active:scale-[0.99] transition-transform"
+        >
+          Criar bloco
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
   const { notes, setNote } = useNotes();
+  const { tasks, add: addTask, toggle, remove } = useTasks();
   const [, setActive] = useActiveTask();
   const ref = useRef<HTMLDivElement>(null);
   const [didInit, setDidInit] = useState(false);
+  const [newTask, setNewTask] = useState("");
+
+  const linked = tasks.filter((t) => t.blockTime === block.time);
 
   useEffect(() => {
     if (didInit) return;
@@ -398,6 +532,28 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
     document.execCommand(cmd, false, value);
   };
 
+  // H1/H2/H3: aplica só na linha (bloco) onde está o cursor; clicar de novo volta a parágrafo.
+  const applyHeading = (level: "H1" | "H2" | "H3") => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) {
+      exec("formatBlock", level);
+      return;
+    }
+    let node: Node | null = sel.anchorNode;
+    while (node && node !== ref.current) {
+      if (node.nodeType === 1) {
+        const tag = (node as HTMLElement).tagName;
+        if (tag === level) {
+          exec("formatBlock", "P");
+          return;
+        }
+        if (/^H[1-6]$|^P$|^DIV$|^LI$/.test(tag)) break;
+      }
+      node = node.parentNode;
+    }
+    exec("formatBlock", level);
+  };
+
   const setFocus = () => {
     if (ref.current) setNote(block.time, ref.current.innerHTML);
     setActive({
@@ -410,6 +566,13 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
     onClose();
   };
 
+  const submitTask = () => {
+    const v = newTask.trim();
+    if (!v) return;
+    addTask(v, block.time);
+    setNewTask("");
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={save} />
@@ -419,7 +582,6 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
         className="relative w-full max-w-lg bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-200"
         style={{ maxHeight: "min(92dvh, 760px)" }}
       >
-        {/* Header */}
         <div className="flex items-start justify-between gap-3 p-5 pb-3 border-b border-border">
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-accent">
@@ -436,15 +598,14 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
           </button>
         </div>
 
-        {/* Toolbar */}
         <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-secondary/40 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <ToolbarBtn onClick={() => exec("formatBlock", "H1")} label="Título 1">
+          <ToolbarBtn onClick={() => applyHeading("H1")} label="Título 1">
             <Heading1 className="size-4" />
           </ToolbarBtn>
-          <ToolbarBtn onClick={() => exec("formatBlock", "H2")} label="Título 2">
+          <ToolbarBtn onClick={() => applyHeading("H2")} label="Título 2">
             <Heading2 className="size-4" />
           </ToolbarBtn>
-          <ToolbarBtn onClick={() => exec("formatBlock", "H3")} label="Título 3">
+          <ToolbarBtn onClick={() => applyHeading("H3")} label="Título 3">
             <Heading3 className="size-4" />
           </ToolbarBtn>
           <span className="w-px h-5 bg-border mx-1" />
@@ -462,19 +623,79 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
           </ToolbarBtn>
         </div>
 
-        {/* Editor */}
-        <div
-          ref={ref}
-          contentEditable
-          suppressContentEditableWarning
-          className="flex-1 overflow-y-auto p-5 text-[15px] leading-relaxed text-foreground outline-none
-            [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-semibold
-            [&_h1]:text-2xl sm:[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h1]:mt-3 [&_h1]:mb-2
-            [&_h2]:text-xl sm:[&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-snug [&_h2]:mt-3 [&_h2]:mb-1.5
-            [&_h3]:text-lg sm:[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1"
-        />
+        <div className="flex-1 overflow-y-auto">
+          <div
+            ref={ref}
+            contentEditable
+            suppressContentEditableWarning
+            className="p-5 text-[15px] leading-relaxed text-foreground outline-none
+              [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_strong]:font-semibold
+              [&_h1]:text-2xl sm:[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:leading-tight [&_h1]:mt-3 [&_h1]:mb-2
+              [&_h2]:text-xl sm:[&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:leading-snug [&_h2]:mt-3 [&_h2]:mb-1.5
+              [&_h3]:text-lg sm:[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1"
+          />
 
-        {/* Footer */}
+          {/* Tarefas vinculadas a este bloco */}
+          <div className="px-5 pb-5 border-t border-border pt-4 space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Tarefas deste bloco
+            </p>
+            {linked.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                Nenhuma tarefa vinculada. Adicione abaixo — elas aparecem no Timer e na Home.
+              </p>
+            )}
+            <ul className="space-y-1.5">
+              {linked.map((t) => (
+                <li key={t.id} className="flex items-center gap-2">
+                  <button
+                    onClick={() => toggle(t.id)}
+                    aria-label="Concluir tarefa"
+                    className={[
+                      "size-5 shrink-0 rounded-md grid place-items-center ring-1 transition-colors",
+                      t.done ? "bg-foreground text-background ring-foreground" : "bg-background ring-border",
+                    ].join(" ")}
+                  >
+                    {t.done && <Check className="size-3" />}
+                  </button>
+                  <span
+                    className={[
+                      "flex-1 text-sm",
+                      t.done ? "line-through text-muted-foreground" : "text-foreground",
+                    ].join(" ")}
+                  >
+                    {t.title}
+                  </span>
+                  <button
+                    onClick={() => remove(t.id)}
+                    aria-label="Remover tarefa"
+                    className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center gap-2 bg-secondary/60 rounded-lg p-1.5">
+              <input
+                type="text"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submitTask()}
+                placeholder="Adicionar tarefa…"
+                className="flex-1 bg-transparent text-sm outline-none px-2 py-1.5 placeholder:text-muted-foreground"
+              />
+              <button
+                onClick={submitTask}
+                aria-label="Adicionar"
+                className="size-8 rounded-md bg-foreground text-background grid place-items-center active:scale-95"
+              >
+                <Plus className="size-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 gap-2 p-4 border-t border-border">
           <button
             onClick={setFocus}
@@ -520,6 +741,3 @@ function ToolbarBtn({
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
 }
-
-export { blocks as agendaBlocks };
-export type { Block as AgendaBlock };
