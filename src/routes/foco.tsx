@@ -76,30 +76,30 @@ function FocoPage() {
   const pct = steps.length ? Math.round((done / steps.length) * 100) : 0;
 
   return (
-    <main className="fixed inset-0 z-50 overflow-y-auto animate-zen-fade flex flex-col px-6 pt-8 pb-10 max-w-md mx-auto bg-background/70 backdrop-blur-3xl">
+    <main className="min-h-screen flex flex-col px-6 pt-6 pb-10 max-w-md mx-auto">
       <header className="flex items-center justify-between mb-6">
         <Link
           to="/timer"
-          className="size-10 rounded-2xl glass grid place-items-center active:scale-90"
-          aria-label="Sair do modo foco"
+          className="size-9 rounded-full bg-secondary grid place-items-center active:scale-95 transition-transform"
+          aria-label="Voltar"
         >
           <ArrowLeft className="size-4" />
         </Link>
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          Modo zen · uma tarefa
+          Uma tarefa por vez
         </p>
-        <span className="size-10" />
+        <span className="size-9" />
       </header>
 
-      <section className="glass-strong rounded-[2rem] p-8 text-center">
+      <section className="bg-card rounded-3xl p-6 ring-1 ring-black/5 text-center">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-accent">
           {active.tag} · {active.time}
         </p>
-        <h1 className="text-4xl sm:text-5xl font-semibold leading-[1.05] mt-4 text-balance tracking-tight hero-pulse-text">
+        <h1 className="text-2xl font-semibold leading-tight mt-2 text-balance">
           {active.title}
         </h1>
         {active.goal && (
-          <p className="text-base text-muted-foreground mt-5 italic">
+          <p className="text-sm text-muted-foreground mt-3 italic">
             “{active.goal}”
           </p>
         )}
