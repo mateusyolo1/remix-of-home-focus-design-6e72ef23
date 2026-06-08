@@ -76,19 +76,19 @@ function FocoPage() {
   const pct = steps.length ? Math.round((done / steps.length) * 100) : 0;
 
   return (
-    <main className="min-h-screen flex flex-col px-6 pt-6 pb-10 max-w-md mx-auto">
+    <main className="fixed inset-0 z-50 overflow-y-auto animate-zen-fade flex flex-col px-6 pt-8 pb-10 max-w-md mx-auto bg-background/70 backdrop-blur-3xl">
       <header className="flex items-center justify-between mb-6">
         <Link
           to="/timer"
-          className="size-9 rounded-full bg-secondary grid place-items-center active:scale-95 transition-transform"
-          aria-label="Voltar"
+          className="size-10 rounded-2xl glass grid place-items-center active:scale-90"
+          aria-label="Sair do modo foco"
         >
           <ArrowLeft className="size-4" />
         </Link>
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-          Uma tarefa por vez
+          Modo zen · uma tarefa
         </p>
-        <span className="size-9" />
+        <span className="size-10" />
       </header>
 
       <section className="bg-card rounded-3xl p-6 ring-1 ring-black/5 text-center">
