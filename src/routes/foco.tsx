@@ -91,15 +91,15 @@ function FocoPage() {
         <span className="size-10" />
       </header>
 
-      <section className="bg-card rounded-3xl p-6 ring-1 ring-black/5 text-center">
+      <section className="glass-strong rounded-[2rem] p-8 text-center">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-accent">
           {active.tag} · {active.time}
         </p>
-        <h1 className="text-2xl font-semibold leading-tight mt-2 text-balance">
+        <h1 className="text-4xl sm:text-5xl font-semibold leading-[1.05] mt-4 text-balance tracking-tight hero-pulse-text">
           {active.title}
         </h1>
         {active.goal && (
-          <p className="text-sm text-muted-foreground mt-3 italic">
+          <p className="text-base text-muted-foreground mt-5 italic">
             “{active.goal}”
           </p>
         )}
