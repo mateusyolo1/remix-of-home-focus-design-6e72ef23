@@ -28,10 +28,10 @@ type SpeechRecognitionLike = {
 function getSpeechCtor(): (new () => SpeechRecognitionLike) | null {
   if (typeof window === "undefined") return null;
   const w = window as unknown as {
-    SpeechRecognition?: new () => SpeechRecognitionLike;
-    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+    SpeechRecognitionLike?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognitionLike?: new () => SpeechRecognitionLike;
   };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+  return w.SpeechRecognitionLike ?? w.webkitSpeechRecognitionLike ?? null;
 }
 
 export function AppShell() {
@@ -40,7 +40,7 @@ export function AppShell() {
   const onHome = pathname === "/";
   const { add } = useTasks();
   const [recording, setRecording] = useState(false);
-  const recogRef = useRef<SpeechRecognition | null>(null);
+  const recogRef = useRef<SpeechRecognitionLike | null>(null);
 
   useEffect(() => {
     return () => {
@@ -66,7 +66,7 @@ export function AppShell() {
       }
       return;
     }
-    const r: SpeechRecognition = new Ctor();
+    const r: SpeechRecognitionLike = new Ctor();
     r.lang = "pt-BR";
     r.interimResults = false;
     r.maxAlternatives = 1;
