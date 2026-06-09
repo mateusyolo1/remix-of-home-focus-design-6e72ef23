@@ -443,16 +443,19 @@ function FullCalendarModal({
 
 
 function NewBlockModal({
+  initialDate,
   onClose,
   onCreate,
 }: {
+  initialDate: Date;
   onClose: () => void;
-  onCreate: (b: { time: string; title: string; tag: string; priority?: "important" }) => void;
+  onCreate: (b: { time: string; title: string; tag: string; date: string; priority?: "important" }) => void;
 }) {
   const [time, setTime] = useState("09:00");
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState<(typeof tagOptions)[number]>("Foco");
   const [important, setImportant] = useState(false);
+  const [date, setDate] = useState<string>(() => dateKey(initialDate));
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -461,7 +464,8 @@ function NewBlockModal({
     };
   }, []);
 
-  const canSave = title.trim() && /^\d{2}:\d{2}$/.test(time);
+  const canSave = title.trim() && /^\d{2}:\d{2}$/.test(time) && /^\d{4}-\d{2}-\d{2}$/.test(date);
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
