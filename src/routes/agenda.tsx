@@ -297,7 +297,9 @@ function AgendaPage() {
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Blocos hoje
+              {sameDay(selectedDate, new Date())
+                ? "Blocos hoje"
+                : `Blocos · ${selectedDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`}
             </p>
             <p className="text-3xl font-semibold tabular-nums mt-1">{visibleBlocks.length}</p>
           </div>
@@ -308,6 +310,7 @@ function AgendaPage() {
             <Plus className="size-4" /> Novo bloco
           </button>
         </section>
+
 
         <section className="space-y-3">
           {visibleBlocks.length === 0 && (
