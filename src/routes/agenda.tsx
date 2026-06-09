@@ -362,6 +362,7 @@ function AgendaPage() {
         <FullCalendarModal
           selected={selectedDate}
           importantDates={importantDates}
+          datesWithBlocks={datesWithBlocksArr}
           onSelect={(d) => {
             setSelectedDate(d);
             setCalendarOpen(false);
@@ -372,13 +373,16 @@ function AgendaPage() {
 
       {newOpen && (
         <NewBlockModal
+          initialDate={selectedDate}
           onClose={() => setNewOpen(false)}
           onCreate={(b) => {
             addBlock(b);
+            setSelectedDate(new Date(b.date + "T00:00:00"));
             setNewOpen(false);
           }}
         />
       )}
+
     </>
   );
 }
