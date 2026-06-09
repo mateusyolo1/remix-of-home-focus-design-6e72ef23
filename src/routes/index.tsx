@@ -24,13 +24,15 @@ type Filter = "Hoje" | "Semana" | "Todas";
 
 function Index() {
   const [active, setActive] = useActiveTask();
-  const [profile] = useProfile();
+  const [profile, setProfile] = useProfile();
   const { mark } = useCheckins();
   const { blocks } = useBlocks();
   const { tasks, add, toggle, remove, update } = useTasks();
   const { notes: noteMap } = useNotes();
   const navigate = useNavigate();
   const [weather, setWeather] = useState<CurrentWeather | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("Hoje");
   const [newTask, setNewTask] = useState("");
   const [linkingId, setLinkingId] = useState<string | null>(null);
@@ -42,23 +44,58 @@ function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const loadWeather = async (lat: number, lon: number) => {
+    setWeatherLoading(true);
+    setWeatherError(null);
+    try {
+      const w = await fetchWeather(lat, lon);
+      if (w) setWeather(w);
+      else setWeatherError("Sem dados de clima");
+    } catch {
+      setWeatherError("Falha ao buscar clima");
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
     if (!profile.city) {
       setWeather(null);
       return;
     }
-    fetchWeather(profile.city.latitude, profile.city.longitude).then((w) => {
-      if (!cancelled) setWeather(w);
-    });
-    return () => {
-      cancelled = true;
-    };
+    loadWeather(profile.city.latitude, profile.city.longitude);
   }, [profile.city?.latitude, profile.city?.longitude]);
+
+  const useGeolocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Geolocalização indisponível");
+      return;
+    }
+    setWeatherLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setProfile({
+          ...profile,
+          city: {
+            name: "Minha localização",
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          },
+        });
+        toast.success("Localização atualizada");
+      },
+      (err) => {
+        setWeatherLoading(false);
+        toast.error(`Localização: ${err.message}`);
+      },
+      { timeout: 8000 }
+    );
+  };
 
   const cityLabel = profile.city
     ? `${profile.city.name}${profile.city.state ? " · " + profile.city.state : ""}`
     : "Defina sua cidade";
+
 
   const filteredTasks = useMemo(() => {
     if (filter === "Todas") return tasks;
@@ -121,19 +158,47 @@ function Index() {
           ))}
         </section>
 
-        <Link
-          to="/perfil/editar"
-          className="flex items-center justify-between bg-secondary/60 rounded-xl px-4 py-2.5 ring-1 ring-black/5 active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CloudSun className="size-4" />
-            <span>
+        <div className="flex items-center gap-2 bg-secondary/60 rounded-xl px-3 py-2 ring-1 ring-black/5">
+          <CloudSun className="size-4 text-muted-foreground shrink-0" />
+          <div className="flex-1 min-w-0 text-xs text-muted-foreground">
+            <span className="block truncate">
               {cityLabel}
-              {weather ? ` · ${weather.temperature}°C · ${weather.label}` : profile.city ? " · carregando…" : ""}
+              {weather
+                ? ` · ${weather.temperature}°C · ${weather.label}`
+                : weatherLoading
+                  ? " · carregando…"
+                  : weatherError
+                    ? ` · ${weatherError}`
+                    : profile.city
+                      ? ""
+                      : " — toque para definir"}
             </span>
           </div>
-          <span className="text-[10px] uppercase tracking-widest text-accent">Editar</span>
-        </Link>
+          <button
+            type="button"
+            onClick={() => profile.city && loadWeather(profile.city.latitude, profile.city.longitude)}
+            disabled={!profile.city || weatherLoading}
+            className="text-[10px] uppercase tracking-widest text-accent px-2 py-1 rounded-md hover:bg-card disabled:opacity-40 active:scale-95"
+            aria-label="Atualizar clima"
+          >
+            ↻
+          </button>
+          <button
+            type="button"
+            onClick={useGeolocation}
+            className="text-[10px] uppercase tracking-widest text-accent px-2 py-1 rounded-md hover:bg-card active:scale-95"
+            aria-label="Usar minha localização"
+          >
+            GPS
+          </button>
+          <Link
+            to="/perfil/editar"
+            className="text-[10px] uppercase tracking-widest text-accent px-2 py-1 rounded-md hover:bg-card active:scale-95"
+          >
+            Editar
+          </Link>
+        </div>
+
 
         {/* Tarefas */}
         <section className="space-y-4">

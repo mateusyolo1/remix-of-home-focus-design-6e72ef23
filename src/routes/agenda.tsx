@@ -24,6 +24,8 @@ import {
   useBlocks,
   useNotes,
   useTasks,
+  blockDateKey,
+  dateKey,
   type Block,
 } from "@/lib/focus-store";
 import { Calendar } from "@/components/ui/calendar";
@@ -90,14 +92,33 @@ function AgendaPage() {
   const [hasMoreRight, setHasMoreRight] = useState(false);
   const importantDates = useMemo(() => getImportantDates(blocks), [blocks]);
 
+  const selectedKey = dateKey(selectedDate);
+  const blocksOfDay = useMemo(
+    () => blocks.filter((b) => blockDateKey(b) === selectedKey),
+    [blocks, selectedKey]
+  );
+  const datesWithBlocks = useMemo(() => {
+    const s = new Set<string>();
+    blocks.forEach((b) => s.add(blockDateKey(b)));
+    return s;
+  }, [blocks]);
+  const datesWithBlocksArr = useMemo(
+    () =>
+      Array.from(datesWithBlocks).map((k) => {
+        const [y, m, d] = k.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      }),
+    [datesWithBlocks]
+  );
+
   const visibleBlocks = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return blocks.filter((b) => {
+    return blocksOfDay.filter((b) => {
       if (activeFilter !== "Tudo" && b.tag !== activeFilter) return false;
       if (q && !`${b.title} ${b.tag} ${b.time}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [blocks, activeFilter, query]);
+  }, [blocksOfDay, activeFilter, query]);
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
 
@@ -165,6 +186,7 @@ function AgendaPage() {
               const isSelected = sameDay(d, selectedDate);
               const isToday = sameDay(d, new Date());
               const isImportant = importantDates.some((x) => sameDay(x, d));
+              const hasBlocks = datesWithBlocks.has(dateKey(d));
               return (
                 <button
                   key={d.toISOString()}
@@ -191,17 +213,22 @@ function AgendaPage() {
                   >
                     {d.getDate()}
                   </span>
-                  {isToday && !isSelected && (
-                    <span
-                      className={[
-                        "size-1 rounded-full mt-0.5",
-                        isImportant ? "bg-destructive" : "bg-foreground",
-                      ].join(" ")}
-                    />
-                  )}
-                  {isImportant && !isToday && !isSelected && (
-                    <span className="size-1 rounded-full bg-destructive mt-0.5" />
-                  )}
+                  <span className="flex items-center gap-0.5 mt-0.5 h-1">
+                    {isToday && !isSelected && (
+                      <span
+                        className={[
+                          "size-1 rounded-full",
+                          isImportant ? "bg-destructive" : "bg-foreground",
+                        ].join(" ")}
+                      />
+                    )}
+                    {isImportant && !isToday && !isSelected && (
+                      <span className="size-1 rounded-full bg-destructive" />
+                    )}
+                    {hasBlocks && !isSelected && !isToday && !isImportant && (
+                      <span className="size-1 rounded-full bg-accent" />
+                    )}
+                  </span>
                 </button>
               );
             })}
@@ -270,7 +297,9 @@ function AgendaPage() {
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-              Blocos hoje
+              {sameDay(selectedDate, new Date())
+                ? "Blocos hoje"
+                : `Blocos · ${selectedDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}`}
             </p>
             <p className="text-3xl font-semibold tabular-nums mt-1">{visibleBlocks.length}</p>
           </div>
@@ -281,6 +310,7 @@ function AgendaPage() {
             <Plus className="size-4" /> Novo bloco
           </button>
         </section>
+
 
         <section className="space-y-3">
           {visibleBlocks.length === 0 && (
@@ -332,6 +362,7 @@ function AgendaPage() {
         <FullCalendarModal
           selected={selectedDate}
           importantDates={importantDates}
+          datesWithBlocks={datesWithBlocksArr}
           onSelect={(d) => {
             setSelectedDate(d);
             setCalendarOpen(false);
@@ -342,13 +373,16 @@ function AgendaPage() {
 
       {newOpen && (
         <NewBlockModal
+          initialDate={selectedDate}
           onClose={() => setNewOpen(false)}
           onCreate={(b) => {
             addBlock(b);
+            setSelectedDate(new Date(b.date + "T00:00:00"));
             setNewOpen(false);
           }}
         />
       )}
+
     </>
   );
 }
@@ -356,11 +390,13 @@ function AgendaPage() {
 function FullCalendarModal({
   selected,
   importantDates,
+  datesWithBlocks,
   onSelect,
   onClose,
 }: {
   selected: Date;
   importantDates: Date[];
+  datesWithBlocks: Date[];
   onSelect: (d: Date) => void;
   onClose: () => void;
 }) {
@@ -389,26 +425,37 @@ function FullCalendarModal({
           mode="single"
           selected={selected}
           onSelect={(d) => d && onSelect(d)}
-          modifiers={{ important: importantDates }}
-          modifiersClassNames={{ important: "text-destructive font-semibold" }}
+          modifiers={{ important: importantDates, hasBlocks: datesWithBlocks }}
+          modifiersClassNames={{
+            important: "text-destructive font-semibold",
+            hasBlocks: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1 after:rounded-full after:bg-accent",
+          }}
           className="pointer-events-auto mx-auto"
         />
+        <p className="text-[10px] text-center text-muted-foreground mt-2">
+          <span className="inline-block size-1.5 rounded-full bg-accent mr-1 align-middle" />
+          dias com blocos
+        </p>
       </div>
     </div>
   );
 }
 
+
 function NewBlockModal({
+  initialDate,
   onClose,
   onCreate,
 }: {
+  initialDate: Date;
   onClose: () => void;
-  onCreate: (b: { time: string; title: string; tag: string; priority?: "important" }) => void;
+  onCreate: (b: { time: string; title: string; tag: string; date: string; priority?: "important" }) => void;
 }) {
   const [time, setTime] = useState("09:00");
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState<(typeof tagOptions)[number]>("Foco");
   const [important, setImportant] = useState(false);
+  const [date, setDate] = useState<string>(() => dateKey(initialDate));
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -417,7 +464,8 @@ function NewBlockModal({
     };
   }, []);
 
-  const canSave = title.trim() && /^\d{2}:\d{2}$/.test(time);
+  const canSave = title.trim() && /^\d{2}:\d{2}$/.test(time) && /^\d{4}-\d{2}-\d{2}$/.test(date);
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -442,6 +490,15 @@ function NewBlockModal({
             />
           </label>
           <label className="block">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Data</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+            />
+          </label>
+          <label className="block">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Horário</span>
             <input
               type="time"
@@ -450,6 +507,7 @@ function NewBlockModal({
               className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
             />
           </label>
+
           <div>
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tag</span>
             <div className="mt-1 flex flex-wrap gap-2">
@@ -482,7 +540,7 @@ function NewBlockModal({
         </div>
         <button
           disabled={!canSave}
-          onClick={() => onCreate({ time, title: title.trim(), tag, priority: important ? "important" : undefined })}
+          onClick={() => onCreate({ time, title: title.trim(), tag, date, priority: important ? "important" : undefined })}
           className="mt-5 w-full h-12 rounded-xl bg-foreground text-background font-medium text-sm disabled:opacity-40 active:scale-[0.99] transition-transform"
         >
           Criar bloco
