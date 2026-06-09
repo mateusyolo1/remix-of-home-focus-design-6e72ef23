@@ -238,15 +238,6 @@ function AgendaPage() {
           </p>
         </section>
 
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-[10px] text-muted-foreground text-center mt-2 opacity-70">
-            Segure para abrir o mês inteiro
-          </p>
-        </section>
-
         <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
           <Search className="size-4 ml-2 text-muted-foreground" />
           <input
