@@ -490,6 +490,15 @@ function NewBlockModal({
             />
           </label>
           <label className="block">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Data</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+            />
+          </label>
+          <label className="block">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Horário</span>
             <input
               type="time"
@@ -498,6 +507,7 @@ function NewBlockModal({
               className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
             />
           </label>
+
           <div>
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tag</span>
             <div className="mt-1 flex flex-wrap gap-2">
