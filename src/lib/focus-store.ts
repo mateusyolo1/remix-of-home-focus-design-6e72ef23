@@ -125,10 +125,22 @@ export function useTasks() {
 export function useBlocks() {
   const [blocks, setBlocks] = useStoreValue<Block[]>(KEY_BLOCKS, SEED_BLOCKS);
   const add = (b: Omit<Block, "notes"> & { notes?: string }) => {
-    const next = [...blocks, { notes: "", ...b }].sort((a, z) =>
-      a.time.localeCompare(z.time)
-    );
+    const next = [...blocks, { notes: "", ...b }].sort((a, z) => {
+      const d = (a.date ?? "").localeCompare(z.date ?? "");
+      return d !== 0 ? d : a.time.localeCompare(z.time);
+    });
     setBlocks(next);
   };
   return { blocks, add, setBlocks };
+}
+
+export function dateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function blockDateKey(b: Block): string {
+  return b.date ?? dateKey(new Date());
 }
