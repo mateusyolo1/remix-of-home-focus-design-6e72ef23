@@ -75,12 +75,12 @@ export function AppShell() {
       setRecording(true);
       toast("Ouvindo… fale sua tarefa");
     };
-    r.onerror = (e: SpeechRecognitionErrorEvent) => {
+    r.onerror = (e) => {
       setRecording(false);
       toast.error(`Microfone: ${e.error}`);
     };
     r.onend = () => setRecording(false);
-    r.onresult = (e: SpeechRecognitionEvent) => {
+    r.onresult = (e) => {
       const text = e.results?.[0]?.[0]?.transcript?.trim();
       if (text) {
         add(text);
