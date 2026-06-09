@@ -186,6 +186,7 @@ function AgendaPage() {
               const isSelected = sameDay(d, selectedDate);
               const isToday = sameDay(d, new Date());
               const isImportant = importantDates.some((x) => sameDay(x, d));
+              const hasBlocks = datesWithBlocks.has(dateKey(d));
               return (
                 <button
                   key={d.toISOString()}
@@ -212,17 +213,31 @@ function AgendaPage() {
                   >
                     {d.getDate()}
                   </span>
-                  {isToday && !isSelected && (
-                    <span
-                      className={[
-                        "size-1 rounded-full mt-0.5",
-                        isImportant ? "bg-destructive" : "bg-foreground",
-                      ].join(" ")}
-                    />
-                  )}
-                  {isImportant && !isToday && !isSelected && (
-                    <span className="size-1 rounded-full bg-destructive mt-0.5" />
-                  )}
+                  <span className="flex items-center gap-0.5 mt-0.5 h-1">
+                    {isToday && !isSelected && (
+                      <span
+                        className={[
+                          "size-1 rounded-full",
+                          isImportant ? "bg-destructive" : "bg-foreground",
+                        ].join(" ")}
+                      />
+                    )}
+                    {isImportant && !isToday && !isSelected && (
+                      <span className="size-1 rounded-full bg-destructive" />
+                    )}
+                    {hasBlocks && !isSelected && !isToday && !isImportant && (
+                      <span className="size-1 rounded-full bg-accent" />
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground text-center mt-2 opacity-70">
+            Segure para abrir o mês inteiro
+          </p>
+        </section>
+
                 </button>
               );
             })}
