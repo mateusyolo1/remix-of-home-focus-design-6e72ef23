@@ -540,7 +540,7 @@ function NewBlockModal({
         </div>
         <button
           disabled={!canSave}
-          onClick={() => onCreate({ time, title: title.trim(), tag, priority: important ? "important" : undefined })}
+          onClick={() => onCreate({ time, title: title.trim(), tag, date, priority: important ? "important" : undefined })}
           className="mt-5 w-full h-12 rounded-xl bg-foreground text-background font-medium text-sm disabled:opacity-40 active:scale-[0.99] transition-transform"
         >
           Criar bloco
