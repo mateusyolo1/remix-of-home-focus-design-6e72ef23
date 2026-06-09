@@ -158,19 +158,47 @@ function Index() {
           ))}
         </section>
 
-        <Link
-          to="/perfil/editar"
-          className="flex items-center justify-between bg-secondary/60 rounded-xl px-4 py-2.5 ring-1 ring-black/5 active:scale-[0.99] transition-transform"
-        >
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CloudSun className="size-4" />
-            <span>
+        <div className="flex items-center gap-2 bg-secondary/60 rounded-xl px-3 py-2 ring-1 ring-black/5">
+          <CloudSun className="size-4 text-muted-foreground shrink-0" />
+          <div className="flex-1 min-w-0 text-xs text-muted-foreground">
+            <span className="block truncate">
               {cityLabel}
-              {weather ? ` · ${weather.temperature}°C · ${weather.label}` : profile.city ? " · carregando…" : ""}
+              {weather
+                ? ` · ${weather.temperature}°C · ${weather.label}`
+                : weatherLoading
+                  ? " · carregando…"
+                  : weatherError
+                    ? ` · ${weatherError}`
+                    : profile.city
+                      ? ""
+                      : " — toque para definir"}
             </span>
           </div>
-          <span className="text-[10px] uppercase tracking-widest text-accent">Editar</span>
-        </Link>
+          <button
+            type="button"
+            onClick={() => profile.city && loadWeather(profile.city.latitude, profile.city.longitude)}
+            disabled={!profile.city || weatherLoading}
+            className="text-[10px] uppercase tracking-widest text-accent px-2 py-1 rounded-md hover:bg-card disabled:opacity-40 active:scale-95"
+            aria-label="Atualizar clima"
+          >
+            ↻
+          </button>
+          <button
+            type="button"
+            onClick={useGeolocation}
+            className="text-[10px] uppercase tracking-widest text-accent px-2 py-1 rounded-md hover:bg-card active:scale-95"
+            aria-label="Usar minha localização"
+          >
+            GPS
+          </button>
+          <Link
+            to="/perfil/editar"
+            className="text-[10px] uppercase tracking-widest text-accent px-2 py-1 rounded-md hover:bg-card active:scale-95"
+          >
+            Editar
+          </Link>
+        </div>
+
 
         {/* Tarefas */}
         <section className="space-y-4">
