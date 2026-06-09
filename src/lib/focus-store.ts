@@ -23,6 +23,8 @@ export type Block = {
   tag: string;
   notes: string;
   priority?: "important";
+  /** yyyy-mm-dd. Quando ausente, o bloco é considerado de hoje. */
+  date?: string;
 };
 
 const KEY_ACTIVE = "fm.active-task";
