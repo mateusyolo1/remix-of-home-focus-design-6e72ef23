@@ -24,6 +24,8 @@ import {
   useBlocks,
   useNotes,
   useTasks,
+  blockDateKey,
+  dateKey,
   type Block,
 } from "@/lib/focus-store";
 import { Calendar } from "@/components/ui/calendar";
