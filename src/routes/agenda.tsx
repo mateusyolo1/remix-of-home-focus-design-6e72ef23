@@ -390,11 +390,13 @@ function AgendaPage() {
 function FullCalendarModal({
   selected,
   importantDates,
+  datesWithBlocks,
   onSelect,
   onClose,
 }: {
   selected: Date;
   importantDates: Date[];
+  datesWithBlocks: Date[];
   onSelect: (d: Date) => void;
   onClose: () => void;
 }) {
@@ -423,14 +425,22 @@ function FullCalendarModal({
           mode="single"
           selected={selected}
           onSelect={(d) => d && onSelect(d)}
-          modifiers={{ important: importantDates }}
-          modifiersClassNames={{ important: "text-destructive font-semibold" }}
+          modifiers={{ important: importantDates, hasBlocks: datesWithBlocks }}
+          modifiersClassNames={{
+            important: "text-destructive font-semibold",
+            hasBlocks: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:size-1 after:rounded-full after:bg-accent",
+          }}
           className="pointer-events-auto mx-auto"
         />
+        <p className="text-[10px] text-center text-muted-foreground mt-2">
+          <span className="inline-block size-1.5 rounded-full bg-accent mr-1 align-middle" />
+          dias com blocos
+        </p>
       </div>
     </div>
   );
 }
+
 
 function NewBlockModal({
   onClose,
