@@ -92,14 +92,33 @@ function AgendaPage() {
   const [hasMoreRight, setHasMoreRight] = useState(false);
   const importantDates = useMemo(() => getImportantDates(blocks), [blocks]);
 
+  const selectedKey = dateKey(selectedDate);
+  const blocksOfDay = useMemo(
+    () => blocks.filter((b) => blockDateKey(b) === selectedKey),
+    [blocks, selectedKey]
+  );
+  const datesWithBlocks = useMemo(() => {
+    const s = new Set<string>();
+    blocks.forEach((b) => s.add(blockDateKey(b)));
+    return s;
+  }, [blocks]);
+  const datesWithBlocksArr = useMemo(
+    () =>
+      Array.from(datesWithBlocks).map((k) => {
+        const [y, m, d] = k.split("-").map(Number);
+        return new Date(y, m - 1, d);
+      }),
+    [datesWithBlocks]
+  );
+
   const visibleBlocks = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return blocks.filter((b) => {
+    return blocksOfDay.filter((b) => {
       if (activeFilter !== "Tudo" && b.tag !== activeFilter) return false;
       if (q && !`${b.title} ${b.tag} ${b.time}`.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [blocks, activeFilter, query]);
+  }, [blocksOfDay, activeFilter, query]);
 
   const weekDays = useMemo(() => getWeekDays(selectedDate), [selectedDate]);
 
