@@ -24,13 +24,15 @@ type Filter = "Hoje" | "Semana" | "Todas";
 
 function Index() {
   const [active, setActive] = useActiveTask();
-  const [profile] = useProfile();
+  const [profile, setProfile] = useProfile();
   const { mark } = useCheckins();
   const { blocks } = useBlocks();
   const { tasks, add, toggle, remove, update } = useTasks();
   const { notes: noteMap } = useNotes();
   const navigate = useNavigate();
   const [weather, setWeather] = useState<CurrentWeather | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("Hoje");
   const [newTask, setNewTask] = useState("");
   const [linkingId, setLinkingId] = useState<string | null>(null);
@@ -42,23 +44,58 @@ function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const loadWeather = async (lat: number, lon: number) => {
+    setWeatherLoading(true);
+    setWeatherError(null);
+    try {
+      const w = await fetchWeather(lat, lon);
+      if (w) setWeather(w);
+      else setWeatherError("Sem dados de clima");
+    } catch {
+      setWeatherError("Falha ao buscar clima");
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
     if (!profile.city) {
       setWeather(null);
       return;
     }
-    fetchWeather(profile.city.latitude, profile.city.longitude).then((w) => {
-      if (!cancelled) setWeather(w);
-    });
-    return () => {
-      cancelled = true;
-    };
+    loadWeather(profile.city.latitude, profile.city.longitude);
   }, [profile.city?.latitude, profile.city?.longitude]);
+
+  const useGeolocation = () => {
+    if (!("geolocation" in navigator)) {
+      toast.error("Geolocalização indisponível");
+      return;
+    }
+    setWeatherLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setProfile({
+          ...profile,
+          city: {
+            name: "Minha localização",
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          },
+        });
+        toast.success("Localização atualizada");
+      },
+      (err) => {
+        setWeatherLoading(false);
+        toast.error(`Localização: ${err.message}`);
+      },
+      { timeout: 8000 }
+    );
+  };
 
   const cityLabel = profile.city
     ? `${profile.city.name}${profile.city.state ? " · " + profile.city.state : ""}`
     : "Defina sua cidade";
+
 
   const filteredTasks = useMemo(() => {
     if (filter === "Todas") return tasks;
