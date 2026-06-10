@@ -3,7 +3,8 @@ import type { AgentConfig } from "./agent-store";
 export type AgentAction =
   | { type: "create_task"; title: string; blockTime?: string }
   | { type: "create_block"; time: string; title: string; tag?: string; date?: string; notes?: string }
-  | { type: "create_note"; title: string; items?: string[]; body?: string }
+  | { type: "create_note"; title: string; body?: string; ttlDays?: number }
+  | { type: "create_list"; title: string; items: string[] }
   | { type: "start_timer"; minutes: number; title?: string };
 
 export type AgentResult = { reply: string; actions: AgentAction[] };
@@ -20,10 +21,17 @@ Você SEMPRE responde com JSON puro neste formato (sem markdown, sem \`\`\`):
 }
 
 Ações disponíveis:
-1) {"type":"create_task","title":"...","blockTime":"HH:MM"?}  — cria tarefa na Home
+1) {"type":"create_task","title":"...","blockTime":"HH:MM"?}  — tarefa única e acionável (na aba Tarefas)
 2) {"type":"create_block","time":"HH:MM","title":"...","tag":"Foco|Reunião|Pausa|Ritual","date":"YYYY-MM-DD"?,"notes":"..."?} — bloco na Agenda
-3) {"type":"create_note","title":"Lista de compras","items":["arroz","feijão"]}  — cria nota/lista
-4) {"type":"start_timer","minutes":25,"title":"Foco"?}  — inicia cronômetro
+3) {"type":"create_note","title":"...","body":"...","ttlDays":7}  — anotação/pensamento/ideia em texto livre (aba Notas)
+4) {"type":"create_list","title":"Compras de mercado","items":["Tomate","Cebola"]}  — checklist com itens marcáveis (aba Listas). USE para listas de compras, mercado, itens, materiais, projetos com sub-itens.
+5) {"type":"start_timer","minutes":25,"title":"Foco"?}  — inicia cronômetro
+
+Como diferenciar:
+- "lista de compras / mercado / preciso comprar / itens" → create_list
+- "anotação / pensamento / ideia / lembrar de uma reflexão" → create_note
+- "tarefa / fazer / lembrar de fazer X" → create_task
+- "agendar / às HH:MM / reunião amanhã" → create_block
 
 Regras:
 - Se o pedido for vago, faça a melhor inferência e execute, depois confirme no "reply".
