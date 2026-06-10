@@ -3,7 +3,8 @@ import type { AgentConfig } from "./agent-store";
 export type AgentAction =
   | { type: "create_task"; title: string; blockTime?: string }
   | { type: "create_block"; time: string; title: string; tag?: string; date?: string; notes?: string }
-  | { type: "create_note"; title: string; items?: string[]; body?: string }
+  | { type: "create_note"; title: string; body?: string; ttlDays?: number }
+  | { type: "create_list"; title: string; items: string[] }
   | { type: "start_timer"; minutes: number; title?: string };
 
 export type AgentResult = { reply: string; actions: AgentAction[] };
