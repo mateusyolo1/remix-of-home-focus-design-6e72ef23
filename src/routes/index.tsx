@@ -163,17 +163,20 @@ function Index() {
         <div className="flex items-center gap-2 bg-secondary/60 rounded-xl px-3 py-2 ring-1 ring-black/5">
           <CloudSun className="size-4 text-muted-foreground shrink-0" />
           <div className="flex-1 min-w-0 text-xs text-muted-foreground">
-            <span className="block truncate">
-              {cityLabel}
-              {weather
-                ? ` · ${weather.temperature}°C · ${weather.label}`
-                : weatherLoading
-                  ? " · carregando…"
-                  : weatherError
-                    ? ` · ${weatherError}`
-                    : profile.city
-                      ? ""
-                      : " — toque para definir"}
+            <span className="block truncate" suppressHydrationWarning>
+              {!mounted
+                ? "Carregando…"
+                : `${cityLabel}${
+                    weather
+                      ? ` · ${weather.temperature}°C · ${weather.label}`
+                      : weatherLoading
+                        ? " · carregando…"
+                        : weatherError
+                          ? ` · ${weatherError}`
+                          : profile.city
+                            ? ""
+                            : " — toque para definir"
+                  }`}
             </span>
           </div>
           <button
