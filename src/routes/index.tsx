@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Filter = "Hoje" | "Semana" | "Todas";
+type Tab = "Tarefas" | "Notas" | "Listas";
 
 function Index() {
   const [active, setActive] = useActiveTask();
