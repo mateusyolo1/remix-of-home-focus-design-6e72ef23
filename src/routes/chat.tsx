@@ -209,7 +209,9 @@ function labelFor(a: AgentAction): string {
     case "create_block":
       return `Bloco ${a.time}${a.date ? ` (${a.date})` : ""}: ${a.title}`;
     case "create_note":
-      return `Nota: ${a.title}${a.items?.length ? ` (${a.items.length} itens)` : ""}`;
+      return `Nota: ${a.title}`;
+    case "create_list":
+      return `Lista: ${a.title} (${a.items.length})`;
     case "start_timer":
       return `Timer: ${a.minutes}min`;
   }
