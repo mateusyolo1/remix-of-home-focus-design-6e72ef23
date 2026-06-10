@@ -163,3 +163,58 @@ export function dateKey(d: Date): string {
 export function blockDateKey(b: Block): string {
   return b.date ?? dateKey(new Date());
 }
+
+export function useQuickNotes() {
+  const [notes, setNotes] = useStoreValue<QuickNote[]>(KEY_QNOTES, []);
+  const add = (input: { title: string; body?: string; ttlDays?: number }) => {
+    const n: QuickNote = {
+      id: uid(),
+      title: input.title,
+      body: input.body ?? "",
+      ttlDays: input.ttlDays ?? 7,
+      createdAt: new Date().toISOString(),
+    };
+    setNotes([n, ...notes]);
+    return n;
+  };
+  const remove = (id: string) => setNotes(notes.filter((n) => n.id !== id));
+  return { notes, add, remove, setNotes };
+}
+
+export function useLists() {
+  const [lists, setLists] = useStoreValue<CheckList[]>(KEY_LISTS, []);
+  const add = (input: { title: string; items: string[] }) => {
+    const l: CheckList = {
+      id: uid(),
+      title: input.title,
+      items: input.items.map((t) => ({ id: uid(), text: t, done: false })),
+      createdAt: new Date().toISOString(),
+    };
+    setLists([l, ...lists]);
+    return l;
+  };
+  const toggleItem = (listId: string, itemId: string) =>
+    setLists(
+      lists.map((l) =>
+        l.id === listId
+          ? { ...l, items: l.items.map((i) => (i.id === itemId ? { ...i, done: !i.done } : i)) }
+          : l
+      )
+    );
+  const addItem = (listId: string, text: string) =>
+    setLists(
+      lists.map((l) =>
+        l.id === listId
+          ? { ...l, items: [...l.items, { id: uid(), text, done: false }] }
+          : l
+      )
+    );
+  const removeItem = (listId: string, itemId: string) =>
+    setLists(
+      lists.map((l) =>
+        l.id === listId ? { ...l, items: l.items.filter((i) => i.id !== itemId) } : l
+      )
+    );
+  const remove = (id: string) => setLists(lists.filter((l) => l.id !== id));
+  return { lists, add, toggleItem, addItem, removeItem, remove, setLists };
+}
