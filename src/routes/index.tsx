@@ -101,12 +101,7 @@ function Index() {
     : "Defina sua cidade";
 
 
-  const filteredTasks = useMemo(() => {
-    if (filter === "Todas") return tasks;
-    // Para hoje / semana, sem datas reais, mostramos todas as não concluídas como "Hoje" e todas como "Semana"
-    if (filter === "Hoje") return tasks.filter((t) => !t.done || tasks.length <= 5);
-    return tasks;
-  }, [tasks, filter]);
+  const filteredTasks = tasks;
 
   const todayBlocks = blocks.slice(0, 3);
   const recentNotes = useMemo(() => {
@@ -119,13 +114,15 @@ function Index() {
       .slice(-2)
       .reverse()
       .map((x) => x.text.slice(0, 80));
-    return [...quickNotes.slice(-2).reverse(), ...fromBlocks].slice(0, 3);
+    const fromQuick = quickNotes.slice(0, 2).map((n) => n.title);
+    return [...fromQuick, ...fromBlocks].slice(0, 3);
   }, [noteMap, quickNotes]);
 
   const addQuickNote = () => {
     const v = quickNote.trim();
     if (!v) return;
-    setQuickNotes((arr) => [...arr, v]);
+    const [first, ...rest] = v.split("\n");
+    addNote({ title: first.slice(0, 80), body: rest.join("\n") });
     setQuickNote("");
     toast.success("Nota salva");
   };
