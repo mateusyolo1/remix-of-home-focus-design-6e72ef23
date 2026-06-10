@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowLeft, MapPin, Search, X } from "lucide-react";
+import { ArrowLeft, Download, Eye, EyeOff, MapPin, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useProfile, type Schedule } from "@/lib/profile-store";
+import { useAgentConfig, MODEL_OPTIONS, type AgentProvider } from "@/lib/agent-store";
 import { searchCity, type GeoResult } from "@/lib/weather";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/perfil/editar")({
   head: () => ({
@@ -27,9 +29,22 @@ const DAYS: { key: keyof Schedule; label: string }[] = [
 
 function EditarPerfil() {
   const [profile, setProfile] = useProfile();
+  const [agent, setAgent] = useAgentConfig();
   const [draft, setDraft] = useState(profile);
   const [cityOpen, setCityOpen] = useState(false);
+  const [showGem, setShowGem] = useState(false);
+  const [showDs, setShowDs] = useState(false);
+  const [installEvt, setInstallEvt] = useState<BeforeInstallPromptEvent | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallEvt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
   useEffect(() => {
     setDraft(profile);
