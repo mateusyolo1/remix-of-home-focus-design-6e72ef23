@@ -7,6 +7,11 @@ import { useAgentConfig, MODEL_OPTIONS, type AgentProvider } from "@/lib/agent-s
 import { searchCity, type GeoResult } from "@/lib/weather";
 import { toast } from "sonner";
 
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
+
 export const Route = createFileRoute("/perfil/editar")({
   head: () => ({
     meta: [
