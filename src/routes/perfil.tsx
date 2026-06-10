@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck, UserCog } from "lucide-react";
+import { Bell, BrainCog, ChevronRight, LogOut, Moon, Settings, ShieldCheck, UserCog, WifiOff } from "lucide-react";
 import { useMemo } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
+import { useHermesConfig } from "@/lib/hermes/hermes-config";
+import { INSTALL_STATUS_LABEL } from "@/lib/hermes/hermes-status";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -130,7 +133,10 @@ function PerfilPage() {
           </p>
         </section>
 
+        <HermesAgentCard />
+
         <section className="bg-card rounded-2xl ring-1 ring-black/5 overflow-hidden">
+
           {items.map(({ icon: Icon, label, to, onClick }, i) => {
             const cls = [
               "flex items-center gap-3 px-4 py-4 text-sm w-full text-left",
@@ -169,5 +175,33 @@ function PerfilPage() {
         <div className="h-4" />
       </main>
     </>
+  );
+}
+
+function HermesAgentCard() {
+  const [config] = useHermesConfig();
+  const connected = config.installStatus === "connected";
+  return (
+    <Link
+      to="/hermes"
+      className="bg-card rounded-2xl ring-1 ring-black/5 p-4 flex items-center gap-3 hover:bg-secondary/40 transition-colors"
+    >
+      <span className="size-11 rounded-xl bg-secondary grid place-items-center shrink-0">
+        {connected ? (
+          <BrainCog className="size-5 text-foreground" />
+        ) : (
+          <WifiOff className="size-5 text-muted-foreground" />
+        )}
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-sm">Hermes Agent</p>
+        <p className="text-[11px] text-muted-foreground truncate">
+          {config.enabled
+            ? INSTALL_STATUS_LABEL[config.installStatus]
+            : "Configurar instalação no Termux"}
+        </p>
+      </div>
+      <ChevronRight className="size-4 text-muted-foreground" />
+    </Link>
   );
 }
