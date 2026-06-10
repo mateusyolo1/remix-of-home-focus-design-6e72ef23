@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TimerRouteImport } from './routes/timer'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as HermesRouteImport } from './routes/hermes'
 import { Route as FocoRouteImport } from './routes/foco'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ChatRouteImport } from './routes/chat'
@@ -26,6 +27,11 @@ const TimerRoute = TimerRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HermesRoute = HermesRouteImport.update({
+  id: '/hermes',
+  path: '/hermes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FocoRoute = FocoRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
+  '/hermes': typeof HermesRoute
   '/perfil': typeof PerfilRouteWithChildren
   '/timer': typeof TimerRoute
   '/perfil/editar': typeof PerfilEditarRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
+  '/hermes': typeof HermesRoute
   '/perfil': typeof PerfilRouteWithChildren
   '/timer': typeof TimerRoute
   '/perfil/editar': typeof PerfilEditarRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
+  '/hermes': typeof HermesRoute
   '/perfil': typeof PerfilRouteWithChildren
   '/timer': typeof TimerRoute
   '/perfil/editar': typeof PerfilEditarRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/configuracoes'
     | '/foco'
+    | '/hermes'
     | '/perfil'
     | '/timer'
     | '/perfil/editar'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/configuracoes'
     | '/foco'
+    | '/hermes'
     | '/perfil'
     | '/timer'
     | '/perfil/editar'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/configuracoes'
     | '/foco'
+    | '/hermes'
     | '/perfil'
     | '/timer'
     | '/perfil/editar'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FocoRoute: typeof FocoRoute
+  HermesRoute: typeof HermesRoute
   PerfilRoute: typeof PerfilRouteWithChildren
   TimerRoute: typeof TimerRoute
 }
@@ -147,6 +160,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hermes': {
+      id: '/hermes'
+      path: '/hermes'
+      fullPath: '/hermes'
+      preLoaderRoute: typeof HermesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/foco': {
@@ -211,6 +231,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   FocoRoute: FocoRoute,
+  HermesRoute: HermesRoute,
   PerfilRoute: PerfilRouteWithChildren,
   TimerRoute: TimerRoute,
 }
