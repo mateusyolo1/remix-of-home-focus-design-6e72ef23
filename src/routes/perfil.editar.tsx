@@ -1,9 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowLeft, MapPin, Search, X } from "lucide-react";
+import { ArrowLeft, Download, Eye, EyeOff, MapPin, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useProfile, type Schedule } from "@/lib/profile-store";
+import { useAgentConfig, MODEL_OPTIONS, type AgentProvider } from "@/lib/agent-store";
 import { searchCity, type GeoResult } from "@/lib/weather";
+import { toast } from "sonner";
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
 
 export const Route = createFileRoute("/perfil/editar")({
   head: () => ({
@@ -27,9 +34,22 @@ const DAYS: { key: keyof Schedule; label: string }[] = [
 
 function EditarPerfil() {
   const [profile, setProfile] = useProfile();
+  const [agent, setAgent] = useAgentConfig();
   const [draft, setDraft] = useState(profile);
   const [cityOpen, setCityOpen] = useState(false);
+  const [showGem, setShowGem] = useState(false);
+  const [showDs, setShowDs] = useState(false);
+  const [installEvt, setInstallEvt] = useState<BeforeInstallPromptEvent | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallEvt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
   useEffect(() => {
     setDraft(profile);
@@ -175,7 +195,126 @@ function EditarPerfil() {
             })}
           </ul>
         </section>
+
+        {/* Agente IA — Hermes */}
+        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-accent" />
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Agente IA · Hermes
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground -mt-2">
+            Suas chaves ficam só no navegador (localStorage).
+          </p>
+
+          <Field label="Provedor">
+            <div className="grid grid-cols-2 gap-2">
+              {(["gemini", "deepseek"] as AgentProvider[]).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setAgent({ ...agent, provider: p, model: MODEL_OPTIONS[p][0].value })}
+                  className={[
+                    "py-2 rounded-lg text-sm font-medium ring-1 transition-colors",
+                    agent.provider === p
+                      ? "bg-foreground text-background ring-foreground"
+                      : "bg-secondary text-foreground ring-black/5",
+                  ].join(" ")}
+                >
+                  {p === "gemini" ? "Gemini" : "DeepSeek"}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="Modelo">
+            <select
+              value={agent.model}
+              onChange={(e) => setAgent({ ...agent, model: e.target.value })}
+              className="w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground"
+            >
+              {MODEL_OPTIONS[agent.provider].map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Gemini API key">
+            <div className="flex items-center gap-2 bg-secondary rounded-lg ring-1 ring-black/5 focus-within:ring-foreground">
+              <input
+                type={showGem ? "text" : "password"}
+                value={agent.geminiKey}
+                onChange={(e) => setAgent({ ...agent, geminiKey: e.target.value })}
+                className="flex-1 bg-transparent px-3 py-2.5 text-sm outline-none"
+                placeholder="AIza…"
+                autoComplete="off"
+              />
+              <button type="button" onClick={() => setShowGem((v) => !v)} className="px-3 text-muted-foreground" aria-label="Mostrar/ocultar">
+                {showGem ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+          </Field>
+
+          <Field label="DeepSeek API key">
+            <div className="flex items-center gap-2 bg-secondary rounded-lg ring-1 ring-black/5 focus-within:ring-foreground">
+              <input
+                type={showDs ? "text" : "password"}
+                value={agent.deepseekKey}
+                onChange={(e) => setAgent({ ...agent, deepseekKey: e.target.value })}
+                className="flex-1 bg-transparent px-3 py-2.5 text-sm outline-none"
+                placeholder="sk-…"
+                autoComplete="off"
+              />
+              <button type="button" onClick={() => setShowDs((v) => !v)} className="px-3 text-muted-foreground" aria-label="Mostrar/ocultar">
+                {showDs ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+          </Field>
+
+          <Link
+            to="/chat"
+            className="block text-center bg-foreground text-background rounded-lg py-2.5 text-sm font-semibold active:scale-[0.99] transition-transform"
+          >
+            Abrir Hermes
+          </Link>
+        </section>
+
+        {/* Instalar app */}
+        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Download className="size-4 text-accent" />
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Instalar o app
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Instale como aplicativo no seu celular ou computador. Funciona offline depois de aberto.
+          </p>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!installEvt) {
+                toast("Abra o menu do navegador → \"Instalar app\" ou \"Adicionar à tela inicial\".");
+                return;
+              }
+              await installEvt.prompt();
+              const { outcome } = await installEvt.userChoice;
+              if (outcome === "accepted") toast.success("App instalado!");
+              setInstallEvt(null);
+            }}
+            className="w-full bg-foreground text-background rounded-lg py-2.5 text-sm font-semibold active:scale-[0.99] transition-transform"
+          >
+            {installEvt ? "Instalar agora" : "Como instalar"}
+          </button>
+          <div className="text-[11px] text-muted-foreground space-y-1 pt-1">
+            <p><strong className="text-foreground">Android/Chrome:</strong> menu ⋮ → "Instalar app".</p>
+            <p><strong className="text-foreground">iPhone/Safari:</strong> compartilhar ↑ → "Adicionar à Tela de Início".</p>
+            <p className="break-all"><strong className="text-foreground">URL:</strong> {typeof window !== "undefined" ? window.location.origin : ""}</p>
+          </div>
+        </section>
       </main>
+
 
       <div className="fixed bottom-20 left-0 right-0 px-6 z-40">
         <button
