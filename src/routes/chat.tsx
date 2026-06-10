@@ -35,7 +35,8 @@ function ChatPage() {
 
   const { add: addTask } = useTasks();
   const { add: addBlock } = useBlocks();
-  const { setNote } = useNotes();
+  const { add: addNote } = useQuickNotes();
+  const { add: addList } = useLists();
   const [, setActive] = useActiveTask();
 
   useEffect(() => {
