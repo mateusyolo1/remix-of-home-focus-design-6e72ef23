@@ -38,8 +38,10 @@ function Index() {
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
   const [quickNotes, setQuickNotes] = useState<string[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     mark();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
