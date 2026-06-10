@@ -108,8 +108,8 @@ function PerfilPage() {
         <section className="grid grid-cols-3 gap-2">
           {[
             { label: "Check-ins", value: hydrated ? String(checkinStreak.days) : "—" },
-            { label: "Sequência", value: `${checkinStreak.streak} dias` },
-            { label: "Hoje", value: checkinStreak.todayChecked ? "✅" : "—" },
+            { label: "Sequência", value: hydrated ? `${checkinStreak.streak} dias` : "—" },
+            { label: "Hoje", value: hydrated ? (checkinStreak.todayChecked ? "✅" : "—") : "—" },
           ].map((s) => (
             <div key={s.label} className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center">
               <p className="text-base font-semibold tabular-nums">{s.value}</p>
