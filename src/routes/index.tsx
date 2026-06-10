@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Link, useNavigate } from "@tanstack/react-router";
+"use client";
+
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -184,18 +185,18 @@ function Index() {
 
       <main className="px-6 space-y-8">
         <section className="grid grid-cols-3 gap-2">
-          {[
-            { label: "Foco", value: "2h 15m" },
-            { label: "Tarefas", value: `${tasks.filter((t) => t.done).length}/${tasks.length}` },
-            { label: "Blocos", value: String(blocks.length) },
-          ].map((s) => (
-            <div key={s.label} className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center">
-              <p className="text-base font-semibold tabular-nums">{s.value}</p>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
-                {s.label}
-              </p>
-            </div>
-          ))}
+          <Link to="/timer" className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center active:scale-[0.98] transition-transform">
+            <p className="text-base font-semibold tabular-nums">2h 15m</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">Foco</p>
+          </Link>
+          <Link to="/" className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center active:scale-[0.98] transition-transform">
+            <p className="text-base font-semibold tabular-nums">{tasks.filter((t) => t.done).length}/{tasks.length}</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">Tarefas</p>
+          </Link>
+          <Link to="/agenda" className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center active:scale-[0.98] transition-transform">
+            <p className="text-base font-semibold tabular-nums">{blocks.length}</p>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">Blocos</p>
+          </Link>
         </section>
 
         <div className="flex items-center gap-2 bg-secondary/60 rounded-xl px-3 py-2 ring-1 ring-black/5">
