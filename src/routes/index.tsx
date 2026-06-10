@@ -29,15 +29,17 @@ function Index() {
   const { blocks } = useBlocks();
   const { tasks, add, toggle, remove, update } = useTasks();
   const { notes: noteMap } = useNotes();
+  const { notes: quickNotes, add: addNote, remove: removeNote } = useQuickNotes();
+  const { lists, add: addList, toggleItem, addItem, removeItem, remove: removeList } = useLists();
   const navigate = useNavigate();
   const [weather, setWeather] = useState<CurrentWeather | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>("Hoje");
+  const [tab, setTab] = useState<Tab>("Tarefas");
   const [newTask, setNewTask] = useState("");
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
-  const [quickNotes, setQuickNotes] = useState<string[]>([]);
+  const [newListItem, setNewListItem] = useState<Record<string, string>>({});
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
