@@ -1,12 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X } from "lucide-react";
+import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useActiveTask, useBlocks, useNotes, useTasks } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
 import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 import { toast } from "sonner";
+import { BrainDumpPanel } from "@/components/hermes/BrainDumpPanel";
+import { OrganizedContentWindow } from "@/components/hermes/OrganizedContentWindow";
+import { NextActionCard } from "@/components/hermes/NextActionCard";
+import { getNextActionPlan } from "@/lib/hermes/hermes-core";
+import { useDraftOrganized, useOrganizedWindowOpen } from "@/lib/hermes/hermes-store";
+import type { ExecutionPlan } from "@/lib/hermes/hermes-types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -140,6 +146,38 @@ function Index() {
     navigate({ to: "/timer" });
   };
 
+  // Hermes state
+  const [organized] = useDraftOrganized();
+  const [hermesWindowOpen] = useOrganizedWindowOpen();
+  const [hermesPlan, setHermesPlan] = useState<ExecutionPlan | null>(null);
+  const [showOrganized, setShowOrganized] = useState(false);
+
+  // Refresh plan whenever something changes
+  useEffect(() => {
+    setHermesPlan(getNextActionPlan());
+  }, []);
+
+  const handleOrganized = () => {
+    setHermesPlan(getNextActionPlan());
+    setShowOrganized(true);
+  };
+
+  const handleCloseOrganized = () => {
+    setShowOrganized(false);
+    setHermesPlan(getNextActionPlan());
+  };
+
+  const startFocusFromPlan = (task: string, minutes: number) => {
+    setActive({
+      time: new Date().toTimeString().slice(0, 5),
+      title: task,
+      tag: "Foco",
+      goal: "",
+      minutes,
+    });
+    navigate({ to: "/timer" });
+  };
+
   return (
     <>
       <PageHeader eyebrow="14 de Outubro" title={`Olá, ${profile.name.split(" ")[0]}`} streak={12} />
@@ -204,6 +242,13 @@ function Index() {
           </Link>
         </div>
 
+        {/* Hermes — Despejar Mente */}
+        <BrainDumpPanel onOrganized={handleOrganized} />
+
+        {/* Hermes — Próxima Ação */}
+        {hermesPlan && (
+          <NextActionCard plan={hermesPlan} onStartFocus={startFocusFromPlan} />
+        )}
 
         {/* Tarefas */}
         <section className="space-y-4">
@@ -243,7 +288,7 @@ function Index() {
                   {active?.title ?? "Escolha um bloco na Agenda para focar"}
                 </h4>
                 {active?.goal && (
-                  <p className="text-xs text-zinc-400 italic mt-1">“{active.goal}”</p>
+                  <p className="text-xs text-zinc-400 italic mt-1">"{active.goal}"</p>
                 )}
               </div>
               <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
@@ -355,10 +400,10 @@ function Index() {
           </ul>
         </section>
 
-        {/* Nota Rápida */}
+        {/* Notas Rápidas */}
         <section className="space-y-4">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">
-            Nota Rápida
+            Notas Rápidas
           </h3>
           <div className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
             <div className="flex items-center gap-2 mb-4">
@@ -437,6 +482,14 @@ function Index() {
 
         <div className="h-4" />
       </main>
+
+      {/* Hermes — Janela de Conteúdo Organizado */}
+      {showOrganized && organized && (
+        <OrganizedContentWindow
+          onClose={handleCloseOrganized}
+          onFocus={startFocusFromPlan}
+        />
+      )}
 
       {linkingId && (
         <LinkBlockSheet
