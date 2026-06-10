@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type AgentAction, type ChatMsg } from "@/lib/agent";
 import { useActiveTask, useBlocks, useLists, useQuickNotes, useTasks } from "@/lib/focus-store";
+import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
@@ -38,6 +39,7 @@ function ChatPage() {
   const { add: addNote } = useQuickNotes();
   const { add: addList } = useLists();
   const [, setActive] = useActiveTask();
+  const [profile] = useProfile();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -99,7 +101,7 @@ function ChatPage() {
     setLoading(true);
     try {
       const history: ChatMsg[] = next.map((m) => ({ role: m.role, content: m.content }));
-      const result = await runAgent(config, history);
+      const result = await runAgent(config, history, buildProfileContext(profile));
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: result.reply || "✓", actions: result.actions },
