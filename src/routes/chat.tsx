@@ -4,7 +4,7 @@ import { AlertTriangle, Send, Settings2, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type AgentAction, type ChatMsg } from "@/lib/agent";
-import { useActiveTask, useBlocks, useNotes, useTasks } from "@/lib/focus-store";
+import { useActiveTask, useBlocks, useLists, useQuickNotes, useTasks } from "@/lib/focus-store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
