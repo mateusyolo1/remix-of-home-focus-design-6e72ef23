@@ -38,10 +38,19 @@ Regras:
 - Pode retornar VÁRIAS ações de uma vez.
 - Se for só conversa, retorne {"reply":"...","actions":[]}.
 - Datas relativas ("amanhã", "sexta") → calcule a data ISO.
-- Nunca invente campos fora do esquema.`;
+- Nunca invente campos fora do esquema.
+- Sempre considere o dossiê do usuário (se fornecido) para personalizar tom, horários e prioridades. Respeite a escala de trabalho — não agende durante folgas.`;
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function buildSystem(profileContext?: string): string {
+  const base = SYSTEM_PROMPT + `\n\nHoje é ${todayIso()}.`;
+  if (profileContext && profileContext.trim()) {
+    return base + `\n\n${profileContext.trim()}`;
+  }
+  return base;
 }
 
 function extractJson(text: string): AgentResult {
@@ -62,7 +71,7 @@ function extractJson(text: string): AgentResult {
   }
 }
 
-async function callGemini(config: AgentConfig, messages: ChatMsg[]): Promise<string> {
+async function callGemini(config: AgentConfig, messages: ChatMsg[], system: string): Promise<string> {
   const contents = messages
     .filter((m) => m.role !== "system")
     .map((m) => ({
@@ -74,7 +83,7 @@ async function callGemini(config: AgentConfig, messages: ChatMsg[]): Promise<str
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM_PROMPT + `\n\nHoje é ${todayIso()}.` }] },
+      systemInstruction: { parts: [{ text: system }] },
       contents,
       generationConfig: { responseMimeType: "application/json", temperature: 0.4 },
     }),
@@ -84,7 +93,7 @@ async function callGemini(config: AgentConfig, messages: ChatMsg[]): Promise<str
   return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
-async function callDeepseek(config: AgentConfig, messages: ChatMsg[]): Promise<string> {
+async function callDeepseek(config: AgentConfig, messages: ChatMsg[], system: string): Promise<string> {
   const res = await fetch("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: {
@@ -94,7 +103,7 @@ async function callDeepseek(config: AgentConfig, messages: ChatMsg[]): Promise<s
     body: JSON.stringify({
       model: config.model,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT + `\n\nHoje é ${todayIso()}.` },
+        { role: "system", content: system },
         ...messages.filter((m) => m.role !== "system"),
       ],
       response_format: { type: "json_object" },
@@ -106,11 +115,16 @@ async function callDeepseek(config: AgentConfig, messages: ChatMsg[]): Promise<s
   return data?.choices?.[0]?.message?.content ?? "";
 }
 
-export async function runAgent(config: AgentConfig, messages: ChatMsg[]): Promise<AgentResult> {
+export async function runAgent(
+  config: AgentConfig,
+  messages: ChatMsg[],
+  profileContext?: string,
+): Promise<AgentResult> {
+  const system = buildSystem(profileContext);
   if (config.provider === "gemini") {
     if (!config.geminiKey) throw new Error("Configure sua API key do Gemini no Perfil.");
-    return extractJson(await callGemini(config, messages));
+    return extractJson(await callGemini(config, messages, system));
   }
   if (!config.deepseekKey) throw new Error("Configure sua API key do DeepSeek no Perfil.");
-  return extractJson(await callDeepseek(config, messages));
+  return extractJson(await callDeepseek(config, messages, system));
 }
