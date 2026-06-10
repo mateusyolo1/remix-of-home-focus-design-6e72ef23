@@ -133,7 +133,10 @@ function PerfilPage() {
           </p>
         </section>
 
+        <HermesAgentCard />
+
         <section className="bg-card rounded-2xl ring-1 ring-black/5 overflow-hidden">
+
           {items.map(({ icon: Icon, label, to, onClick }, i) => {
             const cls = [
               "flex items-center gap-3 px-4 py-4 text-sm w-full text-left",
