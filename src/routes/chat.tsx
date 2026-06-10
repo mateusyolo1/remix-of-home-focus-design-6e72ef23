@@ -63,13 +63,11 @@ function ChatPage() {
           });
           toast.success(`Bloco ${a.time}: ${a.title}`);
         } else if (a.type === "create_note") {
-          const key = `nota-${Date.now()}`;
-          const itemsHtml = a.items?.length
-            ? `<ul>${a.items.map((i) => `<li>${i}</li>`).join("")}</ul>`
-            : "";
-          const html = `<h2>${a.title}</h2>${itemsHtml}${a.body ? `<p>${a.body}</p>` : ""}`;
-          setNote(key, html);
+          addNote({ title: a.title, body: a.body, ttlDays: a.ttlDays });
           toast.success(`Nota: ${a.title}`);
+        } else if (a.type === "create_list") {
+          addList({ title: a.title, items: a.items });
+          toast.success(`Lista: ${a.title} (${a.items.length})`);
         } else if (a.type === "start_timer") {
           setActive({
             time: new Date().toTimeString().slice(0, 5),
