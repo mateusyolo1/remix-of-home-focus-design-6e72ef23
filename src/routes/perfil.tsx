@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck, Sparkles, UserCog } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
 import { useAgentConfig } from "@/lib/agent-store";
 import { toast } from "sonner";
@@ -36,6 +36,11 @@ function PerfilPage() {
   const [profile] = useProfile();
   const [agentConfig] = useAgentConfig();
   const { checkins } = useCheckins();
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const hasAgentKey =
     (agentConfig.provider === "gemini" && agentConfig.geminiKey.length > 0) ||
@@ -102,7 +107,7 @@ function PerfilPage() {
 
         <section className="grid grid-cols-3 gap-2">
           {[
-            { label: "Check-ins", value: String(checkinStreak.days) },
+            { label: "Check-ins", value: hydrated ? String(checkinStreak.days) : "—" },
             { label: "Sequência", value: `${checkinStreak.streak} dias` },
             { label: "Hoje", value: checkinStreak.todayChecked ? "✅" : "—" },
           ].map((s) => (
