@@ -25,7 +25,7 @@ type Item = {
 
 const items: Item[] = [
   { icon: UserCog, label: "Editar perfil", to: "/perfil/editar" },
-  { icon: Sparkles, label: "Agente IA", to: "/perfil/editar" },
+  { icon: Sparkles, label: "Agente IA", onClick: () => window.location.href = "/perfil/editar#agente-ia" },
   { icon: Bell, label: "Lembretes", onClick: () => toast("Lembretes em breve — vamos enviar notificações nos seus horários da agenda.") },
   { icon: Settings, label: "Configurações", to: "/configuracoes" },
   { icon: ShieldCheck, label: "Privacidade", onClick: () => toast("Privacidade — seus dados ficam apenas neste dispositivo (localStorage).") },
