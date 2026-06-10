@@ -27,11 +27,30 @@ export type Block = {
   date?: string;
 };
 
+export type QuickNote = {
+  id: string;
+  title: string;
+  body: string;
+  /** dias até arquivamento sugerido */
+  ttlDays: number;
+  createdAt: string;
+};
+
+export type ListItem = { id: string; text: string; done: boolean };
+export type CheckList = {
+  id: string;
+  title: string;
+  items: ListItem[];
+  createdAt: string;
+};
+
 const KEY_ACTIVE = "fm.active-task";
 const KEY_NOTES = "fm.notes"; // { [time]: htmlString }
 const KEY_STEPS = "fm.steps"; // { [time]: Subtask[] }
 const KEY_TASKS = "fm.tasks"; // Task[]
 const KEY_BLOCKS = "fm.blocks"; // Block[]
+const KEY_QNOTES = "fm.quick-notes"; // QuickNote[]
+const KEY_LISTS = "fm.lists"; // CheckList[]
 
 const EVT = "fm:store";
 
