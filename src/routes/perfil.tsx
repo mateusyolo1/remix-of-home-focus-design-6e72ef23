@@ -112,7 +112,7 @@ function PerfilPage() {
             { label: "Hoje", value: hydrated ? (checkinStreak.todayChecked ? "✅" : "—") : "—" },
           ].map((s) => (
             <div key={s.label} className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center">
-              <p className="text-base font-semibold tabular-nums">{s.value}</p>
+              <p className="text-base font-semibold tabular-nums" suppressHydrationWarning>{s.value}</p>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
                 {s.label}
               </p>
