@@ -1,19 +1,12 @@
-"use client";
-
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X, Sparkles } from "lucide-react";
+import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useActiveTask, useBlocks, useNotes, useTasks } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
 import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 import { toast } from "sonner";
-import { BrainDumpPanel } from "@/components/hermes/BrainDumpPanel";
-import { OrganizedContentWindow } from "@/components/hermes/OrganizedContentWindow";
-import { NextActionCard } from "@/components/hermes/NextActionCard";
-import { getNextActionPlan } from "@/lib/hermes/hermes-core";
-import { useDraftOrganized, useOrganizedWindowOpen } from "@/lib/hermes/hermes-store";
-import type { ExecutionPlan } from "@/lib/hermes/hermes-types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -147,56 +140,24 @@ function Index() {
     navigate({ to: "/timer" });
   };
 
-  // Hermes state
-  const [organized] = useDraftOrganized();
-  const [hermesWindowOpen] = useOrganizedWindowOpen();
-  const [hermesPlan, setHermesPlan] = useState<ExecutionPlan | null>(null);
-  const [showOrganized, setShowOrganized] = useState(false);
-
-  // Refresh plan whenever something changes
-  useEffect(() => {
-    setHermesPlan(getNextActionPlan());
-  }, []);
-
-  const handleOrganized = () => {
-    setHermesPlan(getNextActionPlan());
-    setShowOrganized(true);
-  };
-
-  const handleCloseOrganized = () => {
-    setShowOrganized(false);
-    setHermesPlan(getNextActionPlan());
-  };
-
-  const startFocusFromPlan = (task: string, minutes: number) => {
-    setActive({
-      time: new Date().toTimeString().slice(0, 5),
-      title: task,
-      tag: "Foco",
-      goal: "",
-      minutes,
-    });
-    navigate({ to: "/timer" });
-  };
-
   return (
     <>
       <PageHeader eyebrow="14 de Outubro" title={`Olá, ${profile.name.split(" ")[0]}`} streak={12} />
 
       <main className="px-6 space-y-8">
         <section className="grid grid-cols-3 gap-2">
-          <Link to="/timer" className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center active:scale-[0.98] transition-transform">
-            <p className="text-base font-semibold tabular-nums">2h 15m</p>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">Foco</p>
-          </Link>
-          <Link to="/" className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center active:scale-[0.98] transition-transform">
-            <p className="text-base font-semibold tabular-nums">{tasks.filter((t) => t.done).length}/{tasks.length}</p>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">Tarefas</p>
-          </Link>
-          <Link to="/agenda" className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center active:scale-[0.98] transition-transform">
-            <p className="text-base font-semibold tabular-nums">{blocks.length}</p>
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">Blocos</p>
-          </Link>
+          {[
+            { label: "Foco", value: "2h 15m" },
+            { label: "Tarefas", value: `${tasks.filter((t) => t.done).length}/${tasks.length}` },
+            { label: "Blocos", value: String(blocks.length) },
+          ].map((s) => (
+            <div key={s.label} className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center">
+              <p className="text-base font-semibold tabular-nums">{s.value}</p>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
+                {s.label}
+              </p>
+            </div>
+          ))}
         </section>
 
         <div className="flex items-center gap-2 bg-secondary/60 rounded-xl px-3 py-2 ring-1 ring-black/5">
@@ -243,13 +204,6 @@ function Index() {
           </Link>
         </div>
 
-        {/* Hermes — Despejar Mente */}
-        <BrainDumpPanel onOrganized={handleOrganized} />
-
-        {/* Hermes — Próxima Ação */}
-        {mounted && hermesPlan && (
-          <NextActionCard plan={hermesPlan} onStartFocus={startFocusFromPlan} />
-        )}
 
         {/* Tarefas */}
         <section className="space-y-4">
@@ -275,42 +229,26 @@ function Index() {
             </div>
           </div>
 
-          {mounted ? (
-            <Link
-              to={active ? "/foco" : "/agenda"}
-              className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
-            >
-              <div className="flex justify-between items-start gap-4">
-                <div className="space-y-1 min-w-0">
-                  <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
-                    <Target className="size-3" />
-                    {active ? `Foco · ${active.tag}` : "Próxima ação"}
-                  </p>
-                  <h4 className="text-lg font-medium leading-tight text-balance">
-                    {active?.title ?? "Escolha um bloco na Agenda para focar"}
-                  </h4>
-                  {active?.goal && (
-                    <p className="text-xs text-zinc-400 italic mt-1">"{active.goal}"</p>
-                  )}
-                </div>
-                <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
+          <Link
+            to={active ? "/foco" : "/agenda"}
+            className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+          >
+            <div className="flex justify-between items-start gap-4">
+              <div className="space-y-1 min-w-0">
+                <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
+                  <Target className="size-3" />
+                  {active ? `Foco · ${active.tag}` : "Próxima ação"}
+                </p>
+                <h4 className="text-lg font-medium leading-tight text-balance">
+                  {active?.title ?? "Escolha um bloco na Agenda para focar"}
+                </h4>
+                {active?.goal && (
+                  <p className="text-xs text-zinc-400 italic mt-1">“{active.goal}”</p>
+                )}
               </div>
-            </Link>
-          ) : (
-            <div className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 opacity-60">
-              <div className="flex justify-between items-start gap-4">
-                <div className="space-y-1 min-w-0">
-                  <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
-                    <Target className="size-3" />
-                    Próxima ação
-                  </p>
-                  <h4 className="text-lg font-medium leading-tight text-balance">
-                    Carregando...
-                  </h4>
-                </div>
-              </div>
+              <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
             </div>
-          )}
+          </Link>
 
           <ul className="space-y-2">
             {filteredTasks.length === 0 && (
@@ -417,10 +355,10 @@ function Index() {
           </ul>
         </section>
 
-        {/* Notas Rápidas */}
+        {/* Nota Rápida */}
         <section className="space-y-4">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">
-            Notas Rápidas
+            Nota Rápida
           </h3>
           <div className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
             <div className="flex items-center gap-2 mb-4">
@@ -466,16 +404,13 @@ function Index() {
           </div>
 
           <div className="flex flex-col items-center py-2">
-            <span
-              className="text-6xl font-medium tracking-tighter tabular-nums mb-8 text-foreground"
-              suppressHydrationWarning
-            >
-              {mounted && active ? `${String(active.minutes).padStart(2, "0")}:00` : "25:00"}
+            <span className="text-6xl font-medium tracking-tighter tabular-nums mb-8 text-foreground">
+              {active ? `${String(active.minutes).padStart(2, "0")}:00` : "25:00"}
             </span>
 
-            <div className="flex gap-2 mb-8" suppressHydrationWarning>
+            <div className="flex gap-2 mb-8">
               {[25, 45, 90].map((d, i) => {
-                const isActive = (mounted && active?.minutes === d) || (!active && i === 0);
+                const isActive = (active?.minutes ?? 25) === d || (!active && i === 0);
                 return (
                   <button
                     key={d}
@@ -502,14 +437,6 @@ function Index() {
 
         <div className="h-4" />
       </main>
-
-      {/* Hermes — Janela de Conteúdo Organizado */}
-      {showOrganized && organized && (
-        <OrganizedContentWindow
-          onClose={handleCloseOrganized}
-          onFocus={startFocusFromPlan}
-        />
-      )}
 
       {linkingId && (
         <LinkBlockSheet

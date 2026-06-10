@@ -85,17 +85,6 @@ function EditarPerfil() {
         </Link>
 
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Dados pessoais
-            </p>
-            <Link
-              to="/perfil/editar#agente-ia"
-              className="text-[10px] font-medium text-accent inline-flex items-center gap-1"
-            >
-              <Sparkles className="size-3" /> Ir para Agente IA
-            </Link>
-          </div>
           <Field label="Nome">
             <input
               value={draft.name}
@@ -208,7 +197,7 @@ function EditarPerfil() {
         </section>
 
         {/* Agente IA — Hermes */}
-        <section id="agente-ia" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles className="size-4 text-accent" />
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
