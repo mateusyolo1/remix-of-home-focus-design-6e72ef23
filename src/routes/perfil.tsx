@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck, Sparkles, UserCog } from "lucide-react";
 import { useMemo } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
+import { useAgentConfig } from "@/lib/agent-store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/perfil")({
@@ -33,7 +34,12 @@ const items: Item[] = [
 
 function PerfilPage() {
   const [profile] = useProfile();
+  const [agentConfig] = useAgentConfig();
   const { checkins } = useCheckins();
+
+  const hasAgentKey =
+    (agentConfig.provider === "gemini" && agentConfig.geminiKey.length > 0) ||
+    (agentConfig.provider === "deepseek" && agentConfig.deepseekKey.length > 0);
 
   const checkinStreak = useMemo(() => {
     const dates = Array.from(checkins).sort().reverse();
@@ -74,6 +80,23 @@ function PerfilPage() {
             className="text-xs font-medium text-accent bg-secondary/60 px-3 py-1.5 rounded-full ring-1 ring-black/5 active:scale-95 transition-transform shrink-0"
           >
             Editar
+          </Link>
+        </section>
+
+        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
+          <Link to="/perfil/editar" className="flex items-center gap-4 active:scale-[0.99] transition-transform">
+            <div className="size-10 rounded-xl bg-secondary grid place-items-center shrink-0">
+              <Sparkles className="size-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold">Agente IA · Hermes</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {hasAgentKey
+                  ? `✓ Chave ${agentConfig.provider === "gemini" ? "Gemini" : "DeepSeek"} configurada`
+                  : "⚠️ API key não configurada"}
+              </p>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground shrink-0" />
           </Link>
         </section>
 
