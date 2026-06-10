@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck, UserCog } from "lucide-react";
+import { Bell, BrainCog, ChevronRight, LogOut, Moon, Settings, ShieldCheck, UserCog, WifiOff } from "lucide-react";
 import { useMemo } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
+import { useHermesConfig } from "@/lib/hermes/hermes-config";
+import { INSTALL_STATUS_LABEL } from "@/lib/hermes/hermes-status";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
