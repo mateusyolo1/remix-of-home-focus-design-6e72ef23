@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Bell, ChevronRight, LogOut, Moon, Settings, ShieldCheck, Sparkles, UserCog } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
 import { useAgentConfig } from "@/lib/agent-store";
 import { toast } from "sonner";
@@ -19,28 +19,32 @@ export const Route = createFileRoute("/perfil")({
 type Item = {
   icon: typeof UserCog;
   label: string;
-  to?: "/perfil/editar" | "/configuracoes";
+  to?: string;
   onClick?: () => void;
 };
 
 const items: Item[] = [
   { icon: UserCog, label: "Editar perfil", to: "/perfil/editar" },
-  { icon: Sparkles, label: "Agente IA", onClick: () => window.location.href = "/perfil/editar#agente-ia" },
+  { icon: Sparkles, label: "Agente IA", to: "/perfil/editar#agente-ia" },
   { icon: Bell, label: "Lembretes", onClick: () => toast("Lembretes em breve — vamos enviar notificações nos seus horários da agenda.") },
   { icon: Settings, label: "Configurações", to: "/configuracoes" },
   { icon: ShieldCheck, label: "Privacidade", onClick: () => toast("Privacidade — seus dados ficam apenas neste dispositivo (localStorage).") },
   { icon: Moon, label: "Modo silencioso", onClick: () => toast.success("Modo silencioso ativado") },
 ];
 
+function useHydrated() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
+
 function PerfilPage() {
   const [profile] = useProfile();
   const [agentConfig] = useAgentConfig();
   const { checkins } = useCheckins();
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
+  const hydrated = useHydrated();
 
   const hasAgentKey =
     (agentConfig.provider === "gemini" && agentConfig.geminiKey.length > 0) ||
@@ -88,8 +92,11 @@ function PerfilPage() {
           </Link>
         </section>
 
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
-          <Link to="/perfil/editar" className="flex items-center gap-4 active:scale-[0.99] transition-transform">
+        <Link
+          to="/perfil/editar#agente-ia"
+          className="block bg-card rounded-2xl p-5 ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+        >
+          <div className="flex items-center gap-4">
             <div className="size-10 rounded-xl bg-secondary grid place-items-center shrink-0">
               <Sparkles className="size-5" />
             </div>
@@ -102,8 +109,8 @@ function PerfilPage() {
               </p>
             </div>
             <ChevronRight className="size-4 text-muted-foreground shrink-0" />
-          </Link>
-        </section>
+          </div>
+        </Link>
 
         <section className="grid grid-cols-3 gap-2">
           {[
@@ -112,7 +119,7 @@ function PerfilPage() {
             { label: "Hoje", value: hydrated ? (checkinStreak.todayChecked ? "✅" : "—") : "—" },
           ].map((s) => (
             <div key={s.label} className="bg-card rounded-xl p-3 ring-1 ring-black/5 text-center">
-              <p className="text-base font-semibold tabular-nums" suppressHydrationWarning>{s.value}</p>
+              <p className="text-base font-semibold tabular-nums">{s.value}</p>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
                 {s.label}
               </p>
@@ -121,20 +128,36 @@ function PerfilPage() {
         </section>
 
         <section className="bg-card rounded-2xl ring-1 ring-black/5 divide-y divide-border">
-          {items.map((item) => (
-            <Link
-              key={item.label}
-              to={item.to ?? "#"}
-              onClick={item.onClick}
-              className="flex items-center gap-4 px-5 py-4 active:scale-[0.99] transition-transform"
-            >
-              <div className="size-9 rounded-xl bg-secondary grid place-items-center shrink-0">
-                <item.icon className="size-4 text-foreground" />
+          {items.map((item) => {
+            const content = (
+              <div className="flex items-center gap-4 px-5 py-4 active:scale-[0.99] transition-transform">
+                <div className="size-9 rounded-xl bg-secondary grid place-items-center shrink-0">
+                  <item.icon className="size-4 text-foreground" />
+                </div>
+                <span className="text-sm font-medium flex-1 text-left">{item.label}</span>
+                <ChevronRight className="size-4 text-muted-foreground" />
               </div>
-              <span className="text-sm font-medium flex-1 text-left">{item.label}</span>
-              <ChevronRight className="size-4 text-muted-foreground" />
-            </Link>
-          ))}
+            );
+
+            if (item.to) {
+              return (
+                <Link key={item.label} to={item.to} className="block">
+                  {content}
+                </Link>
+              );
+            }
+
+            return (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.onClick}
+                className="block w-full text-left"
+              >
+                {content}
+              </button>
+            );
+          })}
         </section>
 
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
@@ -154,6 +177,12 @@ function PerfilPage() {
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
           <button
             type="button"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                localStorage.clear();
+                window.location.reload();
+              }
+            }}
             className="flex items-center gap-3 text-sm text-destructive font-medium active:scale-[0.99] transition-transform"
           >
             <LogOut className="size-4" />
