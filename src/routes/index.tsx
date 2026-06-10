@@ -247,7 +247,7 @@ function Index() {
         <BrainDumpPanel onOrganized={handleOrganized} />
 
         {/* Hermes — Próxima Ação */}
-        {hermesPlan && (
+        {mounted && hermesPlan && (
           <NextActionCard plan={hermesPlan} onStartFocus={startFocusFromPlan} />
         )}
 
@@ -275,26 +275,42 @@ function Index() {
             </div>
           </div>
 
-          <Link
-            to={active ? "/foco" : "/agenda"}
-            className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
-          >
-            <div className="flex justify-between items-start gap-4">
-              <div className="space-y-1 min-w-0">
-                <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
-                  <Target className="size-3" />
-                  {active ? `Foco · ${active.tag}` : "Próxima ação"}
-                </p>
-                <h4 className="text-lg font-medium leading-tight text-balance">
-                  {active?.title ?? "Escolha um bloco na Agenda para focar"}
-                </h4>
-                {active?.goal && (
-                  <p className="text-xs text-zinc-400 italic mt-1">"{active.goal}"</p>
-                )}
+          {mounted ? (
+            <Link
+              to={active ? "/foco" : "/agenda"}
+              className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+            >
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
+                    <Target className="size-3" />
+                    {active ? `Foco · ${active.tag}` : "Próxima ação"}
+                  </p>
+                  <h4 className="text-lg font-medium leading-tight text-balance">
+                    {active?.title ?? "Escolha um bloco na Agenda para focar"}
+                  </h4>
+                  {active?.goal && (
+                    <p className="text-xs text-zinc-400 italic mt-1">"{active.goal}"</p>
+                  )}
+                </div>
+                <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
               </div>
-              <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
+            </Link>
+          ) : (
+            <div className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 opacity-60">
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
+                    <Target className="size-3" />
+                    Próxima ação
+                  </p>
+                  <h4 className="text-lg font-medium leading-tight text-balance">
+                    Carregando...
+                  </h4>
+                </div>
+              </div>
             </div>
-          </Link>
+          )}
 
           <ul className="space-y-2">
             {filteredTasks.length === 0 && (
@@ -450,13 +466,16 @@ function Index() {
           </div>
 
           <div className="flex flex-col items-center py-2">
-            <span className="text-6xl font-medium tracking-tighter tabular-nums mb-8 text-foreground">
-              {active ? `${String(active.minutes).padStart(2, "0")}:00` : "25:00"}
+            <span
+              className="text-6xl font-medium tracking-tighter tabular-nums mb-8 text-foreground"
+              suppressHydrationWarning
+            >
+              {mounted && active ? `${String(active.minutes).padStart(2, "0")}:00` : "25:00"}
             </span>
 
-            <div className="flex gap-2 mb-8">
+            <div className="flex gap-2 mb-8" suppressHydrationWarning>
               {[25, 45, 90].map((d, i) => {
-                const isActive = (active?.minutes ?? 25) === d || (!active && i === 0);
+                const isActive = (mounted && active?.minutes === d) || (!active && i === 0);
                 return (
                   <button
                     key={d}
