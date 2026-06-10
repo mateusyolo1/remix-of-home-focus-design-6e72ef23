@@ -226,111 +226,246 @@ function Index() {
           </div>
         </Link>
 
-        {/* Tarefas */}
+        {/* Hoje · Tarefas / Notas / Listas */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-              Tarefas
-            </h3>
+          <div className="flex items-center justify-between gap-2 px-1">
+            <h3 className="text-2xl font-semibold tracking-tight">Hoje</h3>
             <div className="flex gap-1.5">
-              {(["Hoje", "Semana", "Todas"] as Filter[]).map((f) => (
+              {(["Tarefas", "Notas", "Listas"] as Tab[]).map((t) => (
                 <button
-                  key={f}
-                  onClick={() => setFilter(f)}
+                  key={t}
+                  onClick={() => setTab(t)}
                   className={[
-                    "px-2.5 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider ring-1 transition-transform active:scale-95",
-                    filter === f
-                      ? "bg-foreground text-background ring-foreground"
+                    "px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-wide ring-1 transition-transform active:scale-95",
+                    tab === t
+                      ? "bg-accent text-accent-foreground ring-accent"
                       : "bg-card text-muted-foreground ring-black/5",
                   ].join(" ")}
                 >
-                  {f}
+                  {t}
                 </button>
               ))}
             </div>
           </div>
 
-
-          <ul className="space-y-2">
-            {filteredTasks.length === 0 && (
-              <li className="text-center text-xs text-muted-foreground py-4">
-                Sem tarefas. Adicione abaixo.
-              </li>
-            )}
-            {filteredTasks.map((t) => {
-              const linkedBlock = t.blockTime
-                ? blocks.find((b) => b.time === t.blockTime)
-                : null;
-              return (
-                <li
-                  key={t.id}
-                  className="flex items-center gap-3 p-3 bg-card rounded-xl ring-1 ring-black/5"
-                >
-                  <button
-                    onClick={() => toggle(t.id)}
-                    aria-label="Concluir"
-                    className={[
-                      "size-5 shrink-0 rounded-md grid place-items-center ring-1 transition-colors",
-                      t.done ? "bg-foreground text-background ring-foreground" : "bg-background ring-border",
-                    ].join(" ")}
-                  >
-                    {t.done && <Check className="size-3" />}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={[
-                        "text-sm truncate",
-                        t.done ? "line-through text-muted-foreground" : "text-foreground",
-                      ].join(" ")}
+          {tab === "Tarefas" && (
+            <>
+              <ul className="space-y-2">
+                {filteredTasks.length === 0 && (
+                  <li className="text-center text-xs text-muted-foreground py-4">
+                    Sem tarefas. Adicione abaixo.
+                  </li>
+                )}
+                {filteredTasks.map((t) => {
+                  const linkedBlock = t.blockTime
+                    ? blocks.find((b) => b.time === t.blockTime)
+                    : null;
+                  return (
+                    <li
+                      key={t.id}
+                      className="flex items-center gap-3 p-3 bg-card rounded-xl ring-1 ring-black/5"
                     >
-                      {t.title}
-                    </p>
-                    {linkedBlock && (
-                      <p className="text-[10px] text-accent mt-0.5 truncate">
-                        {linkedBlock.time} · {linkedBlock.title}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setLinkingId(t.id)}
-                    aria-label="Vincular a bloco"
-                    className={[
-                      "size-8 rounded-md grid place-items-center transition-colors",
-                      linkedBlock ? "text-accent" : "text-muted-foreground hover:bg-secondary",
-                    ].join(" ")}
-                  >
-                    <Link2 className="size-4" />
-                  </button>
-                  <button
-                    onClick={() => remove(t.id)}
-                    aria-label="Remover"
-                    className="size-8 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+                      <button
+                        onClick={() => toggle(t.id)}
+                        aria-label="Concluir"
+                        className={[
+                          "size-5 shrink-0 rounded-md grid place-items-center ring-1 transition-colors",
+                          t.done ? "bg-foreground text-background ring-foreground" : "bg-background ring-border",
+                        ].join(" ")}
+                      >
+                        {t.done && <Check className="size-3" />}
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className={[
+                            "text-sm truncate",
+                            t.done ? "line-through text-muted-foreground" : "text-foreground",
+                          ].join(" ")}
+                        >
+                          {t.title}
+                        </p>
+                        {linkedBlock && (
+                          <p className="text-[10px] text-accent mt-0.5 truncate">
+                            {linkedBlock.time} · {linkedBlock.title}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setLinkingId(t.id)}
+                        aria-label="Vincular a bloco"
+                        className={[
+                          "size-8 rounded-md grid place-items-center transition-colors",
+                          linkedBlock ? "text-accent" : "text-muted-foreground hover:bg-secondary",
+                        ].join(" ")}
+                      >
+                        <Link2 className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => remove(t.id)}
+                        aria-label="Remover"
+                        className="size-8 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
 
-          <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
-            <input
-              type="text"
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addNewTask()}
-              placeholder="Adicionar tarefa…"
-              className="flex-1 bg-transparent text-sm outline-none px-2 py-2 placeholder:text-muted-foreground"
-            />
-            <button
-              onClick={addNewTask}
-              aria-label="Adicionar"
-              className="size-9 rounded-lg bg-foreground text-background grid place-items-center active:scale-95"
-            >
-              <Plus className="size-4" />
-            </button>
-          </div>
+              <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
+                <input
+                  type="text"
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addNewTask()}
+                  placeholder="Adicionar tarefa…"
+                  className="flex-1 bg-transparent text-sm outline-none px-2 py-2 placeholder:text-muted-foreground"
+                />
+                <button
+                  onClick={addNewTask}
+                  aria-label="Adicionar"
+                  className="size-9 rounded-lg bg-foreground text-background grid place-items-center active:scale-95"
+                >
+                  <Plus className="size-4" />
+                </button>
+              </div>
+            </>
+          )}
+
+          {tab === "Notas" && (
+            <ul className="space-y-2">
+              {quickNotes.length === 0 && (
+                <li className="text-center text-xs text-muted-foreground py-4">
+                  Nenhuma nota. Use a Nota Rápida abaixo ou peça ao Hermes.
+                </li>
+              )}
+              {quickNotes.map((n) => (
+                <li
+                  key={n.id}
+                  className="group p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-1"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-base font-semibold leading-tight">{n.title}</h4>
+                    <button
+                      onClick={() => removeNote(n.id)}
+                      aria-label="Remover nota"
+                      className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                  {n.body && (
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{n.body}</p>
+                  )}
+                  <p className="text-[10px] text-muted-foreground/70 pt-1">
+                    Vida útil: {n.ttlDays} dias · segure para arquivar
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {tab === "Listas" && (
+            <ul className="space-y-3">
+              {lists.length === 0 && (
+                <li className="text-center text-xs text-muted-foreground py-4">
+                  Nenhuma lista. Peça ao Hermes: “lista de compras: tomate, cebola”.
+                </li>
+              )}
+              {lists.map((l) => (
+                <li key={l.id} className="p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="text-base font-semibold leading-tight">{l.title}</h4>
+                    <button
+                      onClick={() => removeList(l.id)}
+                      aria-label="Remover lista"
+                      className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
+                  <ul className="space-y-1.5">
+                    {l.items.map((it) => (
+                      <li key={it.id} className="flex items-center gap-3 group">
+                        <button
+                          onClick={() => toggleItem(l.id, it.id)}
+                          aria-label="Marcar"
+                          className={[
+                            "size-5 shrink-0 rounded-md grid place-items-center ring-1 transition-colors",
+                            it.done
+                              ? "bg-foreground text-background ring-foreground"
+                              : "bg-background ring-border",
+                          ].join(" ")}
+                        >
+                          {it.done && <Check className="size-3" />}
+                        </button>
+                        <span
+                          className={[
+                            "flex-1 text-sm",
+                            it.done ? "line-through text-muted-foreground" : "text-foreground",
+                          ].join(" ")}
+                        >
+                          {it.text}
+                        </span>
+                        <button
+                          onClick={() => removeItem(l.id, it.id)}
+                          aria-label="Remover item"
+                          className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-0 group-hover:opacity-100"
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center gap-2 bg-secondary/60 rounded-lg p-1.5 ring-1 ring-black/5">
+                    <input
+                      type="text"
+                      value={newListItem[l.id] ?? ""}
+                      onChange={(e) =>
+                        setNewListItem({ ...newListItem, [l.id]: e.target.value })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const v = (newListItem[l.id] ?? "").trim();
+                          if (!v) return;
+                          addItem(l.id, v);
+                          setNewListItem({ ...newListItem, [l.id]: "" });
+                        }
+                      }}
+                      placeholder="Adicionar item…"
+                      className="flex-1 bg-transparent text-sm outline-none px-2 py-1.5 placeholder:text-muted-foreground"
+                    />
+                    <button
+                      onClick={() => {
+                        const v = (newListItem[l.id] ?? "").trim();
+                        if (!v) return;
+                        addItem(l.id, v);
+                        setNewListItem({ ...newListItem, [l.id]: "" });
+                      }}
+                      aria-label="Adicionar item"
+                      className="size-8 rounded-md bg-foreground text-background grid place-items-center active:scale-95"
+                    >
+                      <Plus className="size-4" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+              <li>
+                <button
+                  onClick={() => {
+                    const title = window.prompt("Título da lista");
+                    if (!title?.trim()) return;
+                    addList({ title: title.trim(), items: [] });
+                  }}
+                  className="w-full p-3 text-sm font-medium text-muted-foreground bg-card rounded-xl ring-1 ring-black/5 ring-dashed hover:text-foreground active:scale-[0.99]"
+                >
+                  + Nova lista
+                </button>
+              </li>
+            </ul>
+          )}
         </section>
+
 
         {/* Agenda */}
         <section className="space-y-4">
