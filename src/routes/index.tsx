@@ -205,6 +205,28 @@ function Index() {
         </div>
 
 
+        {/* Próxima ação */}
+        <Link
+          to={active ? "/foco" : "/agenda"}
+          className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
+        >
+          <div className="flex justify-between items-start gap-4">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
+                <Target className="size-3" />
+                {active ? `Foco · ${active.tag}` : "Próxima ação"}
+              </p>
+              <h4 className="text-lg font-medium leading-tight text-balance">
+                {active?.title ?? "Escolha um bloco na Agenda para focar"}
+              </h4>
+              {active?.goal && (
+                <p className="text-xs text-zinc-400 italic mt-1">“{active.goal}”</p>
+              )}
+            </div>
+            <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
+          </div>
+        </Link>
+
         {/* Tarefas */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
@@ -229,26 +251,6 @@ function Index() {
             </div>
           </div>
 
-          <Link
-            to={active ? "/foco" : "/agenda"}
-            className="block bg-zinc-900 text-background p-5 rounded-2xl ring-1 ring-black/5 active:scale-[0.99] transition-transform"
-          >
-            <div className="flex justify-between items-start gap-4">
-              <div className="space-y-1 min-w-0">
-                <p className="text-xs text-zinc-400 font-medium inline-flex items-center gap-1.5">
-                  <Target className="size-3" />
-                  {active ? `Foco · ${active.tag}` : "Próxima ação"}
-                </p>
-                <h4 className="text-lg font-medium leading-tight text-balance">
-                  {active?.title ?? "Escolha um bloco na Agenda para focar"}
-                </h4>
-                {active?.goal && (
-                  <p className="text-xs text-zinc-400 italic mt-1">“{active.goal}”</p>
-                )}
-              </div>
-              <ArrowUpRight className="size-5 text-zinc-400 shrink-0 mt-0.5" />
-            </div>
-          </Link>
 
           <ul className="space-y-2">
             {filteredTasks.length === 0 && (
