@@ -171,7 +171,7 @@ function uid() {
 export function useTasks() {
   const [tasks, setTasks] = useStoreValue<Task[]>(KEY_TASKS, SEED_TASKS);
   const add = (title: string, blockTime?: string, tag?: TaskTag) => {
-    const t: Task = { id: uid(), title, done: false, blockTime, tag };
+    const t: Task = { id: uid(), title, done: false, blockTime, tag, createdAt: new Date().toISOString() };
     setTasks([...tasks, t]);
     const detail = [blockTime ? `bloco ${blockTime}` : null, tag ? TASK_TAG_LABEL[tag] : null]
       .filter(Boolean)
@@ -187,7 +187,19 @@ export function useTasks() {
   const remove = (id: string) => setTasks(tasks.filter((t) => t.id !== id));
   const update = (id: string, patch: Partial<Task>) =>
     setTasks(tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-  return { tasks, add, toggle, remove, update, setTasks };
+  const toggleImportant = (id: string) =>
+    setTasks(tasks.map((t) => (t.id === id ? { ...t, important: !t.important } : t)));
+  return { tasks, add, toggle, remove, update, toggleImportant, setTasks };
+}
+
+/** Remove tarefas que excederam o tempo de expiração (sem vínculo nem importância). */
+export function pruneExpiredTasks(tasks: Task[], expiryHours: number): Task[] {
+  const cutoff = Date.now() - expiryHours * 3600 * 1000;
+  return tasks.filter((t) => {
+    if (t.important || t.blockTime || t.done) return true;
+    if (!t.createdAt) return true; // tarefas antigas sem timestamp permanecem
+    return new Date(t.createdAt).getTime() >= cutoff;
+  });
 }
 
 
