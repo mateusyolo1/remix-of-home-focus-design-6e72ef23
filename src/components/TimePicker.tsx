@@ -16,11 +16,19 @@ type Props = {
  */
 export function TimePicker({ value, onChange, className, minuteStep = 5 }: Props) {
   const [open, setOpen] = useState(false);
+  const [align, setAlign] = useState<"left" | "right">("left");
   const wrapRef = useRef<HTMLDivElement>(null);
   const [h, m] = (value || "00:00").split(":");
 
   useEffect(() => {
     if (!open) return;
+    // Decide alignment based on available space to the right of the trigger.
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (rect) {
+      const popoverWidth = 176; // ~ w-44
+      const spaceRight = window.innerWidth - rect.left;
+      setAlign(spaceRight < popoverWidth + 16 ? "right" : "left");
+    }
     const onDoc = (e: MouseEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     };
@@ -46,7 +54,14 @@ export function TimePicker({ value, onChange, className, minuteStep = 5 }: Props
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 right-0 w-40 rounded-xl bg-card ring-1 ring-black/10 shadow-lg p-2 [&_*::-webkit-scrollbar]:!w-1 [&_*]:[scrollbar-width:thin]">
+        <div
+          className={[
+            "absolute z-30 mt-1 w-44 rounded-xl bg-card ring-1 ring-black/10 shadow-lg p-2",
+            "[&_*::-webkit-scrollbar]:!w-1 [&_*]:[scrollbar-width:thin]",
+            align === "right" ? "right-0" : "left-0",
+          ].join(" ")}
+        >
+
           <div className="flex gap-2">
             <Column
               items={hours}
