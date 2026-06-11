@@ -289,3 +289,65 @@ function labelFor(a: RoutedAction): string {
       return `${a.minutes}min${a.title ? ` · ${a.title}` : ""}`;
   }
 }
+
+function FeedbackBar({ actions }: { actions: RoutedAction[] }) {
+  const [sent, setSent] = useState<string | null>(null);
+  const send = (kind: "good" | "wrong_type" | "wrong_category" | "should_not_create") => {
+    const summary = actions.map((a) => labelFor(a)).join(" | ");
+    if (kind === "good") {
+      recordFeedback({
+        kind: "preference",
+        text: `Usuário confirmou que ficou bom: ${summary}`,
+        rule: `Continuar usando o mesmo estilo de extração para entradas semelhantes.`,
+        confidence: 0.5,
+      });
+    } else if (kind === "wrong_category") {
+      recordFeedback({
+        kind: "category_rule",
+        text: `Categoria errada em: ${summary}`,
+        rule: `Revisar a escolha de tag para itens parecidos com "${summary}".`,
+        confidence: 0.65,
+      });
+    } else if (kind === "wrong_type") {
+      recordFeedback({
+        kind: "correction",
+        text: `Tipo errado (task/list/note) em: ${summary}`,
+        rule: `Reclassificar tipo para entradas parecidas com "${summary}".`,
+        confidence: 0.7,
+      });
+    } else {
+      recordFeedback({
+        kind: "rejection",
+        text: `Usuário não queria que fosse criado: ${summary}`,
+        rule: `Não criar automaticamente itens com título parecido a "${summary}".`,
+        confidence: 0.75,
+      });
+    }
+    setSent(kind);
+    toast.success("Feedback registrado");
+  };
+  if (sent) {
+    return (
+      <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+        Obrigado — o Hermes aprendeu.
+      </p>
+    );
+  }
+  const chip = "text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md ring-1 active:scale-95";
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      <button onClick={() => send("good")} className={`${chip} bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 inline-flex items-center gap-1`}>
+        <ThumbsUp className="size-3" /> Ficou bom
+      </button>
+      <button onClick={() => send("wrong_category")} className={`${chip} bg-secondary text-foreground ring-black/5`}>
+        Categoria errada
+      </button>
+      <button onClick={() => send("wrong_type")} className={`${chip} bg-secondary text-foreground ring-black/5`}>
+        Tipo errado
+      </button>
+      <button onClick={() => send("should_not_create")} className={`${chip} bg-destructive/10 text-destructive ring-destructive/20 inline-flex items-center gap-1`}>
+        <ThumbsDown className="size-3" /> Não criar
+      </button>
+    </div>
+  );
+}
