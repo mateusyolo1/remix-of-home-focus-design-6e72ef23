@@ -468,72 +468,117 @@
 }
 
 /* ============================================
-   Liquid Glass — inspired by archisvaze/liquid-glass
-   Translucent surfaces with backdrop blur over a
-   vivid gradient background. Standard backdrop-filter
-   only (Lightning CSS adds prefixes).
+   Liquid Glass — iOS 26 style, inspired by
+   archisvaze/liquid-glass. Uses an SVG
+   feDisplacementMap filter (#liquid-glass)
+   defined in __root.tsx for true refraction
+   on Chromium, plus backdrop-blur, glossy
+   inset highlight and chunky outer shadow.
    ============================================ */
 :root[data-palette="liquid"] {
   --background: oklch(0.97 0.02 260);
-  --foreground: oklch(0.2 0.05 270);
-  --card: oklch(1 0 0 / 55%);
-  --card-foreground: oklch(0.2 0.05 270);
-  --popover: oklch(1 0 0 / 80%);
-  --popover-foreground: oklch(0.2 0.05 270);
+  --foreground: oklch(0.18 0.05 270);
+  --card: oklch(1 0 0 / 35%);
+  --card-foreground: oklch(0.18 0.05 270);
+  --popover: oklch(1 0 0 / 75%);
+  --popover-foreground: oklch(0.18 0.05 270);
   --primary: oklch(0.55 0.22 275);
   --primary-foreground: oklch(0.98 0.01 260);
-  --secondary: oklch(1 0 0 / 45%);
-  --secondary-foreground: oklch(0.2 0.05 270);
-  --muted: oklch(1 0 0 / 35%);
-  --muted-foreground: oklch(0.45 0.05 270);
-  --accent: oklch(0.65 0.2 320);
+  --secondary: oklch(1 0 0 / 32%);
+  --secondary-foreground: oklch(0.18 0.05 270);
+  --muted: oklch(1 0 0 / 22%);
+  --muted-foreground: oklch(0.4 0.05 270);
+  --accent: oklch(0.6 0.22 320);
   --accent-foreground: oklch(0.98 0.01 260);
-  --border: oklch(1 0 0 / 40%);
+  --border: oklch(1 0 0 / 55%);
   --input: oklch(1 0 0 / 50%);
   --ring: oklch(0.55 0.22 275);
 }
 .dark[data-palette="liquid"] {
-  --background: oklch(0.18 0.06 270);
+  --background: oklch(0.16 0.06 270);
   --foreground: oklch(0.97 0.02 260);
-  --card: oklch(1 0 0 / 12%);
+  --card: oklch(1 0 0 / 10%);
   --card-foreground: oklch(0.97 0.02 260);
-  --popover: oklch(0.22 0.05 270 / 85%);
+  --popover: oklch(0.22 0.05 270 / 80%);
   --popover-foreground: oklch(0.97 0.02 260);
   --primary: oklch(0.72 0.2 275);
-  --primary-foreground: oklch(0.18 0.06 270);
-  --secondary: oklch(1 0 0 / 10%);
+  --primary-foreground: oklch(0.16 0.06 270);
+  --secondary: oklch(1 0 0 / 8%);
   --secondary-foreground: oklch(0.97 0.02 260);
-  --muted: oklch(1 0 0 / 8%);
+  --muted: oklch(1 0 0 / 6%);
   --muted-foreground: oklch(0.78 0.04 270);
   --accent: oklch(0.78 0.18 320);
-  --accent-foreground: oklch(0.18 0.06 270);
-  --border: oklch(1 0 0 / 18%);
+  --accent-foreground: oklch(0.16 0.06 270);
+  --border: oklch(1 0 0 / 22%);
   --input: oklch(1 0 0 / 20%);
   --ring: oklch(0.72 0.2 275);
 }
 
 html[data-palette="liquid"] body {
   background-image:
-    radial-gradient(at 18% 12%, oklch(0.78 0.18 320 / 0.55), transparent 55%),
-    radial-gradient(at 82% 18%, oklch(0.78 0.18 220 / 0.55), transparent 55%),
-    radial-gradient(at 30% 92%, oklch(0.78 0.18 275 / 0.55), transparent 55%),
-    radial-gradient(at 88% 80%, oklch(0.78 0.18 30 / 0.45), transparent 55%);
+    radial-gradient(at 15% 10%, oklch(0.75 0.22 320 / 0.7), transparent 50%),
+    radial-gradient(at 85% 15%, oklch(0.78 0.2 220 / 0.7), transparent 50%),
+    radial-gradient(at 25% 90%, oklch(0.7 0.22 275 / 0.7), transparent 50%),
+    radial-gradient(at 90% 80%, oklch(0.78 0.2 30 / 0.6), transparent 50%),
+    radial-gradient(at 55% 50%, oklch(0.85 0.18 145 / 0.45), transparent 55%);
   background-attachment: fixed;
 }
 html[data-palette="liquid"].dark body {
   background-image:
-    radial-gradient(at 18% 12%, oklch(0.5 0.22 320 / 0.55), transparent 55%),
-    radial-gradient(at 82% 18%, oklch(0.5 0.22 220 / 0.55), transparent 55%),
-    radial-gradient(at 30% 92%, oklch(0.5 0.22 275 / 0.6), transparent 55%),
-    radial-gradient(at 88% 80%, oklch(0.55 0.22 30 / 0.45), transparent 55%);
+    radial-gradient(at 15% 10%, oklch(0.5 0.25 320 / 0.7), transparent 50%),
+    radial-gradient(at 85% 15%, oklch(0.5 0.22 220 / 0.7), transparent 50%),
+    radial-gradient(at 25% 90%, oklch(0.5 0.25 275 / 0.75), transparent 50%),
+    radial-gradient(at 90% 80%, oklch(0.55 0.22 30 / 0.55), transparent 50%),
+    radial-gradient(at 55% 50%, oklch(0.55 0.2 145 / 0.4), transparent 55%);
   background-attachment: fixed;
 }
+
+/* Glass surfaces — true iOS 26 Liquid Glass look */
 html[data-palette="liquid"] .bg-card,
 html[data-palette="liquid"] .bg-popover,
 html[data-palette="liquid"] .bg-secondary,
 html[data-palette="liquid"] .bg-muted {
-  backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid var(--border);
+  position: relative;
+  isolation: isolate;
+  backdrop-filter: url(#liquid-glass) blur(8px) saturate(180%) brightness(1.05);
+  border: 1px solid oklch(1 0 0 / 0.45);
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.6),
+    inset 0 -1px 0 0 oklch(1 0 0 / 0.18),
+    inset 0 0 24px -6px oklch(1 0 0 / 0.35),
+    0 8px 24px -6px oklch(0.2 0.05 270 / 0.25),
+    0 2px 6px -2px oklch(0.2 0.05 270 / 0.18);
+}
+/* Glossy specular highlight along the top edge */
+html[data-palette="liquid"] .bg-card::before,
+html[data-palette="liquid"] .bg-popover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, oklch(1 0 0 / 0.55) 0%, oklch(1 0 0 / 0.08) 22%, transparent 45%),
+    linear-gradient(0deg, oklch(1 0 0 / 0.18) 0%, transparent 30%);
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+html[data-palette="liquid"] .bg-card > *,
+html[data-palette="liquid"] .bg-popover > * {
+  position: relative;
+  z-index: 1;
+}
+html[data-palette="liquid"].dark .bg-card,
+html[data-palette="liquid"].dark .bg-popover,
+html[data-palette="liquid"].dark .bg-secondary,
+html[data-palette="liquid"].dark .bg-muted {
+  border: 1px solid oklch(1 0 0 / 0.22);
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.35),
+    inset 0 -1px 0 0 oklch(0 0 0 / 0.25),
+    inset 0 0 24px -6px oklch(1 0 0 / 0.18),
+    0 10px 28px -6px oklch(0 0 0 / 0.55),
+    0 2px 8px -2px oklch(0 0 0 / 0.4);
 }
 
 
