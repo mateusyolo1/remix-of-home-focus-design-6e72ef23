@@ -573,12 +573,14 @@ function Index() {
 
           {tab === "Listas" && (
             <ul className="space-y-3">
-              {lists.length === 0 && (
+              {lists.filter((l) => !l.completedAt).length === 0 && (
                 <li className="text-center text-xs text-muted-foreground py-4">
                   Nenhuma lista. Peça ao Hermes: “lista de compras: tomate, cebola”.
                 </li>
               )}
-              {lists.map((l) => (
+              {lists.filter((l) => !l.completedAt).map((l) => {
+                const allDone = l.items.length > 0 && l.items.every((i) => i.done);
+                return (
                 <li key={l.id} className="p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
