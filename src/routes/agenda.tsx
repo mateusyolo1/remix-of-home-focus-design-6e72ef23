@@ -88,6 +88,8 @@ function AgendaPage() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
+  const [dayPreview, setDayPreview] = useState<Date | null>(null);
+  const [blockPreview, setBlockPreview] = useState<Block | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [hasMoreRight, setHasMoreRight] = useState(false);
   const importantDates = useMemo(() => getImportantDates(blocks), [blocks]);
@@ -140,12 +142,12 @@ function AgendaPage() {
 
   const lpTimer = useRef<number | null>(null);
   const lpFired = useRef(false);
-  const startLP = () => {
+  const startLP = (cb: () => void) => {
     lpFired.current = false;
     if (lpTimer.current) window.clearTimeout(lpTimer.current);
     lpTimer.current = window.setTimeout(() => {
       lpFired.current = true;
-      setCalendarOpen(true);
+      cb();
     }, 450);
   };
   const cancelLP = () => {
@@ -155,25 +157,21 @@ function AgendaPage() {
     }
   };
 
+  const blocksForDate = (d: Date) =>
+    blocks.filter((b) => blockDateKey(b) === dateKey(d));
+
+
   return (
     <>
       <PageHeader eyebrow="Sua semana" title="Agenda" />
       <main className="px-6 space-y-6">
-        <section
-          className="bg-card rounded-2xl p-3 ring-1 ring-black/5 select-none"
-          onPointerDown={startLP}
-          onPointerUp={cancelLP}
-          onPointerLeave={cancelLP}
-          onPointerCancel={cancelLP}
-          onContextMenu={(e) => e.preventDefault()}
-        >
+        <section className="bg-card rounded-2xl p-3 ring-1 ring-black/5 select-none">
           <div className="flex items-center justify-between px-1 mb-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               {selectedDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
             </p>
             <button
               type="button"
-              onPointerDown={(e) => e.stopPropagation()}
               onClick={() => setCalendarOpen(true)}
               className="text-[10px] font-medium text-accent inline-flex items-center gap-1 active:scale-95"
               aria-label="Abrir calendário completo"
@@ -190,7 +188,14 @@ function AgendaPage() {
               return (
                 <button
                   key={d.toISOString()}
-                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerDown={() => startLP(() => setDayPreview(d))}
+                  onPointerUp={cancelLP}
+                  onPointerLeave={cancelLP}
+                  onPointerCancel={cancelLP}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setDayPreview(d);
+                  }}
                   onClick={() => {
                     if (lpFired.current) return;
                     setSelectedDate(d);
@@ -234,9 +239,10 @@ function AgendaPage() {
             })}
           </div>
           <p className="text-[10px] text-muted-foreground text-center mt-2 opacity-70">
-            Segure para abrir o mês inteiro
+            Toque para selecionar · segure para ver o que tem no dia
           </p>
         </section>
+
 
         <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
           <Search className="size-4 ml-2 text-muted-foreground" />
@@ -326,7 +332,18 @@ function AgendaPage() {
               <button
                 type="button"
                 aria-label={`Abrir notas de ${b.title}`}
-                onClick={() => setEditing(b)}
+                onPointerDown={() => startLP(() => setBlockPreview(b))}
+                onPointerUp={cancelLP}
+                onPointerLeave={cancelLP}
+                onPointerCancel={cancelLP}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setBlockPreview(b);
+                }}
+                onClick={() => {
+                  if (lpFired.current) return;
+                  setEditing(b);
+                }}
                 className={[
                   "flex-1 text-left p-4 bg-card rounded-xl ring-1 ring-black/5 border-l-2 active:scale-[0.99] transition-transform",
                   b.priority === "important" ? "border-destructive" : "border-foreground/70",
@@ -379,6 +396,34 @@ function AgendaPage() {
             addBlock(b);
             setSelectedDate(new Date(b.date + "T00:00:00"));
             setNewOpen(false);
+          }}
+        />
+      )}
+
+      {dayPreview && (
+        <DayPreviewModal
+          date={dayPreview}
+          blocks={blocksForDate(dayPreview)}
+          onClose={() => setDayPreview(null)}
+          onOpenDay={() => {
+            setSelectedDate(dayPreview);
+            setDayPreview(null);
+          }}
+          onOpenBlock={(b) => {
+            setDayPreview(null);
+            setEditing(b);
+          }}
+        />
+      )}
+
+      {blockPreview && (
+        <BlockPreviewModal
+          block={blockPreview}
+          onClose={() => setBlockPreview(null)}
+          onOpen={() => {
+            const b = blockPreview;
+            setBlockPreview(null);
+            setEditing(b);
           }}
         />
       )}
@@ -798,4 +843,164 @@ function ToolbarBtn({
 
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
+}
+
+function DayPreviewModal({
+  date,
+  blocks,
+  onClose,
+  onOpenDay,
+  onOpenBlock,
+}: {
+  date: Date;
+  blocks: Block[];
+  onClose: () => void;
+  onOpenDay: () => void;
+  onOpenBlock: (b: Block) => void;
+}) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const sorted = [...blocks].sort((a, b) => a.time.localeCompare(b.time));
+  const label = date.toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[80dvh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Pré-visualização</p>
+            <p className="text-sm font-semibold capitalize">{label}</p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="size-9 rounded-full bg-secondary grid place-items-center active:scale-95"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {sorted.length === 0 && (
+            <p className="text-center text-sm text-muted-foreground py-8">
+              Nenhum bloco para este dia.
+            </p>
+          )}
+          {sorted.map((b) => (
+            <button
+              key={b.time + b.title}
+              type="button"
+              onClick={() => onOpenBlock(b)}
+              className="w-full text-left flex gap-3 items-start p-3 rounded-xl bg-secondary/60 ring-1 ring-black/5 active:scale-[0.99]"
+            >
+              <span className="text-xs font-semibold w-12 pt-0.5 tabular-nums text-muted-foreground">
+                {b.time}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p
+                  className={[
+                    "text-[10px] font-semibold uppercase tracking-widest",
+                    b.priority === "important" ? "text-destructive" : "text-accent",
+                  ].join(" ")}
+                >
+                  {b.tag}
+                  {b.priority === "important" ? " · importante" : ""}
+                </p>
+                <p className="text-sm font-medium mt-0.5 truncate">{b.title}</p>
+                {b.notes && (
+                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                    {b.notes.replace(/<[^>]+>/g, "").trim()}
+                  </p>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="p-4 border-t border-border">
+          <button
+            type="button"
+            onClick={onOpenDay}
+            className="w-full bg-foreground text-background rounded-lg py-2.5 text-sm font-semibold active:scale-[0.99]"
+          >
+            Abrir este dia
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BlockPreviewModal({
+  block,
+  onClose,
+  onOpen,
+}: {
+  block: Block;
+  onClose: () => void;
+  onOpen: () => void;
+}) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const notesText = (block.notes ?? "").replace(/<[^>]+>/g, "").trim();
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl animate-in slide-in-from-bottom duration-200">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {block.time}
+              {block.date ? ` · ${block.date}` : ""}
+            </p>
+            <p
+              className={[
+                "text-[10px] font-semibold uppercase tracking-widest",
+                block.priority === "important" ? "text-destructive" : "text-accent",
+              ].join(" ")}
+            >
+              {block.tag}
+              {block.priority === "important" ? " · importante" : ""}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="size-9 rounded-full bg-secondary grid place-items-center active:scale-95"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="p-5 space-y-3">
+          <h3 className="text-lg font-semibold leading-tight">{block.title}</h3>
+          {notesText ? (
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{notesText}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">Sem notas neste bloco ainda.</p>
+          )}
+          <button
+            type="button"
+            onClick={onOpen}
+            className="w-full bg-foreground text-background rounded-lg py-2.5 text-sm font-semibold active:scale-[0.99]"
+          >
+            Abrir e editar notas
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

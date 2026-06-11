@@ -162,8 +162,32 @@ function EditarPerfil() {
           <ArrowLeft className="size-3.5" /> Voltar
         </Link>
 
+        {/* Atalhos de navegação dentro da página */}
+        <nav className="-mx-6 px-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="flex gap-2 w-max">
+            {[
+              { href: "#identidade", label: "Identidade" },
+              { href: "#escala", label: "Escala" },
+              { href: "#local", label: "Localização" },
+              { href: "#trabalho", label: "Trabalho" },
+              { href: "#sobre", label: "Sobre você" },
+              { href: "#agentes", label: "Agentes" },
+            ].map((s) => (
+              <li key={s.href}>
+                <a
+                  href={s.href}
+                  className="inline-block px-3 py-1.5 rounded-full text-[11px] font-semibold bg-secondary text-foreground ring-1 ring-black/5"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+
         {/* Identidade */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section id="identidade" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <SectionLabel>Identidade</SectionLabel>
           <Field label="Nome completo">
             <Input value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })} placeholder="Seu nome" />
@@ -188,7 +212,7 @@ function EditarPerfil() {
         </section>
 
         {/* Localização */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-3">
+        <section id="local" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-3">
           <SectionLabel>Localização (clima e fuso)</SectionLabel>
           <button
             type="button"
@@ -220,7 +244,7 @@ function EditarPerfil() {
         </section>
 
         {/* Trabalho */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section id="trabalho" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <SectionLabel>Trabalho</SectionLabel>
           <Field label="Função / cargo">
             <Input
@@ -273,13 +297,16 @@ function EditarPerfil() {
         </section>
 
         {/* Escala de trabalho */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
+        <section id="escala" className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
           <div className="flex items-center justify-between mb-3">
             <SectionLabel>Escala de trabalho</SectionLabel>
             <p className="text-[10px] text-muted-foreground tabular-nums">
               {total.toFixed(1)}h por semana
             </p>
           </div>
+          <p className="text-[11px] text-muted-foreground mb-3">
+            Liga/desliga por dia, defina turnos e a pausa aparece automaticamente entre eles.
+          </p>
           <ul className="space-y-3">
             {DAYS.map(({ key, label }) => {
               const day = draft.schedule[key];
@@ -316,38 +343,82 @@ function EditarPerfil() {
                           Nenhum turno. Adicione um abaixo.
                         </p>
                       )}
-                      {day.shifts.map((s, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <input
-                            type="time"
-                            value={s.start}
-                            onChange={(e) => updateShift(key, idx, { start: e.target.value })}
-                            className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
-                          />
-                          <span className="text-xs text-muted-foreground">—</span>
-                          <input
-                            type="time"
-                            value={s.end}
-                            onChange={(e) => updateShift(key, idx, { end: e.target.value })}
-                            className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeShift(key, idx)}
-                            aria-label="Remover turno"
-                            className="ml-auto size-8 rounded-md grid place-items-center text-muted-foreground hover:bg-background"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => addShift(key)}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent"
-                      >
-                        <Plus className="size-3.5" /> Adicionar turno
-                      </button>
+                      {day.shifts.map((s, idx) => {
+                        const prev = day.shifts[idx - 1];
+                        let pauseLabel: string | null = null;
+                        if (prev) {
+                          const [ph, pm] = prev.end.split(":").map(Number);
+                          const [sh, sm] = s.start.split(":").map(Number);
+                          const diff = sh * 60 + sm - (ph * 60 + pm);
+                          if (diff > 0) {
+                            const h = Math.floor(diff / 60);
+                            const m = diff % 60;
+                            pauseLabel = `${h ? `${h}h` : ""}${m ? ` ${m}min` : ""}`.trim();
+                          }
+                        }
+                        return (
+                          <div key={idx}>
+                            {pauseLabel && (
+                              <div className="flex items-center gap-2 my-1 pl-1">
+                                <span className="h-px flex-1 bg-border" />
+                                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                  Pausa · {pauseLabel}
+                                </span>
+                                <span className="h-px flex-1 bg-border" />
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] uppercase tracking-widest text-muted-foreground w-8">
+                                {idx === 0 ? "Início" : idx === 1 ? "Tarde" : `T${idx + 1}`}
+                              </span>
+                              <input
+                                type="time"
+                                value={s.start}
+                                onChange={(e) => updateShift(key, idx, { start: e.target.value })}
+                                className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+                              />
+                              <span className="text-xs text-muted-foreground">—</span>
+                              <input
+                                type="time"
+                                value={s.end}
+                                onChange={(e) => updateShift(key, idx, { end: e.target.value })}
+                                className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeShift(key, idx)}
+                                aria-label="Remover turno"
+                                className="ml-auto size-8 rounded-md grid place-items-center text-muted-foreground hover:bg-background"
+                              >
+                                <Trash2 className="size-4" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                        <button
+                          type="button"
+                          onClick={() => addShift(key)}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent"
+                        >
+                          <Plus className="size-3.5" /> Adicionar turno
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            patchDay(key, {
+                              shifts: [
+                                { start: "08:00", end: "12:00" },
+                                { start: "13:00", end: "17:00" },
+                              ],
+                            })
+                          }
+                          className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-2 py-1 rounded-md bg-background ring-1 ring-black/5"
+                        >
+                          Aplicar 08–12 · 13–17
+                        </button>
+                      </div>
                     </div>
                   )}
                 </li>
@@ -357,7 +428,7 @@ function EditarPerfil() {
         </section>
 
         {/* Sobre você (dossiê IA) */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section id="sobre" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <div className="flex items-start gap-2">
             <Sparkles className="size-4 text-accent mt-0.5" />
             <div>
@@ -542,7 +613,7 @@ function EditarPerfil() {
         </section>
 
         {/* Meus Agentes — router */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section id="agentes" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <div className="flex items-start gap-2">
             <Sparkles className="size-4 text-accent mt-0.5" />
             <div>
