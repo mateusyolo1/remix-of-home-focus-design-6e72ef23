@@ -204,7 +204,7 @@ function ChatPage() {
         <div ref={bottomRef} />
       </main>
 
-      <div className="fixed bottom-28 inset-x-0 px-4 z-30">
+      <div className="fixed bottom-20 inset-x-0 px-4 z-30">
         <form
           onSubmit={(e) => {
             e.preventDefault();
