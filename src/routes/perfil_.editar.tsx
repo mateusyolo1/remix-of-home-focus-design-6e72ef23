@@ -330,8 +330,8 @@ function EditarPerfil() {
                     >
                       <span
                         className={[
-                          "absolute top-0.5 size-5 rounded-full bg-card shadow transition-transform",
-                          day.enabled ? "translate-x-[22px]" : "translate-x-0.5",
+                          "absolute left-0 top-0.5 size-5 rounded-full bg-card shadow transition-transform",
+                          day.enabled ? "translate-x-5" : "translate-x-0.5",
                         ].join(" ")}
                       />
                     </button>
@@ -660,8 +660,8 @@ function EditarPerfil() {
                   >
                     <span
                       className={[
-                        "absolute top-0.5 size-5 rounded-full bg-card shadow transition-transform",
-                        sub.enabled ? "translate-x-[22px]" : "translate-x-0.5",
+                        "absolute left-0 top-0.5 size-5 rounded-full bg-card shadow transition-transform",
+                        sub.enabled ? "translate-x-5" : "translate-x-0.5",
                       ].join(" ")}
                     />
                   </button>
