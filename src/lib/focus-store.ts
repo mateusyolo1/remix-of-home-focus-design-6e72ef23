@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { logActivity } from "@/lib/activity-log";
+
 
 export type ActiveTask = {
   time: string;
