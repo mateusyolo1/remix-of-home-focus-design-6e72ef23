@@ -187,7 +187,7 @@ function EditarPerfil() {
 
 
         {/* Identidade */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section id="identidade" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <SectionLabel>Identidade</SectionLabel>
           <Field label="Nome completo">
             <Input value={draft.name} onChange={(v) => setDraft({ ...draft, name: v })} placeholder="Seu nome" />
