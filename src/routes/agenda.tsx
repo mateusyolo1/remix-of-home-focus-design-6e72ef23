@@ -447,8 +447,10 @@ function FullCalendarModal({
 }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
     };
   }, []);
 
@@ -504,8 +506,10 @@ function NewBlockModal({
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
     };
   }, []);
 
@@ -619,9 +623,11 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
     };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
     };
   }, [onClose]);
 
@@ -860,8 +866,10 @@ function DayPreviewModal({
 }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
     };
   }, []);
 
@@ -950,8 +958,10 @@ function BlockPreviewModal({
 }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
+    document.body.classList.add("modal-open");
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
     };
   }, []);
 
