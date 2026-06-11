@@ -52,6 +52,7 @@ export function AppShell() {
   const recogRef = useRef<SpeechRecognitionLike | null>(null);
   useAlarmRunner();
   useHermesTracker();
+  useNotificationSystem();
 
   useEffect(() => {
     return () => {
