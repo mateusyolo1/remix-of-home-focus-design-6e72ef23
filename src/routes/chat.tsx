@@ -28,6 +28,20 @@ const GREETING: UiMsg = {
     "Oi, sou o Hermes. Fale naturalmente — eu divido em partes e mando para a Agenda, Timer ou Home. Ex.: \"amanhã 14h reunião com João, depois 25min de foco e me lembra de comprar pão\".",
 };
 
+const STORAGE_KEY = "fm.hermes.chat";
+
+function loadMessages(): UiMsg[] {
+  if (typeof window === "undefined") return [GREETING];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [GREETING];
+    const parsed = JSON.parse(raw) as UiMsg[];
+    return Array.isArray(parsed) && parsed.length ? parsed : [GREETING];
+  } catch {
+    return [GREETING];
+  }
+}
+
 function ChatPage() {
   const [config] = useAgentConfig();
   const [messages, setMessages] = useState<UiMsg[]>([GREETING]);
@@ -38,9 +52,35 @@ function ChatPage() {
   const [profile] = useProfile();
   const execute = useExecuteActions();
 
+  // Hydrate from localStorage after mount (avoids SSR mismatch).
+  useEffect(() => {
+    setMessages(loadMessages());
+  }, []);
+
+  // Persist on every change.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch {
+      /* quota or serialize errors are non-fatal */
+    }
+  }, [messages]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  const clearHistory = () => {
+    setMessages([GREETING]);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
+    toast.success("Conversa limpa");
+  };
+
 
   const hasKey =
     (config.provider === "gemini" && config.geminiKey) ||
@@ -78,7 +118,7 @@ function ChatPage() {
     <div className="flex flex-col min-h-screen">
       <PageHeader eyebrow="Agente" title="Hermes IA" />
 
-      <div className="px-6 mb-3">
+      <div className="px-6 mb-3 flex items-center justify-between gap-2">
         <Link
           to="/perfil/editar"
           className="inline-flex items-center gap-2 text-[11px] uppercase tracking-widest font-semibold text-accent bg-card px-3 py-2 rounded-full ring-1 ring-black/5"
@@ -86,7 +126,17 @@ function ChatPage() {
           <Settings2 className="size-3.5" />
           {config.provider === "gemini" ? "Gemini" : "DeepSeek"} · {config.model}
         </Link>
+        {messages.length > 1 && (
+          <button
+            type="button"
+            onClick={clearHistory}
+            className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground bg-secondary px-3 py-2 rounded-full ring-1 ring-black/5 active:scale-95"
+          >
+            Limpar
+          </button>
+        )}
       </div>
+
 
       {!hasKey && (
         <div className="mx-6 mb-3 p-3 rounded-xl bg-destructive/10 ring-1 ring-destructive/30 text-xs text-destructive flex items-start gap-2">
