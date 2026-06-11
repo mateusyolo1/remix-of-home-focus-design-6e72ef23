@@ -181,7 +181,7 @@ export function useTasks() {
   const [tasks, setTasks] = useStoreValue<Task[]>(KEY_TASKS, SEED_TASKS);
   const add = (title: string, blockTime?: string, tag?: TaskTag): Task => {
     const t: Task = { id: uid(), title, done: false, blockTime, tag, createdAt: new Date().toISOString() };
-    setTasks([...tasks, t]);
+    setTasks((prev) => [...prev, t]);
     const detail = [blockTime ? `bloco ${blockTime}` : null, tag ? TASK_TAG_LABEL[tag] : null]
       .filter(Boolean)
       .join(" · ");
@@ -190,15 +190,15 @@ export function useTasks() {
   };
   const toggle = (id: string) => {
     const target = tasks.find((t) => t.id === id);
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
     if (target && !target.done)
       logActivity({ kind: "task_done", title: target.title, tag: target.tag });
   };
-  const remove = (id: string) => setTasks(tasks.filter((t) => t.id !== id));
+  const remove = (id: string) => setTasks((prev) => prev.filter((t) => t.id !== id));
   const update = (id: string, patch: Partial<Task>) =>
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   const toggleImportant = (id: string) =>
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, important: !t.important } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, important: !t.important } : t)));
   return { tasks, add, toggle, remove, update, toggleImportant, setTasks };
 }
 
