@@ -37,6 +37,8 @@ function Index() {
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("Tarefas");
   const [newTask, setNewTask] = useState("");
+  const [newTaskTag, setNewTaskTag] = useState<TaskTag>("trabalho");
+
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
   const [newListItem, setNewListItem] = useState<Record<string, string>>({});
