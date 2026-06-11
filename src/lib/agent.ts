@@ -1,11 +1,12 @@
 import type { AgentConfig } from "./agent-store";
+import type { TaskTag } from "./focus-store";
 import { runOrchestrator, type OrchestratorResult, type RoutedAction } from "./agents/orchestrator";
 
 export type AgentAction =
-  | { type: "create_task"; title: string; blockTime?: string }
+  | { type: "create_task"; title: string; blockTime?: string; tag?: TaskTag; important?: boolean }
   | { type: "create_block"; time: string; title: string; tag?: string; date?: string; notes?: string }
   | { type: "create_note"; title: string; body?: string; ttlDays?: number }
-  | { type: "create_list"; title: string; items: string[] }
+  | { type: "create_list"; title: string; items: string[]; tag?: TaskTag }
   | { type: "start_timer"; minutes: number; title?: string };
 
 export type AgentResult = { reply: string; actions: AgentAction[] };
