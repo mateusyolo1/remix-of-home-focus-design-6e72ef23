@@ -45,6 +45,8 @@ export function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onChat = pathname === "/chat";
   const onHome = pathname === "/";
+  const homeTab = useHomeTab();
+  const micSlot = onHome && homeTab === "Notas";
   const [config] = useAgentConfig();
   const [profile] = useProfile();
   const execute = useExecuteActions();
