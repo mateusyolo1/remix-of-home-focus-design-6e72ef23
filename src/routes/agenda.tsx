@@ -165,21 +165,13 @@ function AgendaPage() {
     <>
       <PageHeader eyebrow="Sua semana" title="Agenda" />
       <main className="px-6 space-y-6">
-        <section
-          className="bg-card rounded-2xl p-3 ring-1 ring-black/5 select-none"
-          onPointerDown={startLP}
-          onPointerUp={cancelLP}
-          onPointerLeave={cancelLP}
-          onPointerCancel={cancelLP}
-          onContextMenu={(e) => e.preventDefault()}
-        >
+        <section className="bg-card rounded-2xl p-3 ring-1 ring-black/5 select-none">
           <div className="flex items-center justify-between px-1 mb-2">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               {selectedDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
             </p>
             <button
               type="button"
-              onPointerDown={(e) => e.stopPropagation()}
               onClick={() => setCalendarOpen(true)}
               className="text-[10px] font-medium text-accent inline-flex items-center gap-1 active:scale-95"
               aria-label="Abrir calendário completo"
@@ -196,7 +188,14 @@ function AgendaPage() {
               return (
                 <button
                   key={d.toISOString()}
-                  onPointerDown={(e) => e.stopPropagation()}
+                  onPointerDown={() => startLP(() => setDayPreview(d))}
+                  onPointerUp={cancelLP}
+                  onPointerLeave={cancelLP}
+                  onPointerCancel={cancelLP}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setDayPreview(d);
+                  }}
                   onClick={() => {
                     if (lpFired.current) return;
                     setSelectedDate(d);
@@ -240,9 +239,10 @@ function AgendaPage() {
             })}
           </div>
           <p className="text-[10px] text-muted-foreground text-center mt-2 opacity-70">
-            Segure para abrir o mês inteiro
+            Toque para selecionar · segure para ver o que tem no dia
           </p>
         </section>
+
 
         <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
           <Search className="size-4 ml-2 text-muted-foreground" />
