@@ -142,12 +142,12 @@ function AgendaPage() {
 
   const lpTimer = useRef<number | null>(null);
   const lpFired = useRef(false);
-  const startLP = () => {
+  const startLP = (cb: () => void) => {
     lpFired.current = false;
     if (lpTimer.current) window.clearTimeout(lpTimer.current);
     lpTimer.current = window.setTimeout(() => {
       lpFired.current = true;
-      setCalendarOpen(true);
+      cb();
     }, 450);
   };
   const cancelLP = () => {
@@ -156,6 +156,10 @@ function AgendaPage() {
       lpTimer.current = null;
     }
   };
+
+  const blocksForDate = (d: Date) =>
+    blocks.filter((b) => blockDateKey(b) === dateKey(d));
+
 
   return (
     <>
