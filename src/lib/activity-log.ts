@@ -139,4 +139,5 @@ export const ACTIVITY_LABEL: Record<ActivityKind, string> = {
   list: "Lista criada",
   list_item_done: "Item concluído",
   block: "Bloco agendado",
+  focus: "Sessão de foco",
 };
