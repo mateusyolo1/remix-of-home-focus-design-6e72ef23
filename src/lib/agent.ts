@@ -3,7 +3,17 @@ import type { TaskTag } from "./focus-store";
 import { runOrchestrator, type OrchestratorResult, type RoutedAction } from "./agents/orchestrator";
 
 export type AgentAction =
-  | { type: "create_task"; title: string; blockTime?: string; tag?: TaskTag; important?: boolean }
+  | {
+      type: "create_task";
+      title: string;
+      blockTime?: string;
+      tag?: TaskTag;
+      important?: boolean;
+      /** ISO date string (UTC) ou epoch ms — prazo da tarefa. */
+      dueAt?: string | number;
+      /** ISO ou epoch — momento específico para lembrar. */
+      reminderAt?: string | number;
+    }
   | { type: "create_block"; time: string; title: string; tag?: string; date?: string; notes?: string }
   | { type: "create_note"; title: string; body?: string; ttlDays?: number }
   | { type: "create_list"; title: string; items: string[]; tag?: TaskTag }
