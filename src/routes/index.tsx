@@ -291,7 +291,7 @@ function Index() {
                         aria-label="Concluir"
                         className={[
                           "size-5 shrink-0 rounded-md grid place-items-center ring-1 transition-colors",
-                          t.done ? "bg-foreground text-background ring-foreground" : "bg-background ring-border",
+                          t.done ? "bg-foreground text-background ring-foreground" : "bg-background ring-foreground/30",
                         ].join(" ")}
                       >
                         {t.done && <Check className="size-3" />}
