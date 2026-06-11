@@ -731,7 +731,7 @@ function EditarPerfil() {
         </section>
       </main>
 
-      <div className="fixed bottom-20 left-0 right-0 px-6 z-40">
+      <div className="fixed bottom-24 left-0 right-0 px-6 z-[55] [body.modal-open_&]:translate-y-full [body.modal-open_&]:pointer-events-none transition-transform duration-200">
         <button
           onClick={save}
           className="w-full max-w-md mx-auto block bg-foreground text-background rounded-xl py-3.5 text-sm font-semibold shadow-lg active:scale-[0.99] transition-transform"
