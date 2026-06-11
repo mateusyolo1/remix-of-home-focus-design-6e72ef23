@@ -201,7 +201,8 @@ export async function runHome(
   sub: SubAgentConfig,
   profileContext?: string,
 ): Promise<AgentAction[]> {
-  const system = `${BASE}${profileContext ? `\n\n${profileContext.trim()}` : ""}${sub.prompt.trim() ? `\n\nInstruções pessoais do usuário para este agente:\n${sub.prompt.trim()}` : ""}`;
+  const learned = getHermesLearningContext(segmentText);
+  const system = `${BASE}${profileContext ? `\n\n${profileContext.trim()}` : ""}${learned ? `\n\n${learned}` : ""}${sub.prompt.trim() ? `\n\nInstruções pessoais do usuário para este agente:\n${sub.prompt.trim()}` : ""}`;
   const text = await callLlm(config, system, [{ role: "user", content: segmentText }], {
     jsonObject: true,
     temperature: 0.1,
