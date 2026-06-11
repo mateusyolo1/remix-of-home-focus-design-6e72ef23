@@ -168,40 +168,42 @@ function ChatPage() {
         </div>
       )}
 
-      <main ref={scrollRef} className="flex-1 px-6 space-y-3 pb-40 overflow-y-auto">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={[
-              "max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ring-1 ring-black/5 whitespace-pre-wrap",
-              m.role === "assistant"
-                ? "bg-card text-foreground rounded-bl-sm"
-                : "bg-foreground text-background ml-auto rounded-br-sm",
-            ].join(" ")}
-          >
-            {m.role === "assistant" && (
-              <div className="flex items-center gap-1.5 mb-1.5 text-[10px] uppercase tracking-widest text-accent font-semibold">
-                <Sparkles className="size-3" /> Hermes
-              </div>
-            )}
-            {m.content}
-            {m.routed && m.routed.length > 0 && (
-              <ul className="mt-2 flex flex-wrap gap-1.5">
-                {m.routed.map((a, j) => (
-                  <li key={j}>
-                    <RoutedBadge action={a} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
-        {loading && (
-          <div className="max-w-[85%] p-4 rounded-2xl bg-card ring-1 ring-black/5 text-sm text-muted-foreground">
-            Hermes está roteando…
-          </div>
-        )}
-        <div ref={bottomRef} />
+      <main ref={scrollRef} className="flex-1 px-6 pb-44 overflow-y-auto">
+        <div className="min-h-full flex flex-col justify-end gap-3">
+          {messages.map((m, i) => (
+            <div
+              key={i}
+              className={[
+                "max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ring-1 ring-black/5 whitespace-pre-wrap",
+                m.role === "assistant"
+                  ? "bg-card text-foreground rounded-bl-sm"
+                  : "bg-foreground text-background ml-auto rounded-br-sm",
+              ].join(" ")}
+            >
+              {m.role === "assistant" && (
+                <div className="flex items-center gap-1.5 mb-1.5 text-[10px] uppercase tracking-widest text-accent font-semibold">
+                  <Sparkles className="size-3" /> Hermes
+                </div>
+              )}
+              {m.content}
+              {m.routed && m.routed.length > 0 && (
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {m.routed.map((a, j) => (
+                    <li key={j}>
+                      <RoutedBadge action={a} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+          {loading && (
+            <div className="max-w-[85%] p-4 rounded-2xl bg-card ring-1 ring-black/5 text-sm text-muted-foreground">
+              Hermes está roteando…
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
       </main>
 
       <div className="fixed bottom-28 inset-x-0 px-4 z-30">
