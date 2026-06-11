@@ -297,13 +297,16 @@ function EditarPerfil() {
         </section>
 
         {/* Escala de trabalho */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
+        <section id="escala" className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
           <div className="flex items-center justify-between mb-3">
             <SectionLabel>Escala de trabalho</SectionLabel>
             <p className="text-[10px] text-muted-foreground tabular-nums">
               {total.toFixed(1)}h por semana
             </p>
           </div>
+          <p className="text-[11px] text-muted-foreground mb-3">
+            Liga/desliga por dia, defina turnos e a pausa aparece automaticamente entre eles.
+          </p>
           <ul className="space-y-3">
             {DAYS.map(({ key, label }) => {
               const day = draft.schedule[key];
