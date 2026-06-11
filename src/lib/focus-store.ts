@@ -75,6 +75,7 @@ export type CheckList = {
   title: string;
   items: ListItem[];
   createdAt: string;
+  tag?: TaskTag;
 };
 
 const KEY_ACTIVE = "fm.active-task";
