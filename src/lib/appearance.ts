@@ -1,5 +1,5 @@
 export type Theme = "light" | "dark" | "system";
-export type PaletteId = "paper" | "midnight" | "sage" | "noir" | "ocean" | "terracotta";
+export type PaletteId = "paper" | "midnight" | "sage" | "noir" | "ocean" | "terracotta" | "rose" | "forest" | "sunset" | "liquid";
 
 export const THEME_KEY = "fm-theme";
 export const PALETTE_KEY = "fm-palette";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-type PaletteId = "paper" | "midnight" | "sage" | "noir" | "ocean" | "terracotta";
+type PaletteId = "paper" | "midnight" | "sage" | "noir" | "ocean" | "terracotta" | "rose" | "forest" | "sunset" | "liquid";
 
 const KEY = "fm-palette";
 
@@ -11,13 +11,18 @@ type Preset = {
 };
 
 const PRESETS: Preset[] = [
-  { id: "paper",      name: "Morning Paper",  swatches: ["#f5f3ee", "#e8e4dd", "#2d2d2d", "#0d0d0d"] },
+  { id: "paper",      name: "Morning Paper",   swatches: ["#f5f3ee", "#e8e4dd", "#2d2d2d", "#0d0d0d"] },
   { id: "midnight",   name: "Midnight Indigo", swatches: ["#0a0a1a", "#141432", "#1e1e5a", "#4f46e5"] },
-  { id: "sage",       name: "Sage & Cream",   swatches: ["#f5f0e8", "#dce5d4", "#a8c0a0", "#7d9b76"] },
-  { id: "noir",       name: "Noir & Gold",    swatches: ["#0d0d0d", "#1a1a1a", "#c9a84c", "#f0d78c"] },
-  { id: "ocean",      name: "Ocean Deep",     swatches: ["#0c2340", "#1a4a6e", "#2d8a9e", "#5cbdb9"] },
-  { id: "terracotta", name: "Terracotta",     swatches: ["#c4654a", "#e8a87c", "#87a878", "#4a6741"] },
+  { id: "sage",       name: "Sage & Cream",    swatches: ["#f5f0e8", "#dce5d4", "#a8c0a0", "#7d9b76"] },
+  { id: "noir",       name: "Noir & Gold",     swatches: ["#0d0d0d", "#1a1a1a", "#c9a84c", "#f0d78c"] },
+  { id: "ocean",      name: "Ocean Deep",      swatches: ["#0c2340", "#1a4a6e", "#2d8a9e", "#5cbdb9"] },
+  { id: "terracotta", name: "Terracotta",      swatches: ["#c4654a", "#e8a87c", "#87a878", "#4a6741"] },
+  { id: "rose",       name: "Rose Quartz",     swatches: ["#fde8ec", "#f5b8c4", "#e0788e", "#a83a52"] },
+  { id: "forest",     name: "Floresta",        swatches: ["#e8efe2", "#a8c79a", "#3e6b3a", "#1f3a1c"] },
+  { id: "sunset",     name: "Pôr do Sol",      swatches: ["#fde4cf", "#f5a86a", "#e85a3c", "#8a2a1a"] },
+  { id: "liquid",     name: "Liquid Glass",    swatches: ["#a5b4fc", "#f0abfc", "#7dd3fc", "#fbcfe8"] },
 ];
+
 
 function apply(id: PaletteId) {
   document.documentElement.setAttribute("data-palette", id);
