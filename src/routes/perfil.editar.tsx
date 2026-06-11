@@ -212,7 +212,7 @@ function EditarPerfil() {
         </section>
 
         {/* Localização */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-3">
+        <section id="local" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-3">
           <SectionLabel>Localização (clima e fuso)</SectionLabel>
           <button
             type="button"
