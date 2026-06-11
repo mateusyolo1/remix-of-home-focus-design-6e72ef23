@@ -135,14 +135,30 @@ export function useTasks() {
   const add = (title: string, blockTime?: string) => {
     const t: Task = { id: uid(), title, done: false, blockTime };
     setTasks([...tasks, t]);
+    logActivity({ kind: "task", title, detail: blockTime ? `bloco ${blockTime}` : undefined });
   };
-  const toggle = (id: string) =>
+  const toggle = (id: string) => {
+    const target = tasks.find((t) => t.id === id);
     setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+    if (target && !target.done) logActivity({ kind: "task_done", title: target.title });
+  };
   const remove = (id: string) => setTasks(tasks.filter((t) => t.id !== id));
   const update = (id: string, patch: Partial<Task>) =>
     setTasks(tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   return { tasks, add, toggle, remove, update, setTasks };
 }
+
+export function useBlocks() {
+  const [blocks, setBlocks] = useStoreValue<Block[]>(KEY_BLOCKS, SEED_BLOCKS);
+  const add = (b: Omit<Block, "notes"> & { notes?: string }) => {
+    const next = [...blocks, { notes: "", ...b }].sort((a, z) => {
+      const d = (a.date ?? "").localeCompare(z.date ?? "");
+      return d !== 0 ? d : a.time.localeCompare(z.time);
+    });
+    setBlocks(next);
+    logActivity({ kind: "block", title: b.title, detail: `${b.time}${b.tag ? " · " + b.tag : ""}` });
+  };
+
 
 export function useBlocks() {
   const [blocks, setBlocks] = useStoreValue<Block[]>(KEY_BLOCKS, SEED_BLOCKS);
