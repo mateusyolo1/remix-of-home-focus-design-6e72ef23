@@ -31,9 +31,11 @@ Hoje é ${todayIso()}.
 ${profileContext ? `\n${profileContext.trim()}\n` : ""}
 
 Responda APENAS JSON puro neste formato:
-{"segments":[{"target":"agenda|timer|home|chat","text":"trecho exato ou parafraseado curto"}]}
+{"segments":[{"target":"agenda|timer|home|chat","text":"trecho LITERAL do usuário, preservando enumerações, itens e detalhes"}]}
 
-Se a fala for atômica, retorne 1 segmento. Se misturar coisas, retorne vários.`;
+IMPORTANTE: o campo "text" deve conter o trecho ORIGINAL do usuário, sem resumir, sem reescrever, sem perder itens. O home-agent precisa do texto completo para extrair tarefas/listas/notas com fidelidade.
+
+Se a fala for atômica, retorne 1 segmento. Se misturar coisas (ex.: tarefas + compras + ideias), retorne vários segmentos — mas cada segmento deve conter integralmente o trecho correspondente.`;
 }
 
 export async function routeSegments(
