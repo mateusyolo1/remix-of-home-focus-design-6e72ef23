@@ -41,8 +41,11 @@ function TimerPage() {
   const persisted = usePersistedTimer();
 
   // Garante que existe um timer (idle) ao entrar na tela.
+  // IMPORTANTE: lê direto do storage para não usar o closure stale de `persisted`
+  // (que é null no primeiro render antes do hook hidratar).
   useEffect(() => {
-    if (!persisted) {
+    const stored = getStoredTimer();
+    if (!stored) {
       const minutes = active?.minutes ?? DEFAULT_MIN;
       createTimer({
         durationMs: minutes * 60_000,
