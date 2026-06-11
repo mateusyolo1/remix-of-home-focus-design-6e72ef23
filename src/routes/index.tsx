@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, Check, CloudSun, Link2, Mic, MoreVertical, Plus, Target, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
+import { Archive, ArchiveRestore, ArrowUpRight, Calendar, Check, CheckCircle2, CloudSun, Link2, Mic, MoreVertical, Plus, Star, Target, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, pruneArchivedNotes, pruneExpiredTasks, blockDateKey, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
 import { useActivityLog, focusMinutesOn, streakDays } from "@/lib/activity-log";
+import { useAppSettings } from "@/lib/app-settings";
 import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 import { toast } from "sonner";
 
@@ -28,15 +29,17 @@ function Index() {
   const [profile, setProfile] = useProfile();
   const { mark } = useCheckins();
   const { blocks } = useBlocks();
-  const { tasks, add, toggle, remove, update } = useTasks();
+  const { tasks, add, toggle, remove, update, toggleImportant, setTasks } = useTasks();
   const { notes: noteMap } = useNotes();
-  const { notes: quickNotes, add: addNote, remove: removeNote } = useQuickNotes();
-  const { lists, add: addList, toggleItem, addItem, removeItem, remove: removeList } = useLists();
+  const { notes: quickNotes, add: addNote, remove: removeNote, update: updateNote, archive: archiveNote, unarchive: unarchiveNote, setNotes: setQuickNotes } = useQuickNotes();
+  const { lists, add: addList, toggleItem, addItem, removeItem, remove: removeList, complete: completeList } = useLists();
+  const [settings] = useAppSettings();
   const navigate = useNavigate();
   const [weather, setWeather] = useState<CurrentWeather | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("Tarefas");
+  const [showArchived, setShowArchived] = useState(false);
   const [newTask, setNewTask] = useState("");
   const [newTaskTag, setNewTaskTag] = useState<TaskTag>("trabalho");
   const [tagMenuOpen, setTagMenuOpen] = useState(false);
@@ -59,6 +62,11 @@ function Index() {
   useEffect(() => {
     setMounted(true);
     mark();
+    // Limpeza automática: tarefas expiradas + notas arquivadas além da retenção.
+    const prunedTasks = pruneExpiredTasks(tasks, settings.taskExpiryHours);
+    if (prunedTasks.length !== tasks.length) setTasks(prunedTasks);
+    const prunedNotes = pruneArchivedNotes(quickNotes, settings.archiveRetentionDays);
+    if (prunedNotes.length !== quickNotes.length) setQuickNotes(prunedNotes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -137,7 +145,22 @@ function Index() {
 
   const filteredTasks = tasks;
 
-  const todayBlocks = blocks.slice(0, 3);
+  // Blocos agendados para hoje que ainda não estão vinculados a nenhuma tarefa.
+  // Aparecem como "tarefas-agenda" virtuais no topo da lista de Tarefas.
+  const todayDateKey = todayKey;
+  const todayAgendaTasks = useMemo(() => {
+    const linkedTimes = new Set(tasks.map((t) => t.blockTime).filter(Boolean));
+    return blocks.filter((b) => blockDateKey(b) === todayDateKey && !linkedTimes.has(b.time));
+  }, [blocks, tasks, todayDateKey]);
+
+  const todayBlocks = useMemo(
+    () => blocks.filter((b) => blockDateKey(b) === todayDateKey).slice(0, 3),
+    [blocks, todayDateKey],
+  );
+
+  const activeNotes = useMemo(() => quickNotes.filter((n) => !n.archivedAt), [quickNotes]);
+  const archivedNotes = useMemo(() => quickNotes.filter((n) => n.archivedAt), [quickNotes]);
+
   const recentNotes = useMemo(() => {
     if (!mounted) return [] as string[];
     const fromBlocks = Object.entries(noteMap)
@@ -149,9 +172,9 @@ function Index() {
       .slice(-2)
       .reverse()
       .map((x) => x.text.slice(0, 80));
-    const fromQuick = quickNotes.slice(0, 2).map((n) => n.title);
+    const fromQuick = activeNotes.slice(0, 2).map((n) => n.title);
     return [...fromQuick, ...fromBlocks].slice(0, 3);
-  }, [noteMap, quickNotes, mounted]);
+  }, [noteMap, activeNotes, mounted]);
 
   const addQuickNote = () => {
     const v = quickNote.trim();
@@ -297,11 +320,37 @@ function Index() {
           {tab === "Tarefas" && (
             <>
               <ul className="space-y-2">
-                {filteredTasks.length === 0 && (
+                {filteredTasks.length === 0 && todayAgendaTasks.length === 0 && (
                   <li className="text-center text-xs text-muted-foreground py-4">
                     Sem tarefas. Adicione abaixo.
                   </li>
                 )}
+                {todayAgendaTasks.map((b) => (
+                  <li
+                    key={`agenda-${b.time}`}
+                    className="flex items-center gap-3 p-3 bg-card rounded-xl ring-1 ring-accent/30"
+                  >
+                    <span className="size-5 shrink-0 rounded-md grid place-items-center ring-1 ring-accent/40 text-accent">
+                      <Calendar className="size-3" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm truncate text-foreground">{b.title}</p>
+                      <p className="text-[10px] text-accent">
+                        {b.time} · Agenda de hoje
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        add(b.title, b.time);
+                        toast.success("Tarefa criada a partir da agenda");
+                      }}
+                      aria-label="Transformar em tarefa"
+                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md bg-secondary text-foreground hover:bg-secondary/70 active:scale-95"
+                    >
+                      Adicionar
+                    </button>
+                  </li>
+                ))}
                 {filteredTasks.map((t) => {
                   const linkedBlock = t.blockTime
                     ? blocks.find((b) => b.time === t.blockTime)
@@ -341,9 +390,24 @@ function Index() {
                               {linkedBlock.time} · {linkedBlock.title}
                             </p>
                           )}
+                          {!linkedBlock && !t.important && t.createdAt && (
+                            <p className="text-[10px] text-muted-foreground/70">
+                              expira em 24h
+                            </p>
+                          )}
                         </div>
 
                       </div>
+                      <button
+                        onClick={() => toggleImportant(t.id)}
+                        aria-label={t.important ? "Remover importância" : "Marcar como importante"}
+                        className={[
+                          "size-8 rounded-md grid place-items-center transition-colors",
+                          t.important ? "text-amber-500" : "text-muted-foreground hover:bg-secondary",
+                        ].join(" ")}
+                      >
+                        <Star className={["size-4", t.important ? "fill-current" : ""].join(" ")} />
+                      </button>
                       <button
                         onClick={() => setLinkingId(t.id)}
                         aria-label="Vincular a bloco"
@@ -450,46 +514,73 @@ function Index() {
           )}
 
           {tab === "Notas" && (
-            <ul className="space-y-2">
-              {quickNotes.length === 0 && (
-                <li className="text-center text-xs text-muted-foreground py-4">
-                  Nenhuma nota. Use a Nota Rápida abaixo ou peça ao Hermes.
-                </li>
-              )}
-              {quickNotes.map((n) => (
-                <li
-                  key={n.id}
-                  className="group p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-1"
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2 px-1">
+                <p className="text-[11px] text-muted-foreground">
+                  {showArchived
+                    ? `Arquivadas — apagam em ${settings.archiveRetentionDays} dias`
+                    : "Segure (1s) o card para arquivar"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowArchived((v) => !v)}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-accent px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-base font-semibold leading-tight">{n.title}</h4>
-                    <button
-                      onClick={() => removeNote(n.id)}
-                      aria-label="Remover nota"
-                      className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </div>
-                  {n.body && (
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{n.body}</p>
+                  {showArchived ? (
+                    <>
+                      <ArchiveRestore className="size-3.5" /> Ativas
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="size-3.5" /> Arquivadas ({archivedNotes.length})
+                    </>
                   )}
-                  <p className="text-[10px] text-muted-foreground/70 pt-1">
-                    Vida útil: {n.ttlDays} dias · segure para arquivar
-                  </p>
-                </li>
-              ))}
-            </ul>
+                </button>
+              </div>
+              <ul className="space-y-2">
+                {(showArchived ? archivedNotes : activeNotes).length === 0 && (
+                  <li className="text-center text-xs text-muted-foreground py-4">
+                    {showArchived
+                      ? "Nada arquivado por aqui."
+                      : "Nenhuma nota. Use a Nota Rápida abaixo ou peça ao Hermes."}
+                  </li>
+                )}
+                {(showArchived ? archivedNotes : activeNotes).map((n) => (
+                  <NoteCard
+                    key={n.id}
+                    note={n}
+                    archived={showArchived}
+                    onArchive={() => {
+                      archiveNote(n.id);
+                      toast.success("Nota arquivada");
+                    }}
+                    onUnarchive={() => {
+                      unarchiveNote(n.id);
+                      toast.success("Nota restaurada");
+                    }}
+                    onRemove={() => removeNote(n.id)}
+                    onCycleTtl={() => {
+                      const cycle = [1, 3, 7, 14, 30, 60, 90];
+                      const idx = cycle.indexOf(n.ttlDays);
+                      const next = cycle[(idx + 1) % cycle.length];
+                      updateNote(n.id, { ttlDays: next });
+                    }}
+                  />
+                ))}
+              </ul>
+            </div>
           )}
 
           {tab === "Listas" && (
             <ul className="space-y-3">
-              {lists.length === 0 && (
+              {lists.filter((l) => !l.completedAt).length === 0 && (
                 <li className="text-center text-xs text-muted-foreground py-4">
                   Nenhuma lista. Peça ao Hermes: “lista de compras: tomate, cebola”.
                 </li>
               )}
-              {lists.map((l) => (
+              {lists.filter((l) => !l.completedAt).map((l) => {
+                const allDone = l.items.length > 0 && l.items.every((i) => i.done);
+                return (
                 <li key={l.id} className="p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -572,8 +663,21 @@ function Index() {
                       <Plus className="size-4" />
                     </button>
                   </div>
+                  {allDone && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        completeList(l.id);
+                        toast.success("Lista concluída");
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-foreground text-background py-2.5 rounded-lg text-sm font-medium active:scale-[0.98]"
+                    >
+                      <CheckCircle2 className="size-4" /> Concluído
+                    </button>
+                  )}
                 </li>
-              ))}
+                );
+              })}
               <li>
                 <div className="relative flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
                   <input
@@ -777,6 +881,104 @@ function Index() {
     </>
   );
 }
+
+function NoteCard({
+  note,
+  archived,
+  onArchive,
+  onUnarchive,
+  onRemove,
+  onCycleTtl,
+}: {
+  note: import("@/lib/focus-store").QuickNote;
+  archived: boolean;
+  onArchive: () => void;
+  onUnarchive: () => void;
+  onRemove: () => void;
+  onCycleTtl: () => void;
+}) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggered = useRef(false);
+
+  const start = () => {
+    if (archived) return;
+    triggered.current = false;
+    timerRef.current = setTimeout(() => {
+      triggered.current = true;
+      onArchive();
+    }, 900);
+  };
+  const cancel = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+  };
+
+  return (
+    <li
+      onMouseDown={start}
+      onMouseUp={cancel}
+      onMouseLeave={cancel}
+      onTouchStart={start}
+      onTouchEnd={cancel}
+      onTouchCancel={cancel}
+      className={[
+        "p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-1 select-none",
+        archived ? "opacity-75" : "",
+      ].join(" ")}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="text-base font-semibold leading-tight">{note.title}</h4>
+        <div className="flex items-center gap-1">
+          {archived ? (
+            <button
+              onClick={onUnarchive}
+              aria-label="Restaurar"
+              className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center"
+            >
+              <ArchiveRestore className="size-3.5" />
+            </button>
+          ) : (
+            <button
+              onClick={onArchive}
+              aria-label="Arquivar"
+              className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
+            >
+              <Archive className="size-3.5" />
+            </button>
+          )}
+          <button
+            onClick={onRemove}
+            aria-label="Remover nota"
+            className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
+      </div>
+      {note.body && (
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{note.body}</p>
+      )}
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCycleTtl();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="text-[10px] font-medium text-muted-foreground/80 px-2 py-1 rounded-md bg-secondary/60 hover:bg-secondary active:scale-95"
+        >
+          Vida útil: {note.ttlDays} {note.ttlDays === 1 ? "dia" : "dias"} ▾
+        </button>
+        {!archived && (
+          <span className="text-[10px] text-muted-foreground/70">segure para arquivar</span>
+        )}
+      </div>
+    </li>
+  );
+}
+
 
 function LinkBlockSheet({
   currentBlockTime,
