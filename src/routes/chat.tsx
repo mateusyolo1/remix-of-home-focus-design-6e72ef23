@@ -125,8 +125,8 @@ function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 px-6 pt-4 pb-2 shadow-[0_1px_0_0_hsl(var(--border)/0.4)]">
+    <div className="fixed top-0 inset-x-0 bottom-[76px] flex flex-col bg-background overflow-hidden">
+      <div className="shrink-0 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 px-6 pt-4 pb-2 shadow-[0_1px_0_0_hsl(var(--border)/0.4)]">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0">
             <div className="size-9 rounded-full bg-secondary ring-1 ring-black/5 grid place-items-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">
@@ -158,9 +158,8 @@ function ChatPage() {
         </div>
       </div>
 
-
       {!hasKey && (
-        <div className="mx-6 mb-3 p-3 rounded-xl bg-destructive/10 ring-1 ring-destructive/30 text-xs text-destructive flex items-start gap-2">
+        <div className="shrink-0 mx-6 mt-2 p-3 rounded-xl bg-destructive/10 ring-1 ring-destructive/30 text-xs text-destructive flex items-start gap-2">
           <AlertTriangle className="size-4 shrink-0 mt-0.5" />
           <span>
             Adicione sua API key em <Link to="/perfil/editar" className="underline font-semibold">Perfil → Agente IA</Link> para o Hermes responder.
@@ -168,7 +167,7 @@ function ChatPage() {
         </div>
       )}
 
-      <main ref={scrollRef} className="flex-1 px-6 pb-44 overflow-y-auto">
+      <main ref={scrollRef} className="flex-1 min-h-0 px-6 pt-2 pb-3 overflow-y-auto">
         <div className="min-h-full flex flex-col justify-end gap-3">
           {messages.map((m, i) => (
             <div
@@ -206,7 +205,7 @@ function ChatPage() {
         </div>
       </main>
 
-      <div className="fixed bottom-28 inset-x-0 px-4 z-30">
+      <div className="shrink-0 px-4 pb-3 pt-2 bg-gradient-to-t from-background via-background to-background/0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
