@@ -161,6 +161,15 @@ function Index() {
     setNewTask("");
   };
 
+  const addNewList = () => {
+    const v = newListTitle.trim();
+    if (!v) return;
+    addList({ title: v, items: [], tag: newListTag });
+    setNewListTitle("");
+  };
+
+
+
 
   const submitTimerStart = (m: number) => {
     if (active) setActive({ ...active, minutes: m });
