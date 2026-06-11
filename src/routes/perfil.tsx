@@ -16,6 +16,17 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  LineChart,
+  Line,
+} from "recharts";
 import { useHermesConfig } from "@/lib/hermes/hermes-config";
 import { INSTALL_STATUS_LABEL } from "@/lib/hermes/hermes-status";
 import { toast } from "sonner";
