@@ -320,11 +320,37 @@ function Index() {
           {tab === "Tarefas" && (
             <>
               <ul className="space-y-2">
-                {filteredTasks.length === 0 && (
+                {filteredTasks.length === 0 && todayAgendaTasks.length === 0 && (
                   <li className="text-center text-xs text-muted-foreground py-4">
                     Sem tarefas. Adicione abaixo.
                   </li>
                 )}
+                {todayAgendaTasks.map((b) => (
+                  <li
+                    key={`agenda-${b.time}`}
+                    className="flex items-center gap-3 p-3 bg-card rounded-xl ring-1 ring-accent/30"
+                  >
+                    <span className="size-5 shrink-0 rounded-md grid place-items-center ring-1 ring-accent/40 text-accent">
+                      <Calendar className="size-3" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm truncate text-foreground">{b.title}</p>
+                      <p className="text-[10px] text-accent">
+                        {b.time} · Agenda de hoje
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        add(b.title, b.time);
+                        toast.success("Tarefa criada a partir da agenda");
+                      }}
+                      aria-label="Transformar em tarefa"
+                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md bg-secondary text-foreground hover:bg-secondary/70 active:scale-95"
+                    >
+                      Adicionar
+                    </button>
+                  </li>
+                ))}
                 {filteredTasks.map((t) => {
                   const linkedBlock = t.blockTime
                     ? blocks.find((b) => b.time === t.blockTime)
@@ -364,9 +390,24 @@ function Index() {
                               {linkedBlock.time} · {linkedBlock.title}
                             </p>
                           )}
+                          {!linkedBlock && !t.important && t.createdAt && (
+                            <p className="text-[10px] text-muted-foreground/70">
+                              expira em 24h
+                            </p>
+                          )}
                         </div>
 
                       </div>
+                      <button
+                        onClick={() => toggleImportant(t.id)}
+                        aria-label={t.important ? "Remover importância" : "Marcar como importante"}
+                        className={[
+                          "size-8 rounded-md grid place-items-center transition-colors",
+                          t.important ? "text-amber-500" : "text-muted-foreground hover:bg-secondary",
+                        ].join(" ")}
+                      >
+                        <Star className={["size-4", t.important ? "fill-current" : ""].join(" ")} />
+                      </button>
                       <button
                         onClick={() => setLinkingId(t.id)}
                         aria-label="Vincular a bloco"
