@@ -17,6 +17,8 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
 import { useActivityLog, activitiesByDate, ACTIVITY_LABEL, type ActivityEntry } from "@/lib/activity-log";
+import { TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
+
 
 import {
   ResponsiveContainer,
