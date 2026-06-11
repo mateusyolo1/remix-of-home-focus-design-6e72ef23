@@ -264,10 +264,10 @@ function RoutedBadge({ action }: { action: RoutedAction }) {
   const Icon = iconForAction(action);
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md ring-1 ${styleMap[target]}`}
+      className={`inline-flex items-start gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md ring-1 ${styleMap[target]}`}
     >
-      <Icon className="size-3" />
-      {labelFor(action)}
+      <Icon className="size-3.5 shrink-0 mt-[1px]" strokeWidth={2} />
+      <span className="leading-snug">{labelFor(action)}</span>
     </span>
   );
 }
