@@ -17,7 +17,7 @@ import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PerfilEditarRouteImport } from './routes/perfil.editar'
+import { Route as PerfilEditarRouteImport } from './routes/perfil_.editar'
 
 const TimerRoute = TimerRouteImport.update({
   id: '/timer',
@@ -60,9 +60,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilEditarRoute = PerfilEditarRouteImport.update({
-  id: '/editar',
-  path: '/editar',
-  getParentRoute: () => PerfilRoute,
+  id: '/perfil_/editar',
+  path: '/perfil/editar',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -72,7 +72,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
-  '/perfil': typeof PerfilRouteWithChildren
+  '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
   '/perfil/editar': typeof PerfilEditarRoute
 }
@@ -83,7 +83,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
-  '/perfil': typeof PerfilRouteWithChildren
+  '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
   '/perfil/editar': typeof PerfilEditarRoute
 }
@@ -95,9 +95,9 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
-  '/perfil': typeof PerfilRouteWithChildren
+  '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
-  '/perfil/editar': typeof PerfilEditarRoute
+  '/perfil_/editar': typeof PerfilEditarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -132,7 +132,7 @@ export interface FileRouteTypes {
     | '/hermes'
     | '/perfil'
     | '/timer'
-    | '/perfil/editar'
+    | '/perfil_/editar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,8 +142,9 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FocoRoute: typeof FocoRoute
   HermesRoute: typeof HermesRoute
-  PerfilRoute: typeof PerfilRouteWithChildren
+  PerfilRoute: typeof PerfilRoute
   TimerRoute: typeof TimerRoute
+  PerfilEditarRoute: typeof PerfilEditarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -204,26 +205,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/perfil/editar': {
-      id: '/perfil/editar'
-      path: '/editar'
+    '/perfil_/editar': {
+      id: '/perfil_/editar'
+      path: '/perfil/editar'
       fullPath: '/perfil/editar'
       preLoaderRoute: typeof PerfilEditarRouteImport
-      parentRoute: typeof PerfilRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface PerfilRouteChildren {
-  PerfilEditarRoute: typeof PerfilEditarRoute
-}
-
-const PerfilRouteChildren: PerfilRouteChildren = {
-  PerfilEditarRoute: PerfilEditarRoute,
-}
-
-const PerfilRouteWithChildren =
-  PerfilRoute._addFileChildren(PerfilRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -232,9 +222,20 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   FocoRoute: FocoRoute,
   HermesRoute: HermesRoute,
-  PerfilRoute: PerfilRouteWithChildren,
+  PerfilRoute: PerfilRoute,
   TimerRoute: TimerRoute,
+  PerfilEditarRoute: PerfilEditarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
