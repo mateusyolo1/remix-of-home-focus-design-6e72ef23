@@ -16,7 +16,7 @@ export function useExecuteActions() {
     for (const a of actions) {
       try {
         if (a.type === "create_task") {
-          addTask(a.title, a.blockTime);
+          addTask(a.title, a.blockTime, a.tag);
           toast.success(`Tarefa: ${a.title}`);
         } else if (a.type === "create_block") {
           addBlock({
@@ -31,7 +31,7 @@ export function useExecuteActions() {
           addNote({ title: a.title, body: a.body, ttlDays: a.ttlDays });
           toast.success(`Nota: ${a.title}`);
         } else if (a.type === "create_list") {
-          addList({ title: a.title, items: a.items });
+          addList({ title: a.title, items: a.items, tag: a.tag });
           toast.success(`Lista: ${a.title} (${a.items.length})`);
         } else if (a.type === "start_timer") {
           setActive({
