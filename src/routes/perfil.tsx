@@ -50,6 +50,7 @@ function PerfilPage() {
   const { checkins } = useCheckins();
   const [modal, setModal] = useState<ModalKind>(null);
   const [silent, setSilent] = useState(false);
+  const [tab, setTab] = useState<"historico" | "desempenho">("historico");
 
   useEffect(() => {
     setSilent(localStorage.getItem(KEY_SILENT) === "1");
