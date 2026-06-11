@@ -21,7 +21,7 @@ import {
   type Schedule,
   type Shift,
 } from "@/lib/profile-store";
-import { useAgentConfig, MODEL_OPTIONS, type AgentProvider } from "@/lib/agent-store";
+import { useAgentConfig, MODEL_OPTIONS, type AgentProvider, type AgentsConfig, type SubAgentConfig } from "@/lib/agent-store";
 import { searchCity, type GeoResult } from "@/lib/weather";
 import { toast } from "sonner";
 
