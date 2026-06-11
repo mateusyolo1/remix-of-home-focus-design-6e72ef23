@@ -15,6 +15,7 @@ import { Route as HermesRouteImport } from './routes/hermes'
 import { Route as FocoRouteImport } from './routes/foco'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as AlarmesRouteImport } from './routes/alarmes'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilEditarRouteImport } from './routes/perfil_.editar'
@@ -49,6 +50,11 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlarmesRoute = AlarmesRouteImport.update({
+  id: '/alarmes',
+  path: '/alarmes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgendaRoute = AgendaRouteImport.update({
   id: '/agenda',
   path: '/agenda',
@@ -68,6 +74,7 @@ const PerfilEditarRoute = PerfilEditarRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/alarmes': typeof AlarmesRoute
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/alarmes': typeof AlarmesRoute
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agenda': typeof AgendaRoute
+  '/alarmes': typeof AlarmesRoute
   '/chat': typeof ChatRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agenda'
+    | '/alarmes'
     | '/chat'
     | '/configuracoes'
     | '/foco'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agenda'
+    | '/alarmes'
     | '/chat'
     | '/configuracoes'
     | '/foco'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agenda'
+    | '/alarmes'
     | '/chat'
     | '/configuracoes'
     | '/foco'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgendaRoute: typeof AgendaRoute
+  AlarmesRoute: typeof AlarmesRoute
   ChatRoute: typeof ChatRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FocoRoute: typeof FocoRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alarmes': {
+      id: '/alarmes'
+      path: '/alarmes'
+      fullPath: '/alarmes'
+      preLoaderRoute: typeof AlarmesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agenda': {
       id: '/agenda'
       path: '/agenda'
@@ -218,6 +238,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgendaRoute: AgendaRoute,
+  AlarmesRoute: AlarmesRoute,
   ChatRoute: ChatRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   FocoRoute: FocoRoute,
