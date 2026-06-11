@@ -514,36 +514,61 @@ function Index() {
           )}
 
           {tab === "Notas" && (
-            <ul className="space-y-2">
-              {quickNotes.length === 0 && (
-                <li className="text-center text-xs text-muted-foreground py-4">
-                  Nenhuma nota. Use a Nota Rápida abaixo ou peça ao Hermes.
-                </li>
-              )}
-              {quickNotes.map((n) => (
-                <li
-                  key={n.id}
-                  className="group p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-1"
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2 px-1">
+                <p className="text-[11px] text-muted-foreground">
+                  {showArchived
+                    ? `Arquivadas — apagam em ${settings.archiveRetentionDays} dias`
+                    : "Segure (1s) o card para arquivar"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowArchived((v) => !v)}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-accent px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-base font-semibold leading-tight">{n.title}</h4>
-                    <button
-                      onClick={() => removeNote(n.id)}
-                      aria-label="Remover nota"
-                      className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
-                    >
-                      <Trash2 className="size-3.5" />
-                    </button>
-                  </div>
-                  {n.body && (
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{n.body}</p>
+                  {showArchived ? (
+                    <>
+                      <ArchiveRestore className="size-3.5" /> Ativas
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="size-3.5" /> Arquivadas ({archivedNotes.length})
+                    </>
                   )}
-                  <p className="text-[10px] text-muted-foreground/70 pt-1">
-                    Vida útil: {n.ttlDays} dias · segure para arquivar
-                  </p>
-                </li>
-              ))}
-            </ul>
+                </button>
+              </div>
+              <ul className="space-y-2">
+                {(showArchived ? archivedNotes : activeNotes).length === 0 && (
+                  <li className="text-center text-xs text-muted-foreground py-4">
+                    {showArchived
+                      ? "Nada arquivado por aqui."
+                      : "Nenhuma nota. Use a Nota Rápida abaixo ou peça ao Hermes."}
+                  </li>
+                )}
+                {(showArchived ? archivedNotes : activeNotes).map((n) => (
+                  <NoteCard
+                    key={n.id}
+                    note={n}
+                    archived={showArchived}
+                    onArchive={() => {
+                      archiveNote(n.id);
+                      toast.success("Nota arquivada");
+                    }}
+                    onUnarchive={() => {
+                      unarchiveNote(n.id);
+                      toast.success("Nota restaurada");
+                    }}
+                    onRemove={() => removeNote(n.id)}
+                    onCycleTtl={() => {
+                      const cycle = [1, 3, 7, 14, 30, 60, 90];
+                      const idx = cycle.indexOf(n.ttlDays);
+                      const next = cycle[(idx + 1) % cycle.length];
+                      updateNote(n.id, { ttlDays: next });
+                    }}
+                  />
+                ))}
+              </ul>
+            </div>
           )}
 
           {tab === "Listas" && (
