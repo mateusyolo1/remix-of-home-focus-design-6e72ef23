@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X } from "lucide-react";
+import { ArrowUpRight, Check, CloudSun, Link2, Mic, MoreVertical, Plus, Target, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
