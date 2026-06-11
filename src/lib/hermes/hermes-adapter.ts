@@ -1,55 +1,28 @@
 import { getHermesConfig } from "./hermes-config";
 import { localFallback, type HermesFallbackResult } from "./hermes-local-fallback";
+import { runSicAgent, checkSicConfig } from "@/lib/sic.functions";
 
 export type HermesResponse =
   | HermesFallbackResult
   | { source: "local_bridge" | "remote_api"; text: string; raw?: unknown };
 
-async function callLocalBridge(url: string, input: string): Promise<HermesResponse> {
-  const res = await fetch(`${url.replace(/\/$/, "")}/organize`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input }),
-  });
-  if (!res.ok) throw new Error(`Bridge ${res.status}`);
-  const data = await res.json();
-  return { source: "local_bridge", text: typeof data?.text === "string" ? data.text : JSON.stringify(data), raw: data };
-}
-
-async function callRemoteApi(url: string, input: string): Promise<HermesResponse> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ input }),
-  });
-  if (!res.ok) throw new Error(`API ${res.status}`);
-  const data = await res.json();
-  return { source: "remote_api", text: typeof data?.text === "string" ? data.text : JSON.stringify(data), raw: data };
-}
-
 export async function sendToHermes(input: string): Promise<HermesResponse> {
   const config = getHermesConfig();
   if (!config.enabled) return localFallback(input);
 
-  if (config.connectionMode === "local_bridge" && config.bridgeUrl) {
-    try {
-      return await callLocalBridge(config.bridgeUrl, input);
-    } catch (err) {
-      if (config.useLocalFallback) return localFallback(input);
-      throw err;
+  try {
+    if (config.connectionMode === "local_bridge") {
+      if (!config.bridgeUrl) throw new Error("Bridge local sem URL configurada.");
+      return await runSicAgent({
+        data: { input, mode: "local_bridge", bridgeUrl: config.bridgeUrl },
+      });
     }
+    // Default: remote_api (proxy server-side → VPS / DeepSeek)
+    return await runSicAgent({ data: { input, mode: "remote_api" } });
+  } catch (err) {
+    if (config.useLocalFallback) return localFallback(input);
+    throw err;
   }
-
-  if (config.connectionMode === "remote_api" && config.remoteApiUrl) {
-    try {
-      return await callRemoteApi(config.remoteApiUrl, input);
-    } catch (err) {
-      if (config.useLocalFallback) return localFallback(input);
-      throw err;
-    }
-  }
-
-  return localFallback(input);
 }
 
 export type HermesConnectionTest = { ok: boolean; message: string };
@@ -57,35 +30,33 @@ export type HermesConnectionTest = { ok: boolean; message: string };
 export async function testHermesConnection(): Promise<HermesConnectionTest> {
   const config = getHermesConfig();
   if (!config.enabled) {
-    return { ok: false, message: "Hermes Agent desativado. O app usa organização local." };
+    return { ok: false, message: "Agente desativado. Usando organização local." };
   }
-  switch (config.connectionMode) {
-    case "local_fallback":
-      return { ok: false, message: "Fallback local ativo. Hermes Agent real não conectado." };
-    case "manual_termux":
+
+  if (config.connectionMode === "local_bridge") {
+    if (!config.bridgeUrl) return { ok: false, message: "Configure a URL da bridge local." };
+    try {
+      const res = await fetch(`${config.bridgeUrl.replace(/\/$/, "")}/health`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return { ok: true, message: "Bridge local respondeu." };
+    } catch {
+      return { ok: false, message: "Bridge local não respondeu." };
+    }
+  }
+
+  // remote_api: verifica via server fn se as secrets estão presentes
+  try {
+    const status = await checkSicConfig();
+    if (!status.configured) {
       return {
         ok: false,
-        message: "Hermes instalado manualmente no Termux, mas ainda não existe bridge automática com o app.",
+        message: "API SIC não configurada no servidor (faltam SIC_API_BASE_URL / SIC_API_TOKEN).",
       };
-    case "local_bridge": {
-      if (!config.bridgeUrl) return { ok: false, message: "Configure a URL da bridge local (ex.: http://127.0.0.1:8765)." };
-      try {
-        const res = await fetch(`${config.bridgeUrl.replace(/\/$/, "")}/health`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return { ok: true, message: "Hermes Bridge conectada." };
-      } catch {
-        return { ok: false, message: "Bridge local não encontrada. Usando fallback local." };
-      }
     }
-    case "remote_api": {
-      if (!config.remoteApiUrl) return { ok: false, message: "Configure a URL da API remota." };
-      try {
-        const res = await fetch(config.remoteApiUrl, { method: "GET" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return { ok: true, message: "API remota do Hermes respondeu." };
-      } catch {
-        return { ok: false, message: "API remota não respondeu. Usando fallback local." };
-      }
-    }
+    // Ping leve com prompt mínimo
+    const r = await runSicAgent({ data: { input: "ping", mode: "remote_api" } });
+    return { ok: true, message: `API SIC respondeu (${status.baseUrlHost ?? "remoto"} • ${status.model}).` };
+  } catch (err) {
+    return { ok: false, message: (err as Error).message };
   }
 }
