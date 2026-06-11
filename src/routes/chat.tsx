@@ -132,7 +132,7 @@ function ChatPage() {
         )}
       </main>
 
-      <div className="fixed bottom-24 inset-x-0 px-4 z-30">
+      <div className="fixed bottom-36 inset-x-0 px-4 z-30">
         <form
           onSubmit={(e) => {
             e.preventDefault();
