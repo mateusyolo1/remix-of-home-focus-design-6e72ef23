@@ -542,7 +542,7 @@ html[data-palette="liquid"] .bg-secondary,
 html[data-palette="liquid"] .bg-muted {
   position: relative;
   isolation: isolate;
-  backdrop-filter: blur(12px) saturate(4);
+  backdrop-filter: blur(16px) saturate(1.6);
   background-color: rgba(255, 255, 255, 0.06);
   border: none;
   box-shadow:
