@@ -72,6 +72,12 @@ function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Mantém o AppShell ciente da aba ativa (para mostrar o microfone só em Notas).
+  useEffect(() => {
+    setHomeTab(tab);
+    return () => setHomeTab("Tarefas");
+  }, [tab]);
+
   const loadWeather = async (lat: number, lon: number) => {
     setWeatherLoading(true);
     setWeatherError(null);
