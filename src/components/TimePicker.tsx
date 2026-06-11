@@ -51,26 +51,35 @@ export function TimePicker({ value, onChange, className, minuteStep = 5 }: Props
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 left-0 w-44 rounded-xl bg-card ring-1 ring-black/10 shadow-lg p-2">
+        <div className="absolute z-30 mt-1 right-0 w-40 rounded-xl bg-card ring-1 ring-black/10 shadow-lg p-2 [&_*::-webkit-scrollbar]:!w-1 [&_*]:[scrollbar-width:thin]">
           <div className="flex gap-2">
             <Column
               items={hours}
               selected={h ?? "00"}
-              onPick={setH}
+              onPick={(v) => onChange(`${v}:${m ?? "00"}`)}
               label="H"
             />
             <Column
               items={minutes}
               selected={m ?? "00"}
-              onPick={setM}
+              onPick={(v) => onChange(`${h ?? "00"}:${v}`)}
               label="M"
             />
           </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="mt-2 w-full bg-foreground text-background rounded-lg py-1.5 text-xs font-semibold active:scale-[0.99]"
+          >
+            Pronto
+          </button>
         </div>
       )}
     </div>
   );
 }
+
+
 
 function Column({
   items,
