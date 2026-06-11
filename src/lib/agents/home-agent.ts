@@ -11,7 +11,7 @@ Responda APENAS JSON puro:
 {"actions":[ ...uma ou mais ações... ]}
 
 Ações disponíveis:
-1) {"type":"create_task","title":"...","tag":"trabalho|estudo|saude|casa|pessoal|outro","important":true|false?,"blockTime":"HH:MM"?}
+1) {"type":"create_task","title":"...","tag":"trabalho|estudo|saude|casa|pessoal|outro","important":true|false?,"blockTime":"HH:MM"?,"dueAt":"ISO datetime"?,"reminderAt":"ISO datetime"?}
 2) {"type":"create_list","title":"...","tag":"trabalho|estudo|saude|casa|pessoal|outro","items":["..."]}
 3) {"type":"create_note","title":"...","body":"..."?,"ttlDays":7?}
 
