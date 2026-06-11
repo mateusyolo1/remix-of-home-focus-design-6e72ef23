@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { logActivity } from "@/lib/activity-log";
+
 
 export type ActiveTask = {
   time: string;
@@ -133,9 +135,13 @@ export function useTasks() {
   const add = (title: string, blockTime?: string) => {
     const t: Task = { id: uid(), title, done: false, blockTime };
     setTasks([...tasks, t]);
+    logActivity({ kind: "task", title, detail: blockTime ? `bloco ${blockTime}` : undefined });
   };
-  const toggle = (id: string) =>
+  const toggle = (id: string) => {
+    const target = tasks.find((t) => t.id === id);
     setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+    if (target && !target.done) logActivity({ kind: "task_done", title: target.title });
+  };
   const remove = (id: string) => setTasks(tasks.filter((t) => t.id !== id));
   const update = (id: string, patch: Partial<Task>) =>
     setTasks(tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)));
@@ -150,9 +156,11 @@ export function useBlocks() {
       return d !== 0 ? d : a.time.localeCompare(z.time);
     });
     setBlocks(next);
+    logActivity({ kind: "block", title: b.title, detail: `${b.time}${b.tag ? " · " + b.tag : ""}` });
   };
   return { blocks, add, setBlocks };
 }
+
 
 export function dateKey(d: Date): string {
   const y = d.getFullYear();
@@ -176,8 +184,10 @@ export function useQuickNotes() {
       createdAt: new Date().toISOString(),
     };
     setNotes([n, ...notes]);
+    logActivity({ kind: "note", title: n.title, detail: n.body?.slice(0, 80) });
     return n;
   };
+
   const remove = (id: string) => setNotes(notes.filter((n) => n.id !== id));
   return { notes, add, remove, setNotes };
 }
@@ -192,9 +202,12 @@ export function useLists() {
       createdAt: new Date().toISOString(),
     };
     setLists([l, ...lists]);
+    logActivity({ kind: "list", title: l.title, detail: `${l.items.length} itens` });
     return l;
   };
-  const toggleItem = (listId: string, itemId: string) =>
+  const toggleItem = (listId: string, itemId: string) => {
+    const list = lists.find((l) => l.id === listId);
+    const item = list?.items.find((i) => i.id === itemId);
     setLists(
       lists.map((l) =>
         l.id === listId
@@ -202,6 +215,9 @@ export function useLists() {
           : l
       )
     );
+    if (item && !item.done) logActivity({ kind: "list_item_done", title: item.text, detail: list?.title });
+  };
+
   const addItem = (listId: string, text: string) =>
     setLists(
       lists.map((l) =>

@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
+import { useActivityLog, activitiesByDate, ACTIVITY_LABEL, type ActivityEntry } from "@/lib/activity-log";
+
 import {
   ResponsiveContainer,
   BarChart,
@@ -51,6 +53,10 @@ function PerfilPage() {
   const [modal, setModal] = useState<ModalKind>(null);
   const [silent, setSilent] = useState(false);
   const [tab, setTab] = useState<"historico" | "desempenho">("historico");
+  const [dayOpen, setDayOpen] = useState<string | null>(null);
+  const activity = useActivityLog();
+  const activityMap = useMemo(() => activitiesByDate(activity), [activity]);
+
 
   useEffect(() => {
     setSilent(localStorage.getItem(KEY_SILENT) === "1");
@@ -87,11 +93,12 @@ function PerfilPage() {
         status = "missed";
         missed++;
       }
-      return { d, status };
+      return { d, status, key };
     });
     return {
       days,
       monthLabel: now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+
       presentCount: present,
       missedCount: missed,
     };
@@ -184,15 +191,22 @@ function PerfilPage() {
                       : d.status === "today"
                       ? "bg-secondary text-foreground ring-1 ring-foreground"
                       : "bg-secondary text-muted-foreground";
+                  const count = activityMap.get(d.key)?.length ?? 0;
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={d.d}
-                      className={["aspect-square rounded-md grid place-items-center text-[11px] font-medium tabular-nums", cls].join(" ")}
+                      onClick={() => setDayOpen(d.key)}
+                      className={["relative aspect-square rounded-md grid place-items-center text-[11px] font-medium tabular-nums active:scale-95 transition-transform", cls].join(" ")}
                     >
                       {d.d}
-                    </div>
+                      {count > 0 && (
+                        <span className="absolute bottom-1 size-1 rounded-full bg-accent" />
+                      )}
+                    </button>
                   );
                 })}
+
               </div>
               <p className="text-[10px] text-muted-foreground mt-3 text-center">
                 Reseta automaticamente todo mês
@@ -258,6 +272,14 @@ function PerfilPage() {
           onClose={() => setModal(null)}
         />
       )}
+      {dayOpen && (
+        <DiaModal
+          dateKey={dayOpen}
+          entries={activityMap.get(dayOpen) ?? []}
+          onClose={() => setDayOpen(null)}
+        />
+      )}
+
     </>
   );
 }
@@ -654,5 +676,78 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-base font-semibold tabular-nums">{value}</p>
       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">{label}</p>
     </div>
+  );
+}
+
+function DiaModal({
+  dateKey,
+  entries,
+  onClose,
+}: {
+  dateKey: string;
+  entries: ActivityEntry[];
+  onClose: () => void;
+}) {
+  const label = useMemo(() => {
+    const [y, m, d] = dateKey.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  }, [dateKey]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, ActivityEntry[]>();
+    for (const e of entries) {
+      const arr = map.get(e.kind) ?? [];
+      arr.push(e);
+      map.set(e.kind, arr);
+    }
+    return map;
+  }, [entries]);
+
+  return (
+    <ModalShell title={label} onClose={onClose}>
+      {entries.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          Sem registros neste dia. Tarefas, notas, listas e blocos criados aparecem aqui.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {Array.from(grouped.entries()).map(([kind, list]) => (
+            <div key={kind}>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                {ACTIVITY_LABEL[kind as keyof typeof ACTIVITY_LABEL]} · {list.length}
+              </p>
+              <ul className="space-y-1.5">
+                {list.map((e) => {
+                  const time = new Date(e.at).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  return (
+                    <li
+                      key={e.id}
+                      className="flex items-start gap-2 bg-secondary rounded-lg px-3 py-2 text-xs"
+                    >
+                      <span className="text-muted-foreground tabular-nums shrink-0">{time}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{e.title}</p>
+                        {e.detail && (
+                          <p className="text-muted-foreground truncate">{e.detail}</p>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </ModalShell>
   );
 }
