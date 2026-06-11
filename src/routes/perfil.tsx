@@ -93,11 +93,12 @@ function PerfilPage() {
         status = "missed";
         missed++;
       }
-      return { d, status };
+      return { d, status, key };
     });
     return {
       days,
       monthLabel: now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+
       presentCount: present,
       missedCount: missed,
     };
