@@ -5,6 +5,7 @@ import { ArrowUpRight, Check, CloudSun, Link2, Mic, MoreVertical, Plus, Target, 
 import { useEffect, useMemo, useState } from "react";
 import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
+import { useActivityLog, focusMinutesOn, streakDays } from "@/lib/activity-log";
 import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 import { toast } from "sonner";
 
