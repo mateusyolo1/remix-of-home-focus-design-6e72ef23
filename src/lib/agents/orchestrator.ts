@@ -13,6 +13,38 @@ export type OrchestratorResult = AgentResult & {
   routed: RoutedAction[];
 };
 
+/**
+ * Monta uma resposta agrupada (Tarefas / Lista / Ideias / Agenda / Timer)
+ * a partir das ações roteadas, mantendo os chips/badges atuais intactos.
+ */
+function formatGroupedReply(actions: RoutedAction[]): string {
+  if (actions.length === 0) return "Pronto.";
+  const tasks: string[] = [];
+  const lists: { title: string; items: string[] }[] = [];
+  const notes: string[] = [];
+  const blocks: string[] = [];
+  const timers: string[] = [];
+
+  for (const a of actions) {
+    if (a.type === "create_task") tasks.push(a.title);
+    else if (a.type === "create_list") lists.push({ title: a.title, items: a.items });
+    else if (a.type === "create_note") notes.push(a.title);
+    else if (a.type === "create_block") blocks.push(`${a.time} · ${a.title}`);
+    else if (a.type === "start_timer") timers.push(`${a.minutes}min${a.title ? ` · ${a.title}` : ""}`);
+  }
+
+  const sections: string[] = [];
+  if (tasks.length) sections.push(`Tarefas:\n${tasks.map((t) => `• ${t}`).join("\n")}`);
+  for (const l of lists) {
+    sections.push(`${l.title}:\n${l.items.map((i) => `• ${i}`).join("\n")}`);
+  }
+  if (notes.length) sections.push(`Ideias:\n${notes.map((n) => `• ${n}`).join("\n")}`);
+  if (blocks.length) sections.push(`Agenda:\n${blocks.map((b) => `• ${b}`).join("\n")}`);
+  if (timers.length) sections.push(`Timer:\n${timers.map((t) => `• ${t}`).join("\n")}`);
+
+  return sections.join("\n\n");
+}
+
 async function chatReply(
   config: AgentConfig,
   history: ChatMsg[],
@@ -66,16 +98,7 @@ export async function runOrchestrator(
       reply = onlyChat ? "Não consegui detectar uma ação." : "";
     }
   } else {
-    const counts = grouped.reduce<Record<string, number>>((acc, a) => {
-      const k = a._target;
-      acc[k] = (acc[k] ?? 0) + 1;
-      return acc;
-    }, {});
-    const parts: string[] = [];
-    if (counts.agenda) parts.push(`Agenda · ${counts.agenda}`);
-    if (counts.timer) parts.push(`Timer · ${counts.timer}`);
-    if (counts.home) parts.push(`Home · ${counts.home}`);
-    reply = `Pronto · ${parts.join("  ·  ")}`;
+    reply = formatGroupedReply(grouped);
   }
 
   return {
