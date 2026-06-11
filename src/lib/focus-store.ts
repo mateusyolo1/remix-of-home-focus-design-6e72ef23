@@ -158,7 +158,8 @@ export function useActiveTask() {
 
 export function useNotes() {
   const [map, setMap] = useStoreValue<Record<string, string>>(KEY_NOTES, {});
-  const set = (time: string, html: string) => setMap({ ...map, [time]: html });
+  const set = (time: string, html: string) =>
+    setMap((prev) => ({ ...prev, [time]: html }));
   return { notes: map, setNote: set };
 }
 
@@ -167,7 +168,7 @@ export function useSteps(time: string | null) {
   const steps = time ? map[time] ?? [] : [];
   const setSteps = (next: Subtask[]) => {
     if (!time) return;
-    setMap({ ...map, [time]: next });
+    setMap((prev) => ({ ...prev, [time]: next }));
   };
   return [steps, setSteps] as const;
 }
