@@ -347,6 +347,196 @@
   --ring: oklch(0.72 0.14 40);
 }
 
+/* Rose Quartz */
+:root[data-palette="rose"] {
+  --background: oklch(0.98 0.012 20);
+  --foreground: oklch(0.22 0.04 15);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.04 15);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.04 15);
+  --primary: oklch(0.62 0.18 10);
+  --primary-foreground: oklch(0.98 0.012 20);
+  --secondary: oklch(0.95 0.025 20);
+  --secondary-foreground: oklch(0.25 0.05 15);
+  --muted: oklch(0.95 0.02 20);
+  --muted-foreground: oklch(0.5 0.04 15);
+  --accent: oklch(0.7 0.14 5);
+  --accent-foreground: oklch(0.98 0.012 20);
+  --border: oklch(0.9 0.02 20);
+  --input: oklch(0.9 0.02 20);
+  --ring: oklch(0.62 0.18 10);
+}
+.dark[data-palette="rose"] {
+  --background: oklch(0.18 0.03 15);
+  --foreground: oklch(0.97 0.015 20);
+  --card: oklch(0.24 0.04 15);
+  --card-foreground: oklch(0.97 0.015 20);
+  --popover: oklch(0.24 0.04 15);
+  --popover-foreground: oklch(0.97 0.015 20);
+  --primary: oklch(0.75 0.16 10);
+  --primary-foreground: oklch(0.18 0.03 15);
+  --secondary: oklch(0.3 0.04 15);
+  --secondary-foreground: oklch(0.97 0.015 20);
+  --muted: oklch(0.3 0.04 15);
+  --muted-foreground: oklch(0.75 0.04 15);
+  --accent: oklch(0.78 0.14 5);
+  --accent-foreground: oklch(0.18 0.03 15);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.75 0.16 10);
+}
+
+/* Forest */
+:root[data-palette="forest"] {
+  --background: oklch(0.96 0.018 140);
+  --foreground: oklch(0.2 0.04 150);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.04 150);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.04 150);
+  --primary: oklch(0.4 0.1 150);
+  --primary-foreground: oklch(0.98 0.015 140);
+  --secondary: oklch(0.92 0.03 140);
+  --secondary-foreground: oklch(0.25 0.05 150);
+  --muted: oklch(0.93 0.025 140);
+  --muted-foreground: oklch(0.48 0.04 150);
+  --accent: oklch(0.55 0.12 145);
+  --accent-foreground: oklch(0.98 0.015 140);
+  --border: oklch(0.88 0.025 140);
+  --input: oklch(0.88 0.025 140);
+  --ring: oklch(0.4 0.1 150);
+}
+.dark[data-palette="forest"] {
+  --background: oklch(0.16 0.025 150);
+  --foreground: oklch(0.95 0.02 140);
+  --card: oklch(0.22 0.03 150);
+  --card-foreground: oklch(0.95 0.02 140);
+  --popover: oklch(0.22 0.03 150);
+  --popover-foreground: oklch(0.95 0.02 140);
+  --primary: oklch(0.72 0.13 145);
+  --primary-foreground: oklch(0.16 0.025 150);
+  --secondary: oklch(0.28 0.035 150);
+  --secondary-foreground: oklch(0.95 0.02 140);
+  --muted: oklch(0.28 0.035 150);
+  --muted-foreground: oklch(0.72 0.04 140);
+  --accent: oklch(0.75 0.13 145);
+  --accent-foreground: oklch(0.16 0.025 150);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.72 0.13 145);
+}
+
+/* Sunset */
+:root[data-palette="sunset"] {
+  --background: oklch(0.97 0.02 55);
+  --foreground: oklch(0.22 0.05 25);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.05 25);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.05 25);
+  --primary: oklch(0.65 0.2 30);
+  --primary-foreground: oklch(0.98 0.015 55);
+  --secondary: oklch(0.94 0.035 55);
+  --secondary-foreground: oklch(0.28 0.06 25);
+  --muted: oklch(0.95 0.025 55);
+  --muted-foreground: oklch(0.5 0.05 30);
+  --accent: oklch(0.7 0.18 60);
+  --accent-foreground: oklch(0.22 0.05 25);
+  --border: oklch(0.9 0.03 55);
+  --input: oklch(0.9 0.03 55);
+  --ring: oklch(0.65 0.2 30);
+}
+.dark[data-palette="sunset"] {
+  --background: oklch(0.18 0.04 25);
+  --foreground: oklch(0.97 0.02 55);
+  --card: oklch(0.24 0.05 25);
+  --card-foreground: oklch(0.97 0.02 55);
+  --popover: oklch(0.24 0.05 25);
+  --popover-foreground: oklch(0.97 0.02 55);
+  --primary: oklch(0.75 0.18 50);
+  --primary-foreground: oklch(0.18 0.04 25);
+  --secondary: oklch(0.3 0.05 25);
+  --secondary-foreground: oklch(0.97 0.02 55);
+  --muted: oklch(0.3 0.05 25);
+  --muted-foreground: oklch(0.75 0.05 50);
+  --accent: oklch(0.78 0.16 60);
+  --accent-foreground: oklch(0.18 0.04 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.75 0.18 50);
+}
+
+/* ============================================
+   Liquid Glass — inspired by archisvaze/liquid-glass
+   Translucent surfaces with backdrop blur over a
+   vivid gradient background. Standard backdrop-filter
+   only (Lightning CSS adds prefixes).
+   ============================================ */
+:root[data-palette="liquid"] {
+  --background: oklch(0.97 0.02 260);
+  --foreground: oklch(0.2 0.05 270);
+  --card: oklch(1 0 0 / 55%);
+  --card-foreground: oklch(0.2 0.05 270);
+  --popover: oklch(1 0 0 / 80%);
+  --popover-foreground: oklch(0.2 0.05 270);
+  --primary: oklch(0.55 0.22 275);
+  --primary-foreground: oklch(0.98 0.01 260);
+  --secondary: oklch(1 0 0 / 45%);
+  --secondary-foreground: oklch(0.2 0.05 270);
+  --muted: oklch(1 0 0 / 35%);
+  --muted-foreground: oklch(0.45 0.05 270);
+  --accent: oklch(0.65 0.2 320);
+  --accent-foreground: oklch(0.98 0.01 260);
+  --border: oklch(1 0 0 / 40%);
+  --input: oklch(1 0 0 / 50%);
+  --ring: oklch(0.55 0.22 275);
+}
+.dark[data-palette="liquid"] {
+  --background: oklch(0.18 0.06 270);
+  --foreground: oklch(0.97 0.02 260);
+  --card: oklch(1 0 0 / 12%);
+  --card-foreground: oklch(0.97 0.02 260);
+  --popover: oklch(0.22 0.05 270 / 85%);
+  --popover-foreground: oklch(0.97 0.02 260);
+  --primary: oklch(0.72 0.2 275);
+  --primary-foreground: oklch(0.18 0.06 270);
+  --secondary: oklch(1 0 0 / 10%);
+  --secondary-foreground: oklch(0.97 0.02 260);
+  --muted: oklch(1 0 0 / 8%);
+  --muted-foreground: oklch(0.78 0.04 270);
+  --accent: oklch(0.78 0.18 320);
+  --accent-foreground: oklch(0.18 0.06 270);
+  --border: oklch(1 0 0 / 18%);
+  --input: oklch(1 0 0 / 20%);
+  --ring: oklch(0.72 0.2 275);
+}
+
+html[data-palette="liquid"] body {
+  background-image:
+    radial-gradient(at 18% 12%, oklch(0.78 0.18 320 / 0.55), transparent 55%),
+    radial-gradient(at 82% 18%, oklch(0.78 0.18 220 / 0.55), transparent 55%),
+    radial-gradient(at 30% 92%, oklch(0.78 0.18 275 / 0.55), transparent 55%),
+    radial-gradient(at 88% 80%, oklch(0.78 0.18 30 / 0.45), transparent 55%);
+  background-attachment: fixed;
+}
+html[data-palette="liquid"].dark body {
+  background-image:
+    radial-gradient(at 18% 12%, oklch(0.5 0.22 320 / 0.55), transparent 55%),
+    radial-gradient(at 82% 18%, oklch(0.5 0.22 220 / 0.55), transparent 55%),
+    radial-gradient(at 30% 92%, oklch(0.5 0.22 275 / 0.6), transparent 55%),
+    radial-gradient(at 88% 80%, oklch(0.55 0.22 30 / 0.45), transparent 55%);
+  background-attachment: fixed;
+}
+html[data-palette="liquid"] .bg-card,
+html[data-palette="liquid"] .bg-popover,
+html[data-palette="liquid"] .bg-secondary,
+html[data-palette="liquid"] .bg-muted {
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid var(--border);
+}
+
+
 @layer base {
   * {
     border-color: var(--color-border);
