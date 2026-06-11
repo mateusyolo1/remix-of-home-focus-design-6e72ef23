@@ -168,7 +168,7 @@ function ChatPage() {
         </div>
       )}
 
-      <main ref={scrollRef} className="flex-1 px-6 space-y-3 pb-32 overflow-y-auto">
+      <main ref={scrollRef} className="flex-1 px-6 space-y-3 pb-24 overflow-y-auto">
         {messages.map((m, i) => (
           <div
             key={i}
@@ -204,7 +204,7 @@ function ChatPage() {
         <div ref={bottomRef} />
       </main>
 
-      <div className="fixed bottom-28 inset-x-0 px-4 z-30">
+      <div className="fixed bottom-20 inset-x-0 px-4 z-30">
         <form
           onSubmit={(e) => {
             e.preventDefault();
