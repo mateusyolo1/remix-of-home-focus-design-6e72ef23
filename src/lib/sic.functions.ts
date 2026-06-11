@@ -59,7 +59,7 @@ async function callRemoteSic(input: string): Promise<SicRunResult> {
     if (typeof text !== "string" || !text.trim()) {
       throw new Error("API SIC retornou resposta vazia ou inválida.");
     }
-    return { source: "remote_api", text, raw: data };
+    return { source: "remote_api", text };
   } catch (err) {
     if ((err as { name?: string }).name === "AbortError") {
       throw new Error("Tempo esgotado ao chamar a API SIC (30s).");
@@ -83,7 +83,7 @@ async function callLocalBridge(bridgeUrl: string, input: string): Promise<SicRun
     if (!res.ok) throw new Error(`Bridge ${res.status}: ${(await res.text()).slice(0, 200)}`);
     const data = await res.json();
     const text = typeof data?.text === "string" ? data.text : JSON.stringify(data);
-    return { source: "local_bridge", text, raw: data };
+    return { source: "local_bridge", text };
   } catch (err) {
     if ((err as { name?: string }).name === "AbortError") {
       throw new Error("Tempo esgotado ao chamar a bridge local (15s).");
