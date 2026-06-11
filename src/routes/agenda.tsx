@@ -332,7 +332,18 @@ function AgendaPage() {
               <button
                 type="button"
                 aria-label={`Abrir notas de ${b.title}`}
-                onClick={() => setEditing(b)}
+                onPointerDown={() => startLP(() => setBlockPreview(b))}
+                onPointerUp={cancelLP}
+                onPointerLeave={cancelLP}
+                onPointerCancel={cancelLP}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  setBlockPreview(b);
+                }}
+                onClick={() => {
+                  if (lpFired.current) return;
+                  setEditing(b);
+                }}
                 className={[
                   "flex-1 text-left p-4 bg-card rounded-xl ring-1 ring-black/5 border-l-2 active:scale-[0.99] transition-transform",
                   b.priority === "important" ? "border-destructive" : "border-foreground/70",
