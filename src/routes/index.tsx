@@ -483,7 +483,14 @@ function Index() {
               {lists.map((l) => (
                 <li key={l.id} className="p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-base font-semibold leading-tight">{l.title}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-base font-semibold leading-tight">{l.title}</h4>
+                      {l.tag && (
+                        <span className="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground">
+                          {TASK_TAG_LABEL[l.tag]}
+                        </span>
+                      )}
+                    </div>
                     <button
                       onClick={() => removeList(l.id)}
                       aria-label="Remover lista"
