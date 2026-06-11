@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
+import { TimePicker } from "@/components/TimePicker";
 import {
   ArrowLeft,
   Download,
@@ -371,19 +372,16 @@ function EditarPerfil() {
                               <span className="text-[10px] uppercase tracking-widest text-muted-foreground w-8">
                                 {idx === 0 ? "Início" : idx === 1 ? "Tarde" : `T${idx + 1}`}
                               </span>
-                              <input
-                                type="time"
+                              <TimePicker
                                 value={s.start}
-                                onChange={(e) => updateShift(key, idx, { start: e.target.value })}
-                                className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+                                onChange={(v) => updateShift(key, idx, { start: v })}
                               />
                               <span className="text-xs text-muted-foreground">—</span>
-                              <input
-                                type="time"
+                              <TimePicker
                                 value={s.end}
-                                onChange={(e) => updateShift(key, idx, { end: e.target.value })}
-                                className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+                                onChange={(v) => updateShift(key, idx, { end: v })}
                               />
+
                               <button
                                 type="button"
                                 onClick={() => removeShift(key, idx)}
