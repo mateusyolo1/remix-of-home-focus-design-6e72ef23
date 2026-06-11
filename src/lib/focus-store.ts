@@ -231,15 +231,19 @@ export function useQuickNotes() {
 
 export function useLists() {
   const [lists, setLists] = useStoreValue<CheckList[]>(KEY_LISTS, []);
-  const add = (input: { title: string; items: string[] }) => {
+  const add = (input: { title: string; items: string[]; tag?: TaskTag }) => {
     const l: CheckList = {
       id: uid(),
       title: input.title,
       items: input.items.map((t) => ({ id: uid(), text: t, done: false })),
       createdAt: new Date().toISOString(),
+      tag: input.tag,
     };
     setLists([l, ...lists]);
-    logActivity({ kind: "list", title: l.title, detail: `${l.items.length} itens` });
+    const detail = [`${l.items.length} itens`, l.tag ? TASK_TAG_LABEL[l.tag] : null]
+      .filter(Boolean)
+      .join(" · ");
+    logActivity({ kind: "list", title: l.title, detail, tag: l.tag });
     return l;
   };
   const toggleItem = (listId: string, itemId: string) => {
@@ -252,7 +256,8 @@ export function useLists() {
           : l
       )
     );
-    if (item && !item.done) logActivity({ kind: "list_item_done", title: item.text, detail: list?.title });
+    if (item && !item.done)
+      logActivity({ kind: "list_item_done", title: item.text, detail: list?.title, tag: list?.tag });
   };
 
   const addItem = (listId: string, text: string) =>
