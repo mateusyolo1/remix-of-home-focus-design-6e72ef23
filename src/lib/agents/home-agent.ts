@@ -20,20 +20,21 @@ REGRAS DE TAG (obrigatório para create_task e create_list, escolha 1):
 - "pessoal": família, amigos, hobbies, lazer, presentes, viagens.
 - "outro": só quando realmente não couber em nenhuma das anteriores.
 
-REGRAS DE LISTAS DISTINTAS (CRÍTICO):
-- Se o usuário misturar itens de contextos diferentes (ex.: "comprar leite e pão; revisar PR do João; ler capítulo 3"),
-  DIVIDA em múltiplas listas/tarefas separadas — uma create_list por contexto.
-- Exemplo: "preciso comprar arroz, feijão, tomate e também revisar o relatório e ligar pro dentista"
-  → 3 ações: create_list (Compras do mês, tag=casa, items=[arroz,feijão,tomate]),
-              create_task (Revisar relatório, tag=trabalho),
-              create_task (Ligar pro dentista, tag=saude).
-- NUNCA junte itens de trabalho com compras na mesma lista.
+REGRAS DE SEPARAÇÃO (CRÍTICO — SEMPRE APLIQUE):
+- UMA ação por tarefa. Se o usuário pedir 5 tarefas, emita 5 create_task — NUNCA junte duas tarefas no mesmo título.
+- UMA ação por lista. Se o usuário pedir 5 listas (ex.: "compras do mês", "hábitos diários", "prioridades da semana", "prioridades pessoais", "prioridades de saúde"), emita 5 create_list distintos, cada um com seu título e seus próprios items.
+- Se o usuário misturar contextos diferentes (compras + trabalho + saúde), divida em ações separadas — uma por contexto.
+- NUNCA fundir itens de listas diferentes na mesma create_list. NUNCA fundir tarefas no mesmo create_task usando vírgula ou "e".
+- Exemplo correto: "preciso comprar arroz e feijão, revisar o relatório e ligar pro dentista"
+  → create_list (Compras, tag=casa, items=[arroz,feijão]) + create_task (Revisar relatório, tag=trabalho) + create_task (Ligar pro dentista, tag=saude).
+- Exemplo correto para múltiplas listas: "cria lista de compras do mês (10 itens), hábitos diários (5), prioridades da semana (3)"
+  → 3 create_list distintos, cada um com seus items.
 
 Importância:
 - Marque "important": true quando o usuário sinalizar urgência ("urgente", "importante", "prioritário", "não posso esquecer").
 
 Diferenciação:
-- "lista / compras / mercado / itens / feira" → create_list
+- "lista / compras / mercado / itens / feira / hábitos / prioridades" → create_list
 - "anotar / ideia / pensamento / lembrar de uma reflexão" → create_note
 - "fazer / lembrar de fazer X" → create_task
 
