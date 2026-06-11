@@ -168,7 +168,7 @@ function ChatPage() {
         </div>
       )}
 
-      <main ref={scrollRef} className="flex-1 px-6 space-y-3 pb-44 overflow-y-auto">
+      <main ref={scrollRef} className="flex-1 px-6 pb-44 overflow-y-auto flex flex-col justify-end gap-3">
         {messages.map((m, i) => (
           <div
             key={i}
