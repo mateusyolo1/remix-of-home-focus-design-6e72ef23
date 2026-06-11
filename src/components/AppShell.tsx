@@ -8,6 +8,7 @@ import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { useAlarmRunner } from "@/lib/alarm-runner";
 import { useHermesTracker } from "@/lib/hermes/tracker";
 import { useNotificationSystem } from "@/lib/notifications/use-notification-system";
+import { useHomeTab } from "@/lib/home-tab-store";
 import { toast } from "sonner";
 
 const tabs = [
@@ -44,6 +45,8 @@ export function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onChat = pathname === "/chat";
   const onHome = pathname === "/";
+  const homeTab = useHomeTab();
+  const micSlot = onHome && homeTab === "Notas";
   const [config] = useAgentConfig();
   const [profile] = useProfile();
   const execute = useExecuteActions();
@@ -118,7 +121,14 @@ export function AppShell() {
     };
     r.onerror = (e) => {
       setRecording(false);
-      toast.error(`Microfone: ${e.error}`);
+      const map: Record<string, string> = {
+        "not-allowed": "Permissão de microfone negada. Habilite nas configurações do navegador.",
+        "service-not-allowed": "Microfone bloqueado pelo sistema. Habilite nas permissões do app.",
+        "no-speech": "Não ouvi nada. Tente novamente.",
+        "audio-capture": "Nenhum microfone encontrado.",
+        network: "Sem internet para reconhecer a voz.",
+      };
+      toast.error(map[e.error] ?? `Microfone: ${e.error}`);
     };
     r.onend = () => setRecording(false);
     r.onresult = (e) => {
@@ -126,10 +136,39 @@ export function AppShell() {
       if (text) handleTranscript(text);
     };
     recogRef.current = r;
+    // Dispara o reconhecimento dentro do gesto do usuário (sem await antes).
     try {
       r.start();
-    } catch {
+    } catch (err) {
       setRecording(false);
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Não consegui iniciar o microfone: ${msg}`);
+      return;
+    }
+    // Em paralelo, garante o prompt de permissão em WebViews (Android APK) que
+    // não acionam o prompt apenas pelo SpeechRecognition. Não bloqueia o gesto.
+    if (typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          // Liberamos imediatamente — o SpeechRecognition usa seu próprio stream.
+          stream.getTracks().forEach((t) => t.stop());
+        })
+        .catch((err: DOMException) => {
+          try {
+            recogRef.current?.stop();
+          } catch {
+            /* noop */
+          }
+          setRecording(false);
+          if (err.name === "NotAllowedError") {
+            toast.error("Permissão de microfone negada.");
+          } else if (err.name === "NotFoundError") {
+            toast.error("Nenhum microfone encontrado.");
+          } else if (err.name === "NotReadableError") {
+            toast.error("Microfone em uso por outro app.");
+          }
+        });
     }
   };
 
@@ -153,7 +192,7 @@ export function AppShell() {
             const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
 
             // Slot central: na Home vira microfone (transcrição -> tarefa).
-            if (to === "/" && onHome) {
+            if (to === "/" && micSlot) {
               return (
                 <li key="mic" className="flex-1">
                   <button
