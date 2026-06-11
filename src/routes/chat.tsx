@@ -126,7 +126,7 @@ function ChatPage() {
   };
 
   return (
-    <div className="fixed top-0 inset-x-0 bottom-[76px] flex flex-col bg-background overflow-hidden">
+    <div className="fixed top-0 inset-x-0 bottom-[112px] flex flex-col bg-background overflow-hidden">
       <div className="shrink-0 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 px-6 pt-4 pb-2 shadow-[0_1px_0_0_hsl(var(--border)/0.4)]">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 min-w-0">
