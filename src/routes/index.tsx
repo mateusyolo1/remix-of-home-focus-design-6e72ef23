@@ -153,9 +153,10 @@ function Index() {
   const addNewTask = () => {
     const v = newTask.trim();
     if (!v) return;
-    add(v);
+    add(v, undefined, newTaskTag);
     setNewTask("");
   };
+
 
   const submitTimerStart = (m: number) => {
     if (active) setActive({ ...active, minutes: m });
