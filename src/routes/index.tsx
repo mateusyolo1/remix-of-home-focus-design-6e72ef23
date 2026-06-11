@@ -802,42 +802,59 @@ function Index() {
           </ul>
         </section>
 
-        {/* Nota Rápida */}
-        <section className="space-y-4">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">
-            Nota Rápida
-          </h3>
-          <div className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
-            <div className="flex items-center gap-2 mb-4">
-              <input
-                type="text"
-                value={quickNote}
-                onChange={(e) => setQuickNote(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addQuickNote()}
-                placeholder="O que está na sua mente?"
-                className="flex-1 text-sm bg-secondary p-3 rounded-lg ring-1 ring-black/5 focus:ring-foreground outline-none placeholder:text-muted-foreground"
-              />
-              <button
-                onClick={() => toast("Gravação por voz em breve")}
-                aria-label="Gravar nota"
-                className="size-11 rounded-lg bg-foreground text-background grid place-items-center transition-transform active:scale-95"
-              >
-                <Mic className="size-4" />
-              </button>
+        {/* Nota Rápida — visível apenas na aba Notas */}
+        {tab === "Notas" && (
+          <section className="space-y-4">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest px-1">
+              Nota Rápida
+            </h3>
+            <div className="bg-card rounded-2xl p-5 ring-1 ring-black/5">
+              <div className="flex items-center gap-2 mb-4">
+                <input
+                  type="text"
+                  value={quickNote}
+                  onChange={(e) => setQuickNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addQuickNote();
+                    }
+                  }}
+                  placeholder="O que está na sua mente?"
+                  className="flex-1 text-sm bg-secondary p-3 rounded-lg ring-1 ring-black/5 focus:ring-foreground outline-none placeholder:text-muted-foreground"
+                />
+                <button
+                  type="button"
+                  onClick={addQuickNote}
+                  disabled={!quickNote.trim()}
+                  aria-label="Salvar nota"
+                  className="size-11 rounded-lg bg-foreground text-background grid place-items-center transition-transform active:scale-95 disabled:opacity-40 disabled:active:scale-100"
+                >
+                  <Plus className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toast("Gravação por voz em breve")}
+                  aria-label="Gravar nota"
+                  className="size-11 rounded-lg bg-secondary text-foreground grid place-items-center transition-transform active:scale-95 ring-1 ring-black/5"
+                >
+                  <Mic className="size-4" />
+                </button>
+              </div>
+              <ul className="space-y-3">
+                {recentNotes.length === 0 && (
+                  <li className="text-xs text-muted-foreground">Nenhuma nota ainda.</li>
+                )}
+                {recentNotes.map((n, i) => (
+                  <li key={`${i}-${n}`} className="flex gap-3 items-center">
+                    <span className="size-1 bg-border rounded-full" />
+                    <p className="text-xs text-muted-foreground">{n}</p>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="space-y-3">
-              {recentNotes.length === 0 && (
-                <li className="text-xs text-muted-foreground">Nenhuma nota ainda.</li>
-              )}
-              {recentNotes.map((n, i) => (
-                <li key={`${i}-${n}`} className="flex gap-3 items-center">
-                  <span className="size-1 bg-border rounded-full" />
-                  <p className="text-xs text-muted-foreground">{n}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Cronômetro (FINAL) */}
         <section className="bg-card rounded-2xl p-6 ring-1 ring-black/5 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.04)]">
