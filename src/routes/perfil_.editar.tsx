@@ -30,7 +30,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-export const Route = createFileRoute("/perfil/editar")({
+export const Route = createFileRoute("/perfil_/editar")({
   head: () => ({
     meta: [
       { title: "Editar perfil — FocusMind" },
