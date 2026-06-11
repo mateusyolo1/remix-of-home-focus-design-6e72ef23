@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Sparkles, StickyNote, Timer as TimerIcon } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Sparkles, StickyNote, ThumbsDown, ThumbsUp, Timer as TimerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type ChatMsg } from "@/lib/agent";
@@ -8,6 +8,7 @@ import type { RouteTarget } from "@/lib/agents/router";
 import type { RoutedAction } from "@/lib/agents/orchestrator";
 import { useExecuteActions } from "@/lib/agents/execute";
 import { buildProfileContext, useProfile } from "@/lib/profile-store";
+import { recordFeedback } from "@/lib/hermes/learning-core";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
