@@ -240,14 +240,12 @@ export async function showNotificationNow(opts: ShowOptions): Promise<boolean> {
         await reg.showNotification(opts.title, {
           body: opts.body,
           tag: opts.tag ?? `${opts.kind}-${opts.entityId ?? ""}`,
-          renotify: true,
           requireInteraction: settings.repeatUntilDismissed,
           data,
           icon: "/icon-192.png",
           badge: "/icon-192.png",
-          // @ts-expect-error actions é suportado em alguns navegadores
-          actions: opts.actions ?? [],
-        });
+          ...({ renotify: true, actions: opts.actions ?? [] } as Record<string, unknown>),
+        } as NotificationOptions);
         sent = true;
       } else {
         new Notification(opts.title, {
