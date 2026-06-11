@@ -50,18 +50,27 @@ function ChatPage() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const hydratedRef = useRef(false);
 
   const [profile] = useProfile();
   const execute = useExecuteActions();
 
   // Hydrate from localStorage after mount (avoids SSR mismatch).
   useEffect(() => {
-    setMessages(loadMessages());
+    const loaded = loadMessages();
+    setMessages(loaded);
+    // marca hidratado só DEPOIS que o setState propagar — usa microtask
+    // para garantir que o efeito de persistência ignore o estado inicial.
+    queueMicrotask(() => {
+      hydratedRef.current = true;
+    });
   }, []);
 
-  // Persist on every change.
+  // Persist on every change — só depois da hidratação para não sobrescrever
+  // o histórico salvo com o GREETING inicial.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!hydratedRef.current) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     } catch {
