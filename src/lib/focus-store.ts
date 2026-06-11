@@ -124,7 +124,9 @@ function write(key: string, value: unknown) {
   window.dispatchEvent(new CustomEvent(EVT, { detail: { key } }));
 }
 
-function useStoreValue<T>(key: string, fallback: T): [T, (v: T) => void] {
+type StoreSetter<T> = (value: T | ((prev: T) => T)) => void;
+
+function useStoreValue<T>(key: string, fallback: T): [T, StoreSetter<T>] {
   const [val, setVal] = useState<T>(fallback);
   useEffect(() => {
     setVal(read(key, fallback));
@@ -140,7 +142,13 @@ function useStoreValue<T>(key: string, fallback: T): [T, (v: T) => void] {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  const update = (v: T) => write(key, v);
+  const update: StoreSetter<T> = (next) => {
+    const prev = read(key, fallback);
+    const value =
+      typeof next === "function" ? (next as (prev: T) => T)(prev) : next;
+    write(key, value);
+    setVal(value);
+  };
   return [val, update];
 }
 
@@ -150,7 +158,8 @@ export function useActiveTask() {
 
 export function useNotes() {
   const [map, setMap] = useStoreValue<Record<string, string>>(KEY_NOTES, {});
-  const set = (time: string, html: string) => setMap({ ...map, [time]: html });
+  const set = (time: string, html: string) =>
+    setMap((prev) => ({ ...prev, [time]: html }));
   return { notes: map, setNote: set };
 }
 
@@ -159,7 +168,7 @@ export function useSteps(time: string | null) {
   const steps = time ? map[time] ?? [] : [];
   const setSteps = (next: Subtask[]) => {
     if (!time) return;
-    setMap({ ...map, [time]: next });
+    setMap((prev) => ({ ...prev, [time]: next }));
   };
   return [steps, setSteps] as const;
 }
@@ -172,7 +181,7 @@ export function useTasks() {
   const [tasks, setTasks] = useStoreValue<Task[]>(KEY_TASKS, SEED_TASKS);
   const add = (title: string, blockTime?: string, tag?: TaskTag): Task => {
     const t: Task = { id: uid(), title, done: false, blockTime, tag, createdAt: new Date().toISOString() };
-    setTasks([...tasks, t]);
+    setTasks((prev) => [...prev, t]);
     const detail = [blockTime ? `bloco ${blockTime}` : null, tag ? TASK_TAG_LABEL[tag] : null]
       .filter(Boolean)
       .join(" · ");
@@ -181,15 +190,15 @@ export function useTasks() {
   };
   const toggle = (id: string) => {
     const target = tasks.find((t) => t.id === id);
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
     if (target && !target.done)
       logActivity({ kind: "task_done", title: target.title, tag: target.tag });
   };
-  const remove = (id: string) => setTasks(tasks.filter((t) => t.id !== id));
+  const remove = (id: string) => setTasks((prev) => prev.filter((t) => t.id !== id));
   const update = (id: string, patch: Partial<Task>) =>
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   const toggleImportant = (id: string) =>
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, important: !t.important } : t)));
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, important: !t.important } : t)));
   return { tasks, add, toggle, remove, update, toggleImportant, setTasks };
 }
 
@@ -207,11 +216,12 @@ export function pruneExpiredTasks(tasks: Task[], expiryHours: number): Task[] {
 export function useBlocks() {
   const [blocks, setBlocks] = useStoreValue<Block[]>(KEY_BLOCKS, SEED_BLOCKS);
   const add = (b: Omit<Block, "notes"> & { notes?: string }) => {
-    const next = [...blocks, { notes: "", ...b }].sort((a, z) => {
-      const d = (a.date ?? "").localeCompare(z.date ?? "");
-      return d !== 0 ? d : a.time.localeCompare(z.time);
-    });
-    setBlocks(next);
+    setBlocks((prev) =>
+      [...prev, { notes: "", ...b }].sort((a, z) => {
+        const d = (a.date ?? "").localeCompare(z.date ?? "");
+        return d !== 0 ? d : a.time.localeCompare(z.time);
+      }),
+    );
     logActivity({ kind: "block", title: b.title, detail: `${b.time}${b.tag ? " · " + b.tag : ""}` });
   };
   return { blocks, add, setBlocks };
@@ -239,18 +249,18 @@ export function useQuickNotes() {
       ttlDays: input.ttlDays ?? 7,
       createdAt: new Date().toISOString(),
     };
-    setNotes([n, ...notes]);
+    setNotes((prev) => [n, ...prev]);
     logActivity({ kind: "note", title: n.title, detail: n.body?.slice(0, 80) });
     return n;
   };
 
-  const remove = (id: string) => setNotes(notes.filter((n) => n.id !== id));
+  const remove = (id: string) => setNotes((prev) => prev.filter((n) => n.id !== id));
   const update = (id: string, patch: Partial<QuickNote>) =>
-    setNotes(notes.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)));
   const archive = (id: string) =>
-    setNotes(notes.map((n) => (n.id === id ? { ...n, archivedAt: new Date().toISOString() } : n)));
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, archivedAt: new Date().toISOString() } : n)));
   const unarchive = (id: string) =>
-    setNotes(notes.map((n) => (n.id === id ? { ...n, archivedAt: undefined } : n)));
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, archivedAt: undefined } : n)));
   return { notes, add, remove, update, archive, unarchive, setNotes };
 }
 
@@ -270,7 +280,7 @@ export function useLists() {
       createdAt: new Date().toISOString(),
       tag: input.tag,
     };
-    setLists([l, ...lists]);
+    setLists((prev) => [l, ...prev]);
     const detail = [`${l.items.length} itens`, l.tag ? TASK_TAG_LABEL[l.tag] : null]
       .filter(Boolean)
       .join(" · ");
@@ -280,33 +290,33 @@ export function useLists() {
   const toggleItem = (listId: string, itemId: string) => {
     const list = lists.find((l) => l.id === listId);
     const item = list?.items.find((i) => i.id === itemId);
-    setLists(
-      lists.map((l) =>
+    setLists((prev) =>
+      prev.map((l) =>
         l.id === listId
           ? { ...l, items: l.items.map((i) => (i.id === itemId ? { ...i, done: !i.done } : i)) }
-          : l
-      )
+          : l,
+      ),
     );
     if (item && !item.done)
       logActivity({ kind: "list_item_done", title: item.text, detail: list?.title, tag: list?.tag });
   };
 
   const addItem = (listId: string, text: string) =>
-    setLists(
-      lists.map((l) =>
+    setLists((prev) =>
+      prev.map((l) =>
         l.id === listId
           ? { ...l, items: [...l.items, { id: uid(), text, done: false }] }
-          : l
-      )
+          : l,
+      ),
     );
   const removeItem = (listId: string, itemId: string) =>
-    setLists(
-      lists.map((l) =>
-        l.id === listId ? { ...l, items: l.items.filter((i) => i.id !== itemId) } : l
-      )
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === listId ? { ...l, items: l.items.filter((i) => i.id !== itemId) } : l,
+      ),
     );
-  const remove = (id: string) => setLists(lists.filter((l) => l.id !== id));
+  const remove = (id: string) => setLists((prev) => prev.filter((l) => l.id !== id));
   const complete = (id: string) =>
-    setLists(lists.map((l) => (l.id === id ? { ...l, completedAt: new Date().toISOString() } : l)));
+    setLists((prev) => prev.map((l) => (l.id === id ? { ...l, completedAt: new Date().toISOString() } : l)));
   return { lists, add, toggleItem, addItem, removeItem, remove, complete, setLists };
 }

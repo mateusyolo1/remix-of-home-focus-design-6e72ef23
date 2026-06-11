@@ -42,14 +42,18 @@ R3. COMPRAS = UMA LISTA ÚNICA
 
 R4. IDEIAS = NOTAS SEPARADAS (uma ideia conceitual = uma create_note)
 - Gatilhos: "ideia", "pensei em", "imaginei", "talvez criar", "seria interessante", "quem sabe", "poderia".
-- Cada ideia distinta vira UMA create_note com title="Ideia: <resumo curto fiel ao texto>".
+- Cada ideia distinta vira UMA create_note com:
+  • title: curto, no máximo 60 caracteres, no formato "Ideia: <resumo>".
+  • body: frase ou parágrafo curto explicando a ideia em texto normal (NÃO repetir o título).
+- NUNCA coloque a explicação inteira no title — o title é só o rótulo.
+- NUNCA deixe body vazio quando a ideia tiver qualquer detalhe no texto original.
 - NUNCA transforme uma ideia em create_list preenchida com itens inventados.
 - NUNCA expanda uma ideia em sub-bullets que o usuário não disse.
 - Exemplo: "pensei em criar um painel para hábitos, montar uma lista semanal de prioridades e testar um modo noturno"
   → 3 create_note:
-     • "Ideia: painel para acompanhar hábitos"
-     • "Ideia: lista semanal de prioridades"
-     • "Ideia: modo noturno mais confortável"
+     • {"type":"create_note","title":"Ideia: painel de hábitos","body":"Criar um painel simples para acompanhar hábitos."}
+     • {"type":"create_note","title":"Ideia: prioridades semanais","body":"Montar uma lista semanal de prioridades."}
+     • {"type":"create_note","title":"Ideia: modo noturno","body":"Testar um modo noturno mais confortável no aplicativo."}
   → NÃO criar create_list "Hábitos diários" nem "Prioridades da Semana".
 
 R5. CLASSIFICAÇÃO POR INTENÇÃO
@@ -82,9 +86,9 @@ Saída CORRETA:
   {"type":"create_task","title":"Separar os arquivos da área de trabalho","tag":"trabalho"},
   {"type":"create_task","title":"Pagar a conta de energia","tag":"casa"},
   {"type":"create_list","title":"Lista de compras","tag":"casa","items":["arroz","ovos","leite","pão","café","banana","frango","detergente","queijo","iogurte"]},
-  {"type":"create_note","title":"Ideia: painel para acompanhar hábitos"},
-  {"type":"create_note","title":"Ideia: lista semanal de prioridades"},
-  {"type":"create_note","title":"Ideia: modo noturno mais confortável"}
+  {"type":"create_note","title":"Ideia: painel de hábitos","body":"Criar um painel simples para acompanhar hábitos."},
+  {"type":"create_note","title":"Ideia: prioridades semanais","body":"Montar uma lista semanal de prioridades."},
+  {"type":"create_note","title":"Ideia: modo noturno","body":"Testar um modo noturno mais confortável no aplicativo."}
 ]}
 
 Se nada se encaixar, retorne {"actions":[]}.`;
