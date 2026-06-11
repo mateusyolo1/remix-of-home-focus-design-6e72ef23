@@ -43,6 +43,9 @@ function Index() {
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
   const [newListItem, setNewListItem] = useState<Record<string, string>>({});
+  const [newListTitle, setNewListTitle] = useState("");
+  const [newListTag, setNewListTag] = useState<TaskTag>("trabalho");
+  const [listTagMenuOpen, setListTagMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -157,6 +160,15 @@ function Index() {
     add(v, undefined, newTaskTag);
     setNewTask("");
   };
+
+  const addNewList = () => {
+    const v = newListTitle.trim();
+    if (!v) return;
+    addList({ title: v, items: [], tag: newListTag });
+    setNewListTitle("");
+  };
+
+
 
 
   const submitTimerStart = (m: number) => {
@@ -471,7 +483,14 @@ function Index() {
               {lists.map((l) => (
                 <li key={l.id} className="p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-base font-semibold leading-tight">{l.title}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-base font-semibold leading-tight">{l.title}</h4>
+                      {l.tag && (
+                        <span className="text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground">
+                          {TASK_TAG_LABEL[l.tag]}
+                        </span>
+                      )}
+                    </div>
                     <button
                       onClick={() => removeList(l.id)}
                       aria-label="Remover lista"
@@ -547,16 +566,81 @@ function Index() {
                 </li>
               ))}
               <li>
-                <button
-                  onClick={() => {
-                    const title = window.prompt("Título da lista");
-                    if (!title?.trim()) return;
-                    addList({ title: title.trim(), items: [] });
-                  }}
-                  className="w-full p-3 text-sm font-medium text-muted-foreground bg-card rounded-xl ring-1 ring-black/5 ring-dashed hover:text-foreground active:scale-[0.99]"
-                >
-                  + Nova lista
-                </button>
+                <div className="relative flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
+                  <input
+                    type="text"
+                    value={newListTitle}
+                    onChange={(e) => setNewListTitle(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addNewList()}
+                    placeholder="Nova lista…"
+                    className="flex-1 bg-transparent text-sm outline-none px-2 py-2 placeholder:text-muted-foreground"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setListTagMenuOpen((v) => !v)}
+                    aria-label="Escolher tag"
+                    aria-expanded={listTagMenuOpen}
+                    className={[
+                      "size-9 rounded-lg grid place-items-center transition-colors",
+                      listTagMenuOpen
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:bg-secondary",
+                    ].join(" ")}
+                  >
+                    <MoreVertical className="size-4" />
+                  </button>
+                  <button
+                    onClick={addNewList}
+                    aria-label="Adicionar lista"
+                    className="size-9 rounded-lg bg-foreground text-background grid place-items-center active:scale-95"
+                  >
+                    <Plus className="size-4" />
+                  </button>
+                  {listTagMenuOpen && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Fechar"
+                        onClick={() => setListTagMenuOpen(false)}
+                        className="fixed inset-0 z-10 cursor-default"
+                      />
+                      <div className="absolute right-2 bottom-full mb-2 z-20 w-48 bg-card rounded-xl ring-1 ring-black/10 shadow-lg p-1.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-2 py-1.5">
+                          Tags
+                        </p>
+                        {TASK_TAGS.map((tg) => {
+                          const active = newListTag === tg;
+                          return (
+                            <button
+                              key={tg}
+                              type="button"
+                              onClick={() => {
+                                setNewListTag(tg);
+                                setListTagMenuOpen(false);
+                              }}
+                              className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-secondary transition-colors"
+                            >
+                              <span className="font-medium">{TASK_TAG_LABEL[tg]}</span>
+                              <span
+                                className={[
+                                  "relative w-8 h-[18px] rounded-full transition-colors shrink-0",
+                                  active ? "bg-foreground" : "bg-secondary ring-1 ring-black/10",
+                                ].join(" ")}
+                              >
+                                <span
+                                  className={[
+                                    "absolute top-[2px] size-[14px] rounded-full bg-background transition-all",
+                                    active ? "left-[16px]" : "left-[2px]",
+                                  ].join(" ")}
+                                />
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
               </li>
             </ul>
           )}
