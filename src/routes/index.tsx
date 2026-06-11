@@ -5,6 +5,7 @@ import { ArrowUpRight, Check, CloudSun, Link2, Mic, MoreVertical, Plus, Target, 
 import { useEffect, useMemo, useState } from "react";
 import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
+import { useActivityLog, focusMinutesOn, streakDays } from "@/lib/activity-log";
 import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 import { toast } from "sonner";
 
@@ -47,6 +48,13 @@ function Index() {
   const [newListTag, setNewListTag] = useState<TaskTag>("trabalho");
   const [listTagMenuOpen, setListTagMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const activity = useActivityLog();
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const todayEyebrow = today.toLocaleDateString("pt-BR", { day: "numeric", month: "long" });
+  const focusMin = focusMinutesOn(activity, todayKey);
+  const focusLabel = focusMin >= 60 ? `${Math.floor(focusMin / 60)}h ${focusMin % 60}m` : `${focusMin}m`;
+  const streak = streakDays(activity);
 
   useEffect(() => {
     setMounted(true);
@@ -178,12 +186,12 @@ function Index() {
 
   return (
     <>
-      <PageHeader eyebrow="14 de Outubro" title={`Olá, ${profile.name.split(" ")[0]}`} streak={12} />
+      <PageHeader eyebrow={todayEyebrow} title={`Olá, ${profile.name.split(" ")[0]}`} streak={streak} />
 
       <main className="px-6 space-y-8">
         <section className="grid grid-cols-3 gap-2">
           {[
-            { label: "Foco", value: "2h 15m" },
+            { label: "Foco", value: focusLabel },
             { label: "Tarefas", value: `${tasks.filter((t) => t.done).length}/${tasks.length}` },
             { label: "Blocos", value: String(blocks.length) },
           ].map((s) => (
@@ -195,6 +203,7 @@ function Index() {
             </div>
           ))}
         </section>
+
 
         <div className="flex items-center gap-2 bg-secondary/60 rounded-xl px-3 py-2 ring-1 ring-black/5">
           <CloudSun className="size-4 text-muted-foreground shrink-0" />

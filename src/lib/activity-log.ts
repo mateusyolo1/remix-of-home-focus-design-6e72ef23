@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 
-export type ActivityKind = "task" | "note" | "list" | "block" | "task_done" | "list_item_done";
+export type ActivityKind =
+  | "task"
+  | "note"
+  | "list"
+  | "block"
+  | "task_done"
+  | "list_item_done"
+  | "focus";
 
 export type ActivityEntry = {
   id: string;
@@ -9,11 +16,14 @@ export type ActivityEntry = {
   detail?: string;
   /** Tag da tarefa, quando aplicável. */
   tag?: string;
+  /** Minutos efetivos (para sessões de foco). */
+  minutes?: number;
   /** ISO timestamp */
   at: string;
   /** yyyy-mm-dd local */
   date: string;
 };
+
 
 
 const KEY = "fm.activity-log";
@@ -51,6 +61,7 @@ export function logActivity(input: {
   title: string;
   detail?: string;
   tag?: string;
+  minutes?: number;
 }) {
   const now = new Date();
   const entry: ActivityEntry = {
@@ -59,6 +70,7 @@ export function logActivity(input: {
     title: input.title,
     detail: input.detail,
     tag: input.tag,
+    minutes: input.minutes,
     at: now.toISOString(),
     date: dateKeyLocal(now),
   };
@@ -68,6 +80,32 @@ export function logActivity(input: {
   write(list.slice(0, 5000));
   return entry;
 }
+
+/** Soma minutos de foco registrados em um dia (yyyy-mm-dd). */
+export function focusMinutesOn(list: ActivityEntry[], date: string): number {
+  return list
+    .filter((e) => e.kind === "focus" && e.date === date)
+    .reduce((acc, e) => acc + (e.minutes ?? 0), 0);
+}
+
+/** Dias consecutivos (até hoje) com pelo menos 1 atividade registrada. */
+export function streakDays(list: ActivityEntry[]): number {
+  if (list.length === 0) return 0;
+  const days = new Set(list.map((e) => e.date));
+  let count = 0;
+  const d = new Date();
+  while (true) {
+    const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    if (days.has(k)) {
+      count += 1;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
 
 export function useActivityLog() {
   const [list, setList] = useState<ActivityEntry[]>([]);
@@ -101,4 +139,5 @@ export const ACTIVITY_LABEL: Record<ActivityKind, string> = {
   list: "Lista criada",
   list_item_done: "Item concluído",
   block: "Bloco agendado",
+  focus: "Sessão de foco",
 };

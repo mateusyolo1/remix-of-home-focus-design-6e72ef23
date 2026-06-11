@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Check, ChevronRight, Pause, Play, RotateCcw, SkipForward, Target, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveTask, useBlocks, useTasks, type Block } from "@/lib/focus-store";
+import { logActivity } from "@/lib/activity-log";
 
 export const Route = createFileRoute("/timer")({
   head: () => ({
@@ -53,6 +54,14 @@ function TimerPage() {
         if (m <= 0) {
           setRunning(false);
           setSeconds(0);
+          const planned = active?.minutes ?? 25;
+          logActivity({
+            kind: "focus",
+            title: active?.title ?? "Foco",
+            detail: `${planned} min`,
+            tag: active?.tag,
+            minutes: planned,
+          });
           return 0;
         }
         return m - 1;
@@ -60,6 +69,7 @@ function TimerPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seconds]);
+
 
   const display = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
@@ -80,17 +90,33 @@ function TimerPage() {
     if (active) setActive({ ...active, minutes: m });
   };
 
+  const logElapsed = () => {
+    const planned = active?.minutes ?? 25;
+    const elapsedMin = Math.max(0, planned - minutes - (seconds > 0 ? 0 : 0));
+    if (elapsedMin <= 0) return;
+    logActivity({
+      kind: "focus",
+      title: active?.title ?? "Foco",
+      detail: `${elapsedMin} min`,
+      tag: active?.tag,
+      minutes: elapsedMin,
+    });
+  };
+
   const reset = () => {
     setRunning(false);
+    logElapsed();
     setMinutes(active?.minutes ?? 25);
     setSeconds(0);
   };
 
   const complete = () => {
     setRunning(false);
+    logElapsed();
     setMinutes(0);
     setSeconds(0);
   };
+
 
   const linkedTasks = active ? tasks.filter((t) => t.blockTime === active.time) : [];
 
