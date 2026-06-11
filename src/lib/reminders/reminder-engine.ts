@@ -81,7 +81,7 @@ export function useReminderEngine() {
 
   // Ações vindas da notificação: marcar concluído / adiar.
   useEffect(() => {
-    return onNotificationAction((msg) => {
+    const off = onNotificationAction((msg) => {
       if (msg.entityType !== "task" || !msg.entityId) return;
       const task = tasks.find((t) => t.id === msg.entityId);
       if (!task) return;
@@ -94,5 +94,8 @@ export function useReminderEngine() {
         toast(`Adiado 15 min: ${task.title}`);
       }
     });
+    return () => {
+      off();
+    };
   }, [tasks, toggle, update]);
 }
