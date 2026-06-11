@@ -135,13 +135,13 @@ export function AppShell() {
         <Link
           to="/chat"
           aria-label="Abrir agente IA"
-          className="fixed bottom-28 right-5 z-40 size-14 rounded-full bg-foreground text-background shadow-lg shadow-foreground/20 grid place-items-center transition-transform active:scale-90"
+          className="fixed bottom-28 right-5 z-40 size-14 rounded-full bg-foreground text-background shadow-lg shadow-foreground/20 grid place-items-center transition-transform active:scale-90 [body.modal-open_&]:translate-y-32 [body.modal-open_&]:pointer-events-none"
         >
           <Sparkles className="size-5" />
         </Link>
       )}
 
-      <nav className="fixed bottom-0 inset-x-0 z-50 bg-card/85 backdrop-blur-md border-t border-border px-4 pt-3 pb-6">
+      <nav className="fixed bottom-0 inset-x-0 z-50 bg-card/85 backdrop-blur-md border-t border-border px-4 pt-3 pb-6 transition-transform duration-200 [body.modal-open_&]:translate-y-full [body.modal-open_&]:pointer-events-none">
         <ul className="flex justify-between items-center max-w-md mx-auto">
           {tabs.map(({ to, label, icon: Icon }) => {
             const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
