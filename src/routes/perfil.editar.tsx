@@ -162,6 +162,30 @@ function EditarPerfil() {
           <ArrowLeft className="size-3.5" /> Voltar
         </Link>
 
+        {/* Atalhos de navegação dentro da página */}
+        <nav className="-mx-6 px-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="flex gap-2 w-max">
+            {[
+              { href: "#identidade", label: "Identidade" },
+              { href: "#escala", label: "Escala" },
+              { href: "#local", label: "Localização" },
+              { href: "#trabalho", label: "Trabalho" },
+              { href: "#sobre", label: "Sobre você" },
+              { href: "#agentes", label: "Agentes" },
+            ].map((s) => (
+              <li key={s.href}>
+                <a
+                  href={s.href}
+                  className="inline-block px-3 py-1.5 rounded-full text-[11px] font-semibold bg-secondary text-foreground ring-1 ring-black/5"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+
         {/* Identidade */}
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <SectionLabel>Identidade</SectionLabel>
