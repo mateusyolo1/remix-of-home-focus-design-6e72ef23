@@ -12,12 +12,43 @@ export type ActiveTask = {
 
 export type Subtask = { id: string; text: string; done: boolean };
 
+export type TaskTag =
+  | "trabalho"
+  | "estudo"
+  | "saude"
+  | "casa"
+  | "pessoal"
+  | "outro";
+
+export const TASK_TAGS: TaskTag[] = [
+  "trabalho",
+  "estudo",
+  "saude",
+  "casa",
+  "pessoal",
+  "outro",
+];
+
+export const TASK_TAG_LABEL: Record<TaskTag, string> = {
+  trabalho: "Trabalho",
+  estudo: "Estudo",
+  saude: "Saúde",
+  casa: "Casa",
+  pessoal: "Pessoal",
+  outro: "Outro",
+};
+
+/** Tags consideradas "produtivas" para gerar estatísticas de desempenho. */
+export const PRODUCTIVE_TAGS: TaskTag[] = ["trabalho", "estudo"];
+
 export type Task = {
   id: string;
   title: string;
   done: boolean;
   blockTime?: string; // links to Block.time
+  tag?: TaskTag;
 };
+
 
 export type Block = {
   time: string;
@@ -132,21 +163,26 @@ function uid() {
 
 export function useTasks() {
   const [tasks, setTasks] = useStoreValue<Task[]>(KEY_TASKS, SEED_TASKS);
-  const add = (title: string, blockTime?: string) => {
-    const t: Task = { id: uid(), title, done: false, blockTime };
+  const add = (title: string, blockTime?: string, tag?: TaskTag) => {
+    const t: Task = { id: uid(), title, done: false, blockTime, tag };
     setTasks([...tasks, t]);
-    logActivity({ kind: "task", title, detail: blockTime ? `bloco ${blockTime}` : undefined });
+    const detail = [blockTime ? `bloco ${blockTime}` : null, tag ? TASK_TAG_LABEL[tag] : null]
+      .filter(Boolean)
+      .join(" · ");
+    logActivity({ kind: "task", title, detail: detail || undefined, tag });
   };
   const toggle = (id: string) => {
     const target = tasks.find((t) => t.id === id);
     setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
-    if (target && !target.done) logActivity({ kind: "task_done", title: target.title });
+    if (target && !target.done)
+      logActivity({ kind: "task_done", title: target.title, tag: target.tag });
   };
   const remove = (id: string) => setTasks(tasks.filter((t) => t.id !== id));
   const update = (id: string, patch: Partial<Task>) =>
     setTasks(tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   return { tasks, add, toggle, remove, update, setTasks };
 }
+
 
 export function useBlocks() {
   const [blocks, setBlocks] = useStoreValue<Block[]>(KEY_BLOCKS, SEED_BLOCKS);

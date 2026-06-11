@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks } from "@/lib/focus-store";
+import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
 import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 import { toast } from "sonner";
@@ -37,6 +37,8 @@ function Index() {
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("Tarefas");
   const [newTask, setNewTask] = useState("");
+  const [newTaskTag, setNewTaskTag] = useState<TaskTag>("trabalho");
+
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
   const [newListItem, setNewListItem] = useState<Record<string, string>>({});
@@ -151,9 +153,10 @@ function Index() {
   const addNewTask = () => {
     const v = newTask.trim();
     if (!v) return;
-    add(v);
+    add(v, undefined, newTaskTag);
     setNewTask("");
   };
+
 
   const submitTimerStart = (m: number) => {
     if (active) setActive({ ...active, minutes: m });
@@ -305,11 +308,19 @@ function Index() {
                         >
                           {t.title}
                         </p>
-                        {linkedBlock && (
-                          <p className="text-[10px] text-accent mt-0.5 truncate">
-                            {linkedBlock.time} · {linkedBlock.title}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {t.tag && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">
+                              {TASK_TAG_LABEL[t.tag]}
+                            </span>
+                          )}
+                          {linkedBlock && (
+                            <p className="text-[10px] text-accent truncate">
+                              {linkedBlock.time} · {linkedBlock.title}
+                            </p>
+                          )}
+                        </div>
+
                       </div>
                       <button
                         onClick={() => setLinkingId(t.id)}
@@ -333,23 +344,43 @@ function Index() {
                 })}
               </ul>
 
-              <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
-                <input
-                  type="text"
-                  value={newTask}
-                  onChange={(e) => setNewTask(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addNewTask()}
-                  placeholder="Adicionar tarefa…"
-                  className="flex-1 bg-transparent text-sm outline-none px-2 py-2 placeholder:text-muted-foreground"
-                />
-                <button
-                  onClick={addNewTask}
-                  aria-label="Adicionar"
-                  className="size-9 rounded-lg bg-foreground text-background grid place-items-center active:scale-95"
-                >
-                  <Plus className="size-4" />
-                </button>
+              <div className="space-y-2">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+                  {TASK_TAGS.map((tg) => (
+                    <button
+                      key={tg}
+                      type="button"
+                      onClick={() => setNewTaskTag(tg)}
+                      className={[
+                        "shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ring-1 transition-colors",
+                        newTaskTag === tg
+                          ? "bg-foreground text-background ring-foreground"
+                          : "bg-card text-muted-foreground ring-black/10 hover:text-foreground",
+                      ].join(" ")}
+                    >
+                      {TASK_TAG_LABEL[tg]}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
+                  <input
+                    type="text"
+                    value={newTask}
+                    onChange={(e) => setNewTask(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addNewTask()}
+                    placeholder="Adicionar tarefa…"
+                    className="flex-1 bg-transparent text-sm outline-none px-2 py-2 placeholder:text-muted-foreground"
+                  />
+                  <button
+                    onClick={addNewTask}
+                    aria-label="Adicionar"
+                    className="size-9 rounded-lg bg-foreground text-background grid place-items-center active:scale-95"
+                  >
+                    <Plus className="size-4" />
+                  </button>
+                </div>
               </div>
+
             </>
           )}
 
