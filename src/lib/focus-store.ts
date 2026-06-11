@@ -184,8 +184,10 @@ export function useQuickNotes() {
       createdAt: new Date().toISOString(),
     };
     setNotes([n, ...notes]);
+    logActivity({ kind: "note", title: n.title, detail: n.body?.slice(0, 80) });
     return n;
   };
+
   const remove = (id: string) => setNotes(notes.filter((n) => n.id !== id));
   return { notes, add, remove, setNotes };
 }
