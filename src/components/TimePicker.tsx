@@ -33,11 +33,6 @@ export function TimePicker({ value, onChange, className, minuteStep = 5 }: Props
     String(i * minuteStep).padStart(2, "0"),
   );
 
-  const setH = (nh: string) => onChange(`${nh}:${m ?? "00"}`);
-  const setM = (nm: string) => {
-    onChange(`${h ?? "00"}:${nm}`);
-    setOpen(false);
-  };
 
   return (
     <div ref={wrapRef} className={["relative inline-block", className ?? ""].join(" ")}>
