@@ -137,43 +137,70 @@ function PerfilPage() {
           ))}
         </section>
 
-        <section className="bg-card rounded-2xl p-4 ring-1 ring-black/5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground capitalize">
-              {monthLabel}
-            </p>
-            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <span className="size-2 rounded-sm bg-foreground" /> Presente
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="size-2 rounded-sm bg-destructive" /> Faltou
-              </span>
-            </div>
+        <section className="bg-card rounded-2xl ring-1 ring-black/5 overflow-hidden">
+          <div className="flex gap-1 p-1 m-2 bg-secondary rounded-xl">
+            {([
+              { id: "historico", label: "Histórico" },
+              { id: "desempenho", label: "Desempenho" },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={[
+                  "flex-1 text-xs font-semibold py-2 rounded-lg transition-colors",
+                  tab === t.id
+                    ? "bg-card text-foreground ring-1 ring-black/5"
+                    : "text-muted-foreground",
+                ].join(" ")}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
-          <div className="grid grid-cols-7 gap-1.5">
-            {days.map((d) => {
-              const cls =
-                d.status === "present"
-                  ? "bg-foreground text-background"
-                  : d.status === "missed"
-                  ? "bg-destructive text-destructive-foreground"
-                  : d.status === "today"
-                  ? "bg-secondary text-foreground ring-1 ring-foreground"
-                  : "bg-secondary text-muted-foreground";
-              return (
-                <div
-                  key={d.d}
-                  className={["aspect-square rounded-md grid place-items-center text-[11px] font-medium tabular-nums", cls].join(" ")}
-                >
-                  {d.d}
+
+          {tab === "historico" ? (
+            <div className="p-4 pt-2">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground capitalize">
+                  {monthLabel}
+                </p>
+                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="size-2 rounded-sm bg-foreground" /> Presente
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <span className="size-2 rounded-sm bg-destructive" /> Faltou
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-          <p className="text-[10px] text-muted-foreground mt-3 text-center">
-            Reseta automaticamente todo mês
-          </p>
+              </div>
+              <div className="grid grid-cols-7 gap-1.5">
+                {days.map((d) => {
+                  const cls =
+                    d.status === "present"
+                      ? "bg-foreground text-background"
+                      : d.status === "missed"
+                      ? "bg-destructive text-destructive-foreground"
+                      : d.status === "today"
+                      ? "bg-secondary text-foreground ring-1 ring-foreground"
+                      : "bg-secondary text-muted-foreground";
+                  return (
+                    <div
+                      key={d.d}
+                      className={["aspect-square rounded-md grid place-items-center text-[11px] font-medium tabular-nums", cls].join(" ")}
+                    >
+                      {d.d}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-3 text-center">
+                Reseta automaticamente todo mês
+              </p>
+            </div>
+          ) : (
+            <DesempenhoPanel checkins={checkins} presentCount={presentCount} missedCount={missedCount} />
+          )}
         </section>
 
         <HermesAgentCard />
