@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 
-export type ActivityKind = "task" | "note" | "list" | "block" | "task_done" | "list_item_done";
+export type ActivityKind =
+  | "task"
+  | "note"
+  | "list"
+  | "block"
+  | "task_done"
+  | "list_item_done"
+  | "focus";
 
 export type ActivityEntry = {
   id: string;
@@ -9,11 +16,14 @@ export type ActivityEntry = {
   detail?: string;
   /** Tag da tarefa, quando aplicável. */
   tag?: string;
+  /** Minutos efetivos (para sessões de foco). */
+  minutes?: number;
   /** ISO timestamp */
   at: string;
   /** yyyy-mm-dd local */
   date: string;
 };
+
 
 
 const KEY = "fm.activity-log";
