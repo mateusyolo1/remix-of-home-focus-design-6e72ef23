@@ -655,13 +655,13 @@ function EditarPerfil() {
                     onClick={() => update({ enabled: !sub.enabled })}
                     className={[
                       "relative w-11 h-6 rounded-full transition-colors shrink-0 mt-0.5",
-                      sub.enabled ? "bg-destructive" : "bg-background ring-1 ring-border",
+                      sub.enabled ? "bg-primary" : "bg-muted ring-1 ring-border",
                     ].join(" ")}
                   >
                     <span
                       className={[
-                        "absolute top-0.5 size-5 rounded-full bg-background shadow transition-transform",
-                        sub.enabled ? "translate-x-5" : "translate-x-0.5",
+                        "absolute top-0.5 size-5 rounded-full bg-card shadow transition-transform",
+                        sub.enabled ? "translate-x-[22px]" : "translate-x-0.5",
                       ].join(" ")}
                     />
                   </button>
