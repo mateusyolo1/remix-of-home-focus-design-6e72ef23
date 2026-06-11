@@ -663,8 +663,21 @@ function Index() {
                       <Plus className="size-4" />
                     </button>
                   </div>
+                  {allDone && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        completeList(l.id);
+                        toast.success("Lista concluída");
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-2 bg-foreground text-background py-2.5 rounded-lg text-sm font-medium active:scale-[0.98]"
+                    >
+                      <CheckCircle2 className="size-4" /> Concluído
+                    </button>
+                  )}
                 </li>
-              ))}
+                );
+              })}
               <li>
                 <div className="relative flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
                   <input
