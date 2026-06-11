@@ -623,6 +623,9 @@ function EditarPerfil() {
               </div>
             );
           })}
+        </section>
+
+
 
         {/* Instalar app */}
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-3">
