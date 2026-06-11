@@ -533,23 +533,24 @@ html[data-palette="liquid"].dark body {
   background-attachment: fixed;
 }
 
-/* Glass surfaces — true iOS 26 Liquid Glass look */
+/* Glass surfaces — faithful to archisvaze/liquid-glass recipe:
+   tint 6% white + inner rim highlight with NEGATIVE spread + soft outer shadow
+   + blurred & heavily saturated backdrop. No SVG displacement (kept lightweight). */
 html[data-palette="liquid"] .bg-card,
 html[data-palette="liquid"] .bg-popover,
 html[data-palette="liquid"] .bg-secondary,
 html[data-palette="liquid"] .bg-muted {
   position: relative;
   isolation: isolate;
-  backdrop-filter: url(#liquid-glass) blur(8px) saturate(180%) brightness(1.05);
-  border: 1px solid oklch(1 0 0 / 0.45);
+  backdrop-filter: blur(12px) saturate(4);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: none;
   box-shadow:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.6),
-    inset 0 -1px 0 0 oklch(1 0 0 / 0.18),
-    inset 0 0 24px -6px oklch(1 0 0 / 0.35),
-    0 8px 24px -6px oklch(0.2 0.05 270 / 0.25),
-    0 2px 6px -2px oklch(0.2 0.05 270 / 0.18);
+    inset 0 0 20px -5px rgba(255, 255, 255, 0.45),
+    0 4px 24px rgba(0, 0, 0, 0.18);
 }
-/* Glossy specular highlight along the top edge */
+/* The inner highlight already lives in box-shadow; ::before adds the subtle
+   top-edge gloss the iOS pucks have. */
 html[data-palette="liquid"] .bg-card::before,
 html[data-palette="liquid"] .bg-popover::before {
   content: "";
@@ -557,10 +558,7 @@ html[data-palette="liquid"] .bg-popover::before {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background:
-    linear-gradient(180deg, oklch(1 0 0 / 0.55) 0%, oklch(1 0 0 / 0.08) 22%, transparent 45%),
-    linear-gradient(0deg, oklch(1 0 0 / 0.18) 0%, transparent 30%);
-  mix-blend-mode: screen;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.06) 18%, transparent 40%);
   z-index: 0;
 }
 html[data-palette="liquid"] .bg-card > *,
@@ -568,26 +566,21 @@ html[data-palette="liquid"] .bg-popover > * {
   position: relative;
   z-index: 1;
 }
+/* Dark mode: keep the same recipe but invert the rim & gloss so the glass
+   reads as a darker pane lit from above, not a blown-out white pill. */
 html[data-palette="liquid"].dark .bg-card,
 html[data-palette="liquid"].dark .bg-popover,
 html[data-palette="liquid"].dark .bg-secondary,
 html[data-palette="liquid"].dark .bg-muted {
-  backdrop-filter: url(#liquid-glass) blur(12px) saturate(160%) brightness(0.9);
-  border: 1px solid oklch(1 0 0 / 0.18);
+  backdrop-filter: blur(14px) saturate(2.2) brightness(0.85);
+  background-color: rgba(255, 255, 255, 0.04);
   box-shadow:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.22),
-    inset 0 -1px 0 0 oklch(0 0 0 / 0.35),
-    inset 0 0 24px -6px oklch(1 0 0 / 0.08),
-    0 10px 28px -6px oklch(0 0 0 / 0.6),
-    0 2px 8px -2px oklch(0 0 0 / 0.45);
+    inset 0 0 20px -5px rgba(255, 255, 255, 0.22),
+    0 4px 24px rgba(0, 0, 0, 0.55);
 }
-/* Tone down the glossy highlight in dark mode so cards stay legible */
 html[data-palette="liquid"].dark .bg-card::before,
 html[data-palette="liquid"].dark .bg-popover::before {
-  background:
-    linear-gradient(180deg, oklch(1 0 0 / 0.18) 0%, oklch(1 0 0 / 0.04) 25%, transparent 50%),
-    linear-gradient(0deg, oklch(0 0 0 / 0.25) 0%, transparent 35%);
-  mix-blend-mode: overlay;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 20%, transparent 45%);
 }
 
 
