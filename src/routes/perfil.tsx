@@ -537,3 +537,122 @@ function SilenciosoModal({
     </ModalShell>
   );
 }
+
+function DesempenhoPanel({
+  checkins,
+  presentCount,
+  missedCount,
+}: {
+  checkins: Set<string>;
+  presentCount: number;
+  missedCount: number;
+}) {
+  const { weekly, last14, rate } = useMemo(() => {
+    const now = new Date();
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+    const last14 = Array.from({ length: 14 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (13 - i));
+      return {
+        label: String(d.getDate()).padStart(2, "0"),
+        presente: checkins.has(fmt(d)) ? 1 : 0,
+      };
+    });
+
+    const weekly = Array.from({ length: 8 }, (_, w) => {
+      const end = new Date(now);
+      end.setDate(now.getDate() - (7 - 1) * (7 - w));
+      let count = 0;
+      const start = new Date(now);
+      start.setDate(now.getDate() - (8 - w) * 7 + 1);
+      const stop = new Date(now);
+      stop.setDate(now.getDate() - (7 - w) * 7);
+      for (let d = new Date(start); d <= stop; d.setDate(d.getDate() + 1)) {
+        if (checkins.has(fmt(d))) count++;
+      }
+      return { label: `S${w + 1}`, dias: count };
+    });
+
+    const total = presentCount + missedCount;
+    const rate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
+    return { weekly, last14, rate };
+  }, [checkins, presentCount, missedCount]);
+
+  return (
+    <div className="p-4 pt-2 space-y-4">
+      <div className="grid grid-cols-3 gap-2">
+        <Metric label="Taxa" value={`${rate}%`} />
+        <Metric label="Presenças" value={String(presentCount)} />
+        <Metric label="Faltas" value={String(missedCount)} />
+      </div>
+
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          Últimos 14 dias
+        </p>
+        <div className="h-32">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={last14} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis hide domain={[0, 1]} />
+              <Tooltip
+                cursor={{ fill: "hsl(var(--secondary))" }}
+                contentStyle={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 8,
+                  fontSize: 11,
+                }}
+                formatter={(v: number) => (v ? "Presente" : "Faltou")}
+              />
+              <Bar dataKey="presente" fill="currentColor" className="text-foreground" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          Tendência semanal (8 semanas)
+        </p>
+        <div className="h-32">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={weekly} margin={{ top: 4, right: 8, bottom: 0, left: -28 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" domain={[0, 7]} />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 8,
+                  fontSize: 11,
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="dias"
+                stroke="currentColor"
+                className="text-foreground"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-secondary rounded-xl p-3 text-center ring-1 ring-black/5">
+      <p className="text-base font-semibold tabular-nums">{value}</p>
+      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">{label}</p>
+    </div>
+  );
+}
