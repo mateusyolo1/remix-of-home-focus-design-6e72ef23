@@ -343,38 +343,82 @@ function EditarPerfil() {
                           Nenhum turno. Adicione um abaixo.
                         </p>
                       )}
-                      {day.shifts.map((s, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <input
-                            type="time"
-                            value={s.start}
-                            onChange={(e) => updateShift(key, idx, { start: e.target.value })}
-                            className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
-                          />
-                          <span className="text-xs text-muted-foreground">—</span>
-                          <input
-                            type="time"
-                            value={s.end}
-                            onChange={(e) => updateShift(key, idx, { end: e.target.value })}
-                            className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeShift(key, idx)}
-                            aria-label="Remover turno"
-                            className="ml-auto size-8 rounded-md grid place-items-center text-muted-foreground hover:bg-background"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => addShift(key)}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent"
-                      >
-                        <Plus className="size-3.5" /> Adicionar turno
-                      </button>
+                      {day.shifts.map((s, idx) => {
+                        const prev = day.shifts[idx - 1];
+                        let pauseLabel: string | null = null;
+                        if (prev) {
+                          const [ph, pm] = prev.end.split(":").map(Number);
+                          const [sh, sm] = s.start.split(":").map(Number);
+                          const diff = sh * 60 + sm - (ph * 60 + pm);
+                          if (diff > 0) {
+                            const h = Math.floor(diff / 60);
+                            const m = diff % 60;
+                            pauseLabel = `${h ? `${h}h` : ""}${m ? ` ${m}min` : ""}`.trim();
+                          }
+                        }
+                        return (
+                          <div key={idx}>
+                            {pauseLabel && (
+                              <div className="flex items-center gap-2 my-1 pl-1">
+                                <span className="h-px flex-1 bg-border" />
+                                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                  Pausa · {pauseLabel}
+                                </span>
+                                <span className="h-px flex-1 bg-border" />
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] uppercase tracking-widest text-muted-foreground w-8">
+                                {idx === 0 ? "Início" : idx === 1 ? "Tarde" : `T${idx + 1}`}
+                              </span>
+                              <input
+                                type="time"
+                                value={s.start}
+                                onChange={(e) => updateShift(key, idx, { start: e.target.value })}
+                                className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+                              />
+                              <span className="text-xs text-muted-foreground">—</span>
+                              <input
+                                type="time"
+                                value={s.end}
+                                onChange={(e) => updateShift(key, idx, { end: e.target.value })}
+                                className="bg-background rounded-md px-2 py-1.5 text-sm ring-1 ring-black/5 focus:ring-foreground tabular-nums"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeShift(key, idx)}
+                                aria-label="Remover turno"
+                                className="ml-auto size-8 rounded-md grid place-items-center text-muted-foreground hover:bg-background"
+                              >
+                                <Trash2 className="size-4" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                        <button
+                          type="button"
+                          onClick={() => addShift(key)}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent"
+                        >
+                          <Plus className="size-3.5" /> Adicionar turno
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            patchDay(key, {
+                              shifts: [
+                                { start: "08:00", end: "12:00" },
+                                { start: "13:00", end: "17:00" },
+                              ],
+                            })
+                          }
+                          className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-2 py-1 rounded-md bg-background ring-1 ring-black/5"
+                        >
+                          Aplicar 08–12 · 13–17
+                        </button>
+                      </div>
                     </div>
                   )}
                 </li>
