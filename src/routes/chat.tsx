@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Shuffle, Sparkles, StickyNote, Tag, ThumbsDown, ThumbsUp, Timer as TimerIcon } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Shuffle, Sparkles, Split, StickyNote, Tag, ThumbsDown, ThumbsUp, Timer as TimerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type ChatMsg } from "@/lib/agent";
@@ -8,7 +8,7 @@ import type { RouteTarget } from "@/lib/agents/router";
 import type { RoutedAction } from "@/lib/agents/orchestrator";
 import { useExecuteActions } from "@/lib/agents/execute";
 import { buildProfileContext, useProfile } from "@/lib/profile-store";
-import { recordFeedback } from "@/lib/hermes/learning-core";
+import { submitAgentFeedback, type AgentFeedbackKind } from "@/lib/hermes/agent-core";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
@@ -291,38 +291,10 @@ function labelFor(a: RoutedAction): string {
 }
 
 function FeedbackBar({ actions }: { actions: RoutedAction[] }) {
-  const [sent, setSent] = useState<string | null>(null);
-  const send = (kind: "good" | "wrong_type" | "wrong_category" | "should_not_create") => {
+  const [sent, setSent] = useState<AgentFeedbackKind | null>(null);
+  const send = (kind: AgentFeedbackKind) => {
     const summary = actions.map((a) => labelFor(a)).join(" | ");
-    if (kind === "good") {
-      recordFeedback({
-        kind: "preference",
-        text: `Usuário confirmou que ficou bom: ${summary}`,
-        rule: `Continuar usando o mesmo estilo de extração para entradas semelhantes.`,
-        confidence: 0.5,
-      });
-    } else if (kind === "wrong_category") {
-      recordFeedback({
-        kind: "category_rule",
-        text: `Categoria errada em: ${summary}`,
-        rule: `Revisar a escolha de tag para itens parecidos com "${summary}".`,
-        confidence: 0.65,
-      });
-    } else if (kind === "wrong_type") {
-      recordFeedback({
-        kind: "correction",
-        text: `Tipo errado (task/list/note) em: ${summary}`,
-        rule: `Reclassificar tipo para entradas parecidas com "${summary}".`,
-        confidence: 0.7,
-      });
-    } else {
-      recordFeedback({
-        kind: "rejection",
-        text: `Usuário não queria que fosse criado: ${summary}`,
-        rule: `Não criar automaticamente itens com título parecido a "${summary}".`,
-        confidence: 0.75,
-      });
-    }
+    submitAgentFeedback({ kind, summary });
     setSent(kind);
     toast.success("Feedback registrado");
   };
@@ -339,11 +311,14 @@ function FeedbackBar({ actions }: { actions: RoutedAction[] }) {
       <button title="Ficou bom" aria-label="Ficou bom" onClick={() => send("good")} className={`${btn} bg-emerald-500/10 text-emerald-600 ring-emerald-500/20`}>
         <ThumbsUp className="size-3.5" />
       </button>
-      <button title="Categoria errada" aria-label="Categoria errada" onClick={() => send("wrong_category")} className={`${btn} bg-secondary text-muted-foreground ring-black/5`}>
+      <button title="Tag errada" aria-label="Tag errada" onClick={() => send("wrong_category")} className={`${btn} bg-secondary text-muted-foreground ring-black/5`}>
         <Tag className="size-3.5" />
       </button>
       <button title="Tipo errado" aria-label="Tipo errado" onClick={() => send("wrong_type")} className={`${btn} bg-secondary text-muted-foreground ring-black/5`}>
         <Shuffle className="size-3.5" />
+      </button>
+      <button title="Agrupou/separou errado" aria-label="Agrupou ou separou errado" onClick={() => send("wrong_grouping")} className={`${btn} bg-secondary text-muted-foreground ring-black/5`}>
+        <Split className="size-3.5" />
       </button>
       <button title="Não criar" aria-label="Não criar" onClick={() => send("should_not_create")} className={`${btn} bg-destructive/10 text-destructive ring-destructive/20`}>
         <ThumbsDown className="size-3.5" />
@@ -351,3 +326,4 @@ function FeedbackBar({ actions }: { actions: RoutedAction[] }) {
     </div>
   );
 }
+
