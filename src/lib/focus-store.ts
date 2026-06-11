@@ -205,7 +205,28 @@ export function useTasks() {
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   const toggleImportant = (id: string) =>
     setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, important: !t.important } : t)));
-  return { tasks, add, toggle, remove, update, toggleImportant, setTasks };
+  /** Cria várias tarefas em uma única atualização — evita race em batch. */
+  const addMany = (
+    inputs: { title: string; blockTime?: string; tag?: TaskTag }[],
+  ): Task[] => {
+    const created: Task[] = inputs.map((i) => ({
+      id: uid(),
+      title: i.title,
+      done: false,
+      blockTime: i.blockTime,
+      tag: i.tag,
+      createdAt: new Date().toISOString(),
+    }));
+    setTasks((prev) => [...prev, ...created]);
+    for (const t of created) {
+      const detail = [t.blockTime ? `bloco ${t.blockTime}` : null, t.tag ? TASK_TAG_LABEL[t.tag] : null]
+        .filter(Boolean)
+        .join(" · ");
+      logActivity({ kind: "task", title: t.title, detail: detail || undefined, tag: t.tag });
+    }
+    return created;
+  };
+  return { tasks, add, addMany, toggle, remove, update, toggleImportant, setTasks };
 }
 
 /** Remove tarefas que excederam o tempo de expiração (sem vínculo nem importância). */
