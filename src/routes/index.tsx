@@ -48,6 +48,13 @@ function Index() {
   const [newListTag, setNewListTag] = useState<TaskTag>("trabalho");
   const [listTagMenuOpen, setListTagMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const activity = useActivityLog();
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const todayEyebrow = today.toLocaleDateString("pt-BR", { day: "numeric", month: "long" });
+  const focusMin = focusMinutesOn(activity, todayKey);
+  const focusLabel = focusMin >= 60 ? `${Math.floor(focusMin / 60)}h ${focusMin % 60}m` : `${focusMin}m`;
+  const streak = streakDays(activity);
 
   useEffect(() => {
     setMounted(true);
