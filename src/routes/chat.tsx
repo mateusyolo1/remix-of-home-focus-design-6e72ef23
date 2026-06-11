@@ -126,26 +126,35 @@ function ChatPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 pb-2 shadow-[0_1px_0_0_hsl(var(--border)/0.4)]">
-        <PageHeader eyebrow="Agente" title="Hermes IA" />
-
-        <div className="px-6 flex items-center justify-between gap-2">
-          <Link
-            to="/perfil/editar"
-            className="inline-flex items-center gap-2 text-[11px] uppercase tracking-widest font-semibold text-accent bg-card px-3 py-2 rounded-full ring-1 ring-black/5"
-          >
-            <Settings2 className="size-3.5" />
-            {config.provider === "gemini" ? "Gemini" : "DeepSeek"} · {config.model}
-          </Link>
-          {messages.length > 1 && (
-            <button
-              type="button"
-              onClick={clearHistory}
-              className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground bg-secondary px-3 py-2 rounded-full ring-1 ring-black/5 active:scale-95"
+      <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 px-6 pt-4 pb-2 shadow-[0_1px_0_0_hsl(var(--border)/0.4)]">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="size-9 rounded-full bg-secondary ring-1 ring-black/5 grid place-items-center text-[10px] font-semibold uppercase tracking-widest text-muted-foreground shrink-0">
+              H
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-accent leading-none mb-0.5">Agente</p>
+              <h1 className="text-base font-semibold tracking-tight text-foreground leading-tight truncate">Hermes IA</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link
+              to="/perfil/editar"
+              className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-accent bg-card px-2.5 py-1.5 rounded-full ring-1 ring-black/5"
             >
-              Limpar
-            </button>
-          )}
+              <Settings2 className="size-3" />
+              {config.provider === "gemini" ? "Gemini" : "DeepSeek"}
+            </Link>
+            {messages.length > 1 && (
+              <button
+                type="button"
+                onClick={clearHistory}
+                className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground bg-secondary px-2.5 py-1.5 rounded-full ring-1 ring-black/5 active:scale-95"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
