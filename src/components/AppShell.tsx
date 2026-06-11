@@ -48,6 +48,7 @@ export function AppShell() {
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
   const recogRef = useRef<SpeechRecognitionLike | null>(null);
+  useAlarmRunner();
 
   useEffect(() => {
     return () => {
