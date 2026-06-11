@@ -5,7 +5,7 @@ import { useHermesMemories } from "@/lib/hermes/memory-store";
 import { analyzeHermesBehavior } from "@/lib/hermes/behavior-analyzer";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/perfil/memoria")({
+export const Route = createFileRoute("/perfil_/memoria")({
   head: () => ({
     meta: [
       { title: "Memória do Hermes — FocusMind" },
