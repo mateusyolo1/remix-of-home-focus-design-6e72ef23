@@ -326,32 +326,49 @@ function Index() {
                     Sem tarefas. Adicione abaixo.
                   </li>
                 )}
-                {todayAgendaTasks.map((b) => (
-                  <li
-                    key={`agenda-${b.time}`}
-                    className="flex items-center gap-3 p-3 bg-card rounded-xl ring-1 ring-accent/30"
-                  >
-                    <span className="size-5 shrink-0 rounded-md grid place-items-center ring-1 ring-accent/40 text-accent">
-                      <Calendar className="size-3" />
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate text-foreground">{b.title}</p>
-                      <p className="text-[10px] text-accent">
-                        {b.time} · Agenda de hoje
-                      </p>
-                    </div>
+                {todayAgendaTasks.length > 0 && (
+                  <li className="rounded-xl bg-card/60 ring-1 ring-black/5 overflow-hidden">
                     <button
-                      onClick={() => {
-                        add(b.title, b.time);
-                        toast.success("Tarefa criada a partir da agenda");
-                      }}
-                      aria-label="Transformar em tarefa"
-                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md bg-secondary text-foreground hover:bg-secondary/70 active:scale-95"
+                      type="button"
+                      onClick={() => setShowAgendaTasks((v) => !v)}
+                      className="w-full flex items-center justify-between gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground hover:bg-secondary/40"
                     >
-                      Adicionar
+                      <span className="flex items-center gap-2">
+                        <Calendar className="size-3.5 text-accent" />
+                        Da agenda · {todayAgendaTasks.length}
+                      </span>
+                      <span className="text-[10px]">{showAgendaTasks ? "Ocultar" : "Mostrar"}</span>
                     </button>
+                    {showAgendaTasks && (
+                      <ul className="px-2 pb-2 space-y-1.5">
+                        {todayAgendaTasks.map((b) => (
+                          <li
+                            key={`agenda-${b.time}`}
+                            className="flex items-center gap-3 p-2.5 bg-background rounded-lg ring-1 ring-accent/20"
+                          >
+                            <span className="size-5 shrink-0 rounded-md grid place-items-center ring-1 ring-accent/40 text-accent">
+                              <Calendar className="size-3" />
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm truncate text-foreground">{b.title}</p>
+                              <p className="text-[10px] text-accent">{b.time} · Agenda de hoje</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                add(b.title, b.time);
+                                toast.success("Tarefa criada a partir da agenda");
+                              }}
+                              aria-label="Transformar em tarefa"
+                              className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md bg-secondary text-foreground hover:bg-secondary/70 active:scale-95"
+                            >
+                              Adicionar
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
-                ))}
+                )}
                 {filteredTasks.map((t) => {
                   const linkedBlock = t.blockTime
                     ? blocks.find((b) => b.time === t.blockTime)
