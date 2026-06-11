@@ -400,6 +400,34 @@ function AgendaPage() {
         />
       )}
 
+      {dayPreview && (
+        <DayPreviewModal
+          date={dayPreview}
+          blocks={blocksForDate(dayPreview)}
+          onClose={() => setDayPreview(null)}
+          onOpenDay={() => {
+            setSelectedDate(dayPreview);
+            setDayPreview(null);
+          }}
+          onOpenBlock={(b) => {
+            setDayPreview(null);
+            setEditing(b);
+          }}
+        />
+      )}
+
+      {blockPreview && (
+        <BlockPreviewModal
+          block={blockPreview}
+          onClose={() => setBlockPreview(null)}
+          onOpen={() => {
+            const b = blockPreview;
+            setBlockPreview(null);
+            setEditing(b);
+          }}
+        />
+      )}
+
     </>
   );
 }
