@@ -286,6 +286,31 @@ function TimerPage() {
               <SkipForward className="size-4" />
             </button>
           </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-1.5">
+            {[5, 15, 25, 45, 60].map((min) => {
+              const isCurrent =
+                persisted &&
+                persisted.status !== "running" &&
+                Math.round(persisted.durationMs / 60_000) === min;
+              return (
+                <button
+                  key={min}
+                  type="button"
+                  onClick={() => updateMinutes(min, 0)}
+                  disabled={running}
+                  className={[
+                    "text-[11px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full ring-1 transition active:scale-95 disabled:opacity-40",
+                    isCurrent
+                      ? "bg-foreground text-background ring-foreground"
+                      : "bg-secondary text-muted-foreground ring-black/5",
+                  ].join(" ")}
+                >
+                  {min} min
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         {active && linkedTasks.length > 0 && (
