@@ -54,6 +54,14 @@ function TimerPage() {
         if (m <= 0) {
           setRunning(false);
           setSeconds(0);
+          const planned = active?.minutes ?? 25;
+          logActivity({
+            kind: "focus",
+            title: active?.title ?? "Foco",
+            detail: `${planned} min`,
+            tag: active?.tag,
+            minutes: planned,
+          });
           return 0;
         }
         return m - 1;
@@ -61,6 +69,7 @@ function TimerPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seconds]);
+
 
   const display = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
