@@ -308,11 +308,19 @@ function Index() {
                         >
                           {t.title}
                         </p>
-                        {linkedBlock && (
-                          <p className="text-[10px] text-accent mt-0.5 truncate">
-                            {linkedBlock.time} · {linkedBlock.title}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {t.tag && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-1.5 py-0.5 rounded bg-secondary">
+                              {TASK_TAG_LABEL[t.tag]}
+                            </span>
+                          )}
+                          {linkedBlock && (
+                            <p className="text-[10px] text-accent truncate">
+                              {linkedBlock.time} · {linkedBlock.title}
+                            </p>
+                          )}
+                        </div>
+
                       </div>
                       <button
                         onClick={() => setLinkingId(t.id)}
