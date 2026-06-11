@@ -1,7 +1,10 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { CalendarDays, Home, MessageSquareText, Mic, Timer, User, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useTasks } from "@/lib/focus-store";
+import { useAgentConfig } from "@/lib/agent-store";
+import { runAgent } from "@/lib/agent";
+import { useExecuteActions } from "@/lib/agents/execute";
+import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { toast } from "sonner";
 
 const tabs = [
