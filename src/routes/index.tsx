@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { ArrowUpRight, Check, CloudSun, Link2, Mic, Plus, Target, Trash2, X } from "lucide-react";
+import { ArrowUpRight, Check, CloudSun, Link2, Mic, MoreVertical, Plus, Target, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
@@ -38,6 +38,7 @@ function Index() {
   const [tab, setTab] = useState<Tab>("Tarefas");
   const [newTask, setNewTask] = useState("");
   const [newTaskTag, setNewTaskTag] = useState<TaskTag>("trabalho");
+  const [tagMenuOpen, setTagMenuOpen] = useState(false);
 
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
@@ -345,24 +346,7 @@ function Index() {
               </ul>
 
               <div className="space-y-2">
-                <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
-                  {TASK_TAGS.map((tg) => (
-                    <button
-                      key={tg}
-                      type="button"
-                      onClick={() => setNewTaskTag(tg)}
-                      className={[
-                        "shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full ring-1 transition-colors",
-                        newTaskTag === tg
-                          ? "bg-foreground text-background ring-foreground"
-                          : "bg-card text-muted-foreground ring-black/10 hover:text-foreground",
-                      ].join(" ")}
-                    >
-                      {TASK_TAG_LABEL[tg]}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
+                <div className="relative flex items-center gap-2 bg-card rounded-xl p-2 ring-1 ring-black/5">
                   <input
                     type="text"
                     value={newTask}
@@ -372,14 +356,74 @@ function Index() {
                     className="flex-1 bg-transparent text-sm outline-none px-2 py-2 placeholder:text-muted-foreground"
                   />
                   <button
+                    type="button"
+                    onClick={() => setTagMenuOpen((v) => !v)}
+                    aria-label="Escolher tag"
+                    aria-expanded={tagMenuOpen}
+                    className={[
+                      "size-9 rounded-lg grid place-items-center transition-colors",
+                      tagMenuOpen
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:bg-secondary",
+                    ].join(" ")}
+                  >
+                    <MoreVertical className="size-4" />
+                  </button>
+                  <button
                     onClick={addNewTask}
                     aria-label="Adicionar"
                     className="size-9 rounded-lg bg-foreground text-background grid place-items-center active:scale-95"
                   >
                     <Plus className="size-4" />
                   </button>
+                  {tagMenuOpen && (
+                    <>
+                      <button
+                        type="button"
+                        aria-label="Fechar"
+                        onClick={() => setTagMenuOpen(false)}
+                        className="fixed inset-0 z-10 cursor-default"
+                      />
+                      <div className="absolute right-2 bottom-full mb-2 z-20 w-48 bg-card rounded-xl ring-1 ring-black/10 shadow-lg p-1.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-2 py-1.5">
+                          Tags
+                        </p>
+                        {TASK_TAGS.map((tg) => {
+                          const active = newTaskTag === tg;
+                          return (
+                            <button
+                              key={tg}
+                              type="button"
+                              onClick={() => {
+                                setNewTaskTag(tg);
+                                setTagMenuOpen(false);
+                              }}
+                              className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg text-xs hover:bg-secondary transition-colors"
+                            >
+                              <span className="font-medium">{TASK_TAG_LABEL[tg]}</span>
+                              <span
+                                className={[
+                                  "relative w-8 h-[18px] rounded-full transition-colors shrink-0",
+                                  active ? "bg-foreground" : "bg-secondary ring-1 ring-black/10",
+                                ].join(" ")}
+                              >
+                                <span
+                                  className={[
+                                    "absolute top-[2px] size-[14px] rounded-full bg-background transition-all",
+                                    active ? "left-[16px]" : "left-[2px]",
+                                  ].join(" ")}
+                                />
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
+
+
 
             </>
           )}
