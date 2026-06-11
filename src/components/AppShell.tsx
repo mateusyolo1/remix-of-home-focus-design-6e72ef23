@@ -28,10 +28,10 @@ type SpeechRecognitionLike = {
 function getSpeechCtor(): (new () => SpeechRecognitionLike) | null {
   if (typeof window === "undefined") return null;
   const w = window as unknown as {
-    SpeechRecognitionLike?: new () => SpeechRecognitionLike;
-    webkitSpeechRecognitionLike?: new () => SpeechRecognitionLike;
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
   };
-  return w.SpeechRecognitionLike ?? w.webkitSpeechRecognitionLike ?? null;
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
 export function AppShell() {
