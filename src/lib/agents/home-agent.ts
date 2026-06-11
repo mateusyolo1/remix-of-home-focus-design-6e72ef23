@@ -86,9 +86,9 @@ Saída CORRETA:
   {"type":"create_task","title":"Separar os arquivos da área de trabalho","tag":"trabalho"},
   {"type":"create_task","title":"Pagar a conta de energia","tag":"casa"},
   {"type":"create_list","title":"Lista de compras","tag":"casa","items":["arroz","ovos","leite","pão","café","banana","frango","detergente","queijo","iogurte"]},
-  {"type":"create_note","title":"Ideia: painel para acompanhar hábitos"},
-  {"type":"create_note","title":"Ideia: lista semanal de prioridades"},
-  {"type":"create_note","title":"Ideia: modo noturno mais confortável"}
+  {"type":"create_note","title":"Ideia: painel de hábitos","body":"Criar um painel simples para acompanhar hábitos."},
+  {"type":"create_note","title":"Ideia: prioridades semanais","body":"Montar uma lista semanal de prioridades."},
+  {"type":"create_note","title":"Ideia: modo noturno","body":"Testar um modo noturno mais confortável no aplicativo."}
 ]}
 
 Se nada se encaixar, retorne {"actions":[]}.`;
