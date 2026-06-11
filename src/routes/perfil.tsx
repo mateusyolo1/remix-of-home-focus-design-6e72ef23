@@ -678,3 +678,76 @@ function Metric({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function DiaModal({
+  dateKey,
+  entries,
+  onClose,
+}: {
+  dateKey: string;
+  entries: ActivityEntry[];
+  onClose: () => void;
+}) {
+  const label = useMemo(() => {
+    const [y, m, d] = dateKey.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  }, [dateKey]);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, ActivityEntry[]>();
+    for (const e of entries) {
+      const arr = map.get(e.kind) ?? [];
+      arr.push(e);
+      map.set(e.kind, arr);
+    }
+    return map;
+  }, [entries]);
+
+  return (
+    <ModalShell title={label} onClose={onClose}>
+      {entries.length === 0 ? (
+        <p className="text-xs text-muted-foreground">
+          Sem registros neste dia. Tarefas, notas, listas e blocos criados aparecem aqui.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {Array.from(grouped.entries()).map(([kind, list]) => (
+            <div key={kind}>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                {ACTIVITY_LABEL[kind as keyof typeof ACTIVITY_LABEL]} · {list.length}
+              </p>
+              <ul className="space-y-1.5">
+                {list.map((e) => {
+                  const time = new Date(e.at).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  return (
+                    <li
+                      key={e.id}
+                      className="flex items-start gap-2 bg-secondary rounded-lg px-3 py-2 text-xs"
+                    >
+                      <span className="text-muted-foreground tabular-nums shrink-0">{time}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{e.title}</p>
+                        {e.detail && (
+                          <p className="text-muted-foreground truncate">{e.detail}</p>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </ModalShell>
+  );
+}
