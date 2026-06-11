@@ -589,8 +589,85 @@ html[data-palette="liquid"].dark .bg-popover::before {
     border-color: var(--color-border);
   }
 
+  :root {
+    color-scheme: light;
+    accent-color: var(--foreground);
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    accent-color: var(--foreground);
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--foreground) 18%, transparent);
+    color: var(--foreground);
+  }
+
+  /* Native form controls follow the interface */
+  input,
+  textarea,
+  select,
+  button,
+  progress,
+  meter {
+    accent-color: var(--foreground);
+  }
+
+  /* Date/time pickers — neutralize the blue tint of the system UI */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="color"] {
+    color-scheme: light dark;
+    accent-color: var(--foreground);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator,
+  input[type="week"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    filter: grayscale(1);
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+
+  /* Scrollbars */
+  * {
+    scrollbar-color: color-mix(in oklab, var(--foreground) 30%, transparent) transparent;
+    scrollbar-width: thin;
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--foreground) 22%, transparent);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--foreground) 45%, transparent);
+  }
 }
+
