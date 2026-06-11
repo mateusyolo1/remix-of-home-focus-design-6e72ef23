@@ -621,13 +621,15 @@ function LinkBlockSheet({
 }) {
   const { blocks } = useBlocks();
   useEffect(() => {
+    document.body.classList.add("modal-open");
     document.body.style.overflow = "hidden";
     return () => {
+      document.body.classList.remove("modal-open");
       document.body.style.overflow = "";
     };
   }, []);
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 p-5 pb-7 animate-in slide-in-from-bottom duration-200">
         <div className="flex items-center justify-between mb-3">
