@@ -562,92 +562,100 @@ function SilenciosoModal({
   );
 }
 
-function DesempenhoPanel({
-  checkins,
-  presentCount,
-  missedCount,
-}: {
-  checkins: Set<string>;
-  presentCount: number;
-  missedCount: number;
-}) {
-  const { weekly, last14, rate } = useMemo(() => {
+function DesempenhoPanel({ activity }: { activity: ActivityEntry[] }) {
+  const { byTag, last14, totalCreated, totalDone, doneRate } = useMemo(() => {
     const now = new Date();
     const fmt = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
+    // Agrega criadas vs concluídas por tag
+    const created: Record<string, number> = {};
+    const done: Record<string, number> = {};
+    let totalCreated = 0;
+    let totalDone = 0;
+    for (const e of activity) {
+      const tag = (e.tag as TaskTag | undefined) ?? "outro";
+      if (e.kind === "task") {
+        created[tag] = (created[tag] ?? 0) + 1;
+        totalCreated++;
+      } else if (e.kind === "task_done") {
+        done[tag] = (done[tag] ?? 0) + 1;
+        totalDone++;
+      }
+    }
+    const byTag = TASK_TAGS.map((t) => ({
+      tag: t,
+      label: TASK_TAG_LABEL[t],
+      criadas: created[t] ?? 0,
+      concluidas: done[t] ?? 0,
+    })).filter((r) => r.criadas + r.concluidas > 0);
+
+    // Últimos 14 dias: tarefas concluídas por dia
     const last14 = Array.from({ length: 14 }, (_, i) => {
       const d = new Date(now);
       d.setDate(now.getDate() - (13 - i));
-      return {
-        label: String(d.getDate()).padStart(2, "0"),
-        presente: checkins.has(fmt(d)) ? 1 : 0,
-      };
+      const key = fmt(d);
+      const concluidas = activity.filter(
+        (e) => e.kind === "task_done" && e.date === key,
+      ).length;
+      return { label: String(d.getDate()).padStart(2, "0"), concluidas };
     });
 
-    const weekly = Array.from({ length: 8 }, (_, w) => {
-      const end = new Date(now);
-      end.setDate(now.getDate() - (7 - 1) * (7 - w));
-      let count = 0;
-      const start = new Date(now);
-      start.setDate(now.getDate() - (8 - w) * 7 + 1);
-      const stop = new Date(now);
-      stop.setDate(now.getDate() - (7 - w) * 7);
-      for (let d = new Date(start); d <= stop; d.setDate(d.getDate() + 1)) {
-        if (checkins.has(fmt(d))) count++;
-      }
-      return { label: `S${w + 1}`, dias: count };
-    });
+    const doneRate = totalCreated > 0 ? Math.round((totalDone / totalCreated) * 100) : 0;
 
-    const total = presentCount + missedCount;
-    const rate = total > 0 ? Math.round((presentCount / total) * 100) : 0;
-    return { weekly, last14, rate };
-  }, [checkins, presentCount, missedCount]);
+    return { byTag, last14, totalCreated, totalDone, doneRate };
+  }, [activity]);
 
   return (
-    <div className="p-4 pt-2 space-y-4">
+    <div className="p-4 pt-2 space-y-5">
       <div className="grid grid-cols-3 gap-2">
-        <Metric label="Taxa" value={`${rate}%`} />
-        <Metric label="Presenças" value={String(presentCount)} />
-        <Metric label="Faltas" value={String(missedCount)} />
+        <Metric label="Criadas" value={String(totalCreated)} />
+        <Metric label="Concluídas" value={String(totalDone)} />
+        <Metric label="Taxa" value={`${doneRate}%`} />
       </div>
 
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-          Últimos 14 dias
+          Por categoria
         </p>
-        <div className="h-32">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={last14} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis hide domain={[0, 1]} />
-              <Tooltip
-                cursor={{ fill: "hsl(var(--secondary))" }}
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 8,
-                  fontSize: 11,
-                }}
-                formatter={(v: number) => (v ? "Presente" : "Faltou")}
-              />
-              <Bar dataKey="presente" fill="currentColor" className="text-foreground" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {byTag.length === 0 ? (
+          <p className="text-xs text-muted-foreground py-4 text-center">
+            Nenhuma tarefa registrada ainda. Adicione tarefas com uma categoria para ver estatísticas.
+          </p>
+        ) : (
+          <div className="h-44">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={byTag} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                <Tooltip
+                  cursor={{ fill: "hsl(var(--secondary))" }}
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 8,
+                    fontSize: 11,
+                  }}
+                />
+                <Bar dataKey="criadas" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="Criadas" />
+                <Bar dataKey="concluidas" fill="currentColor" className="text-foreground" radius={[4, 4, 0, 0]} name="Concluídas" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </div>
 
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-          Tendência semanal (8 semanas)
+          Concluídas — últimos 14 dias
         </p>
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={weekly} margin={{ top: 4, right: 8, bottom: 0, left: -28 }}>
+            <LineChart data={last14} margin={{ top: 4, right: 8, bottom: 0, left: -28 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" domain={[0, 7]} />
+              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
               <Tooltip
                 contentStyle={{
                   background: "hsl(var(--card))",
@@ -658,7 +666,7 @@ function DesempenhoPanel({
               />
               <Line
                 type="monotone"
-                dataKey="dias"
+                dataKey="concluidas"
                 stroke="currentColor"
                 className="text-foreground"
                 strokeWidth={2}
@@ -671,6 +679,7 @@ function DesempenhoPanel({
     </div>
   );
 }
+
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
