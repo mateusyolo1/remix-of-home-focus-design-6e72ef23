@@ -415,7 +415,7 @@ function Index() {
                             "size-5 shrink-0 rounded-md grid place-items-center ring-1 transition-colors",
                             it.done
                               ? "bg-foreground text-background ring-foreground"
-                              : "bg-background ring-border",
+                              : "bg-background ring-foreground/30",
                           ].join(" ")}
                         >
                           {it.done && <Check className="size-3" />}
