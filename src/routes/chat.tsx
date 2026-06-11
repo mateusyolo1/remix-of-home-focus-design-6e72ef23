@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PageHeader } from "@/components/PageHeader";
-import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Sparkles, StickyNote, Timer as TimerIcon } from "lucide-react";
+
+import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Sparkles, StickyNote, ThumbsDown, ThumbsUp, Timer as TimerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type ChatMsg } from "@/lib/agent";
@@ -8,6 +8,7 @@ import type { RouteTarget } from "@/lib/agents/router";
 import type { RoutedAction } from "@/lib/agents/orchestrator";
 import { useExecuteActions } from "@/lib/agents/execute";
 import { buildProfileContext, useProfile } from "@/lib/profile-store";
+import { recordFeedback } from "@/lib/hermes/learning-core";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
@@ -186,13 +187,16 @@ function ChatPage() {
               )}
               {m.content}
               {m.routed && m.routed.length > 0 && (
-                <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {m.routed.map((a, j) => (
-                    <li key={j}>
-                      <RoutedBadge action={a} />
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {m.routed.map((a, j) => (
+                      <li key={j}>
+                        <RoutedBadge action={a} />
+                      </li>
+                    ))}
+                  </ul>
+                  <FeedbackBar actions={m.routed} />
+                </>
               )}
             </div>
           ))}
@@ -284,4 +288,66 @@ function labelFor(a: RoutedAction): string {
     case "start_timer":
       return `${a.minutes}min${a.title ? ` · ${a.title}` : ""}`;
   }
+}
+
+function FeedbackBar({ actions }: { actions: RoutedAction[] }) {
+  const [sent, setSent] = useState<string | null>(null);
+  const send = (kind: "good" | "wrong_type" | "wrong_category" | "should_not_create") => {
+    const summary = actions.map((a) => labelFor(a)).join(" | ");
+    if (kind === "good") {
+      recordFeedback({
+        kind: "preference",
+        text: `Usuário confirmou que ficou bom: ${summary}`,
+        rule: `Continuar usando o mesmo estilo de extração para entradas semelhantes.`,
+        confidence: 0.5,
+      });
+    } else if (kind === "wrong_category") {
+      recordFeedback({
+        kind: "category_rule",
+        text: `Categoria errada em: ${summary}`,
+        rule: `Revisar a escolha de tag para itens parecidos com "${summary}".`,
+        confidence: 0.65,
+      });
+    } else if (kind === "wrong_type") {
+      recordFeedback({
+        kind: "correction",
+        text: `Tipo errado (task/list/note) em: ${summary}`,
+        rule: `Reclassificar tipo para entradas parecidas com "${summary}".`,
+        confidence: 0.7,
+      });
+    } else {
+      recordFeedback({
+        kind: "rejection",
+        text: `Usuário não queria que fosse criado: ${summary}`,
+        rule: `Não criar automaticamente itens com título parecido a "${summary}".`,
+        confidence: 0.75,
+      });
+    }
+    setSent(kind);
+    toast.success("Feedback registrado");
+  };
+  if (sent) {
+    return (
+      <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+        Obrigado — o Hermes aprendeu.
+      </p>
+    );
+  }
+  const chip = "text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md ring-1 active:scale-95";
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      <button onClick={() => send("good")} className={`${chip} bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 inline-flex items-center gap-1`}>
+        <ThumbsUp className="size-3" /> Ficou bom
+      </button>
+      <button onClick={() => send("wrong_category")} className={`${chip} bg-secondary text-foreground ring-black/5`}>
+        Categoria errada
+      </button>
+      <button onClick={() => send("wrong_type")} className={`${chip} bg-secondary text-foreground ring-black/5`}>
+        Tipo errado
+      </button>
+      <button onClick={() => send("should_not_create")} className={`${chip} bg-destructive/10 text-destructive ring-destructive/20 inline-flex items-center gap-1`}>
+        <ThumbsDown className="size-3" /> Não criar
+      </button>
+    </div>
+  );
 }

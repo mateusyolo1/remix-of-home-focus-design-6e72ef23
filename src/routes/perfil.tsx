@@ -115,11 +115,12 @@ function PerfilPage() {
   const items: {
     icon: typeof UserCog;
     label: string;
-    to?: "/perfil/editar" | "/configuracoes" | "/alarmes";
+    to?: "/perfil/editar" | "/configuracoes" | "/alarmes" | "/perfil/memoria";
     onClick?: () => void;
     badge?: string;
   }[] = [
     { icon: UserCog, label: "Editar perfil", to: "/perfil/editar" },
+    { icon: BrainCog, label: "Memória do Hermes", to: "/perfil/memoria" },
     { icon: Bell, label: "Alarmes", to: "/alarmes" },
     { icon: Bell, label: "Lembretes", onClick: () => setModal("lembretes") },
     { icon: Settings, label: "Configurações", to: "/configuracoes" },

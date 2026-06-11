@@ -170,13 +170,14 @@ function uid() {
 
 export function useTasks() {
   const [tasks, setTasks] = useStoreValue<Task[]>(KEY_TASKS, SEED_TASKS);
-  const add = (title: string, blockTime?: string, tag?: TaskTag) => {
+  const add = (title: string, blockTime?: string, tag?: TaskTag): Task => {
     const t: Task = { id: uid(), title, done: false, blockTime, tag, createdAt: new Date().toISOString() };
     setTasks([...tasks, t]);
     const detail = [blockTime ? `bloco ${blockTime}` : null, tag ? TASK_TAG_LABEL[tag] : null]
       .filter(Boolean)
       .join(" · ");
     logActivity({ kind: "task", title, detail: detail || undefined, tag });
+    return t;
   };
   const toggle = (id: string) => {
     const target = tasks.find((t) => t.id === id);

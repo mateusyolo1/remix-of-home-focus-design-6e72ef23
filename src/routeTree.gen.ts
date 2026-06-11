@@ -19,6 +19,7 @@ import { Route as AlarmesRouteImport } from './routes/alarmes'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilEditarRouteImport } from './routes/perfil_.editar'
+import { Route as PerfilMemoriaRouteImport } from './routes/perfil.memoria'
 
 const TimerRoute = TimerRouteImport.update({
   id: '/timer',
@@ -70,6 +71,11 @@ const PerfilEditarRoute = PerfilEditarRouteImport.update({
   path: '/perfil/editar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilMemoriaRoute = PerfilMemoriaRouteImport.update({
+  id: '/memoria',
+  path: '/memoria',
+  getParentRoute: () => PerfilRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -79,8 +85,9 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
-  '/perfil': typeof PerfilRoute
+  '/perfil': typeof PerfilRouteWithChildren
   '/timer': typeof TimerRoute
+  '/perfil/memoria': typeof PerfilMemoriaRoute
   '/perfil/editar': typeof PerfilEditarRoute
 }
 export interface FileRoutesByTo {
@@ -91,8 +98,9 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
-  '/perfil': typeof PerfilRoute
+  '/perfil': typeof PerfilRouteWithChildren
   '/timer': typeof TimerRoute
+  '/perfil/memoria': typeof PerfilMemoriaRoute
   '/perfil/editar': typeof PerfilEditarRoute
 }
 export interface FileRoutesById {
@@ -104,8 +112,9 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
-  '/perfil': typeof PerfilRoute
+  '/perfil': typeof PerfilRouteWithChildren
   '/timer': typeof TimerRoute
+  '/perfil/memoria': typeof PerfilMemoriaRoute
   '/perfil_/editar': typeof PerfilEditarRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/hermes'
     | '/perfil'
     | '/timer'
+    | '/perfil/memoria'
     | '/perfil/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/hermes'
     | '/perfil'
     | '/timer'
+    | '/perfil/memoria'
     | '/perfil/editar'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/hermes'
     | '/perfil'
     | '/timer'
+    | '/perfil/memoria'
     | '/perfil_/editar'
   fileRoutesById: FileRoutesById
 }
@@ -155,7 +167,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FocoRoute: typeof FocoRoute
   HermesRoute: typeof HermesRoute
-  PerfilRoute: typeof PerfilRoute
+  PerfilRoute: typeof PerfilRouteWithChildren
   TimerRoute: typeof TimerRoute
   PerfilEditarRoute: typeof PerfilEditarRoute
 }
@@ -232,8 +244,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilEditarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perfil/memoria': {
+      id: '/perfil/memoria'
+      path: '/memoria'
+      fullPath: '/perfil/memoria'
+      preLoaderRoute: typeof PerfilMemoriaRouteImport
+      parentRoute: typeof PerfilRoute
+    }
   }
 }
+
+interface PerfilRouteChildren {
+  PerfilMemoriaRoute: typeof PerfilMemoriaRoute
+}
+
+const PerfilRouteChildren: PerfilRouteChildren = {
+  PerfilMemoriaRoute: PerfilMemoriaRoute,
+}
+
+const PerfilRouteWithChildren =
+  PerfilRoute._addFileChildren(PerfilRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -243,7 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   FocoRoute: FocoRoute,
   HermesRoute: HermesRoute,
-  PerfilRoute: PerfilRoute,
+  PerfilRoute: PerfilRouteWithChildren,
   TimerRoute: TimerRoute,
   PerfilEditarRoute: PerfilEditarRoute,
 }

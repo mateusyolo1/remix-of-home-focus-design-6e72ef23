@@ -6,6 +6,7 @@ import { runAgent } from "@/lib/agent";
 import { useExecuteActions } from "@/lib/agents/execute";
 import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { useAlarmRunner } from "@/lib/alarm-runner";
+import { useHermesTracker } from "@/lib/hermes/tracker";
 import { toast } from "sonner";
 
 const tabs = [
@@ -49,6 +50,7 @@ export function AppShell() {
   const [processing, setProcessing] = useState(false);
   const recogRef = useRef<SpeechRecognitionLike | null>(null);
   useAlarmRunner();
+  useHermesTracker();
 
   useEffect(() => {
     return () => {

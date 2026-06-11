@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useActiveTask, useBlocks, useLists, useQuickNotes, useTasks } from "@/lib/focus-store";
 import type { AgentAction } from "@/lib/agent";
 import type { RoutedAction } from "@/lib/agents/orchestrator";
+import { recordCreation } from "@/lib/hermes/learning-core";
 
 export function useExecuteActions() {
   const { add: addTask } = useTasks();
@@ -16,7 +17,8 @@ export function useExecuteActions() {
     for (const a of actions) {
       try {
         if (a.type === "create_task") {
-          addTask(a.title, a.blockTime, a.tag);
+          const t = addTask(a.title, a.blockTime, a.tag);
+          recordCreation({ entityId: t.id, entityKind: "task", title: t.title, tag: t.tag });
           toast.success(`Tarefa: ${a.title}`);
         } else if (a.type === "create_block") {
           addBlock({
@@ -28,10 +30,18 @@ export function useExecuteActions() {
           });
           toast.success(`Bloco ${a.time}: ${a.title}`);
         } else if (a.type === "create_note") {
-          addNote({ title: a.title, body: a.body, ttlDays: a.ttlDays });
+          const n = addNote({ title: a.title, body: a.body, ttlDays: a.ttlDays });
+          recordCreation({ entityId: n.id, entityKind: "note", title: n.title });
           toast.success(`Nota: ${a.title}`);
         } else if (a.type === "create_list") {
-          addList({ title: a.title, items: a.items, tag: a.tag });
+          const l = addList({ title: a.title, items: a.items, tag: a.tag });
+          recordCreation({
+            entityId: l.id,
+            entityKind: "list",
+            title: l.title,
+            tag: l.tag,
+            items: a.items,
+          });
           toast.success(`Lista: ${a.title} (${a.items.length})`);
         } else if (a.type === "start_timer") {
           setActive({
