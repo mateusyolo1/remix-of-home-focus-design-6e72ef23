@@ -47,6 +47,8 @@ export type Task = {
   done: boolean;
   blockTime?: string; // links to Block.time
   tag?: TaskTag;
+  important?: boolean;
+  createdAt?: string;
 };
 
 
@@ -67,6 +69,8 @@ export type QuickNote = {
   /** dias até arquivamento sugerido */
   ttlDays: number;
   createdAt: string;
+  /** ISO; quando definido, a nota está arquivada e sujeita à retenção. */
+  archivedAt?: string;
 };
 
 export type ListItem = { id: string; text: string; done: boolean };
@@ -76,6 +80,8 @@ export type CheckList = {
   items: ListItem[];
   createdAt: string;
   tag?: TaskTag;
+  /** ISO; quando definido, a lista foi concluída/arquivada. */
+  completedAt?: string;
 };
 
 const KEY_ACTIVE = "fm.active-task";
