@@ -72,33 +72,53 @@ function Index() {
 
   const useGeolocation = () => {
     if (!("geolocation" in navigator)) {
-      toast.error("Geolocalização indisponível");
+      toast.error("Geolocalização indisponível neste navegador");
       return;
     }
     setWeatherLoading(true);
+    toast("Solicitando permissão de GPS…");
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        let name = "Minha localização";
+        let state: string | undefined;
+        let country: string | undefined;
+        try {
+          const r = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=pt&format=json`,
+          );
+          const data = await r.json();
+          const first = data?.results?.[0];
+          if (first) {
+            name = first.name ?? name;
+            state = first.admin1;
+            country = first.country;
+          }
+        } catch {
+          // ignore — coords still saved
+        }
         setProfile({
           ...profile,
-          city: {
-            name: "Minha localização",
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          },
+          city: { name, state, country, latitude, longitude, fromGps: true },
         });
-        toast.success("Localização atualizada");
+        toast.success(`Localização: ${name}${state ? " · " + state : ""}`);
       },
       (err) => {
         setWeatherLoading(false);
-        toast.error(`Localização: ${err.message}`);
+        toast.error(
+          err.code === err.PERMISSION_DENIED
+            ? "Permissão de GPS negada. Habilite nas configurações do navegador."
+            : `Não foi possível obter o GPS (${err.message})`,
+        );
       },
-      { timeout: 8000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
   };
 
   const cityLabel = profile.city
-    ? `${profile.city.name}${profile.city.state ? " · " + profile.city.state : ""}`
+    ? `${profile.city.name}${profile.city.state ? " · " + profile.city.state : ""}${profile.city.country ? " · " + profile.city.country : ""}`
     : "Defina sua cidade";
+
 
 
   const filteredTasks = tasks;
