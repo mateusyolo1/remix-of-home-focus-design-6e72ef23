@@ -20,12 +20,19 @@ export type AppSettings = {
    * manter o fluxo antigo funcionando.
    */
   hermesAgentV2Enabled: boolean;
+  /**
+   * Feature flag — Hermes Learning Loop (Observe/Log/Memory + ciclo de
+   * aprendizado contínuo). Default OFF enquanto em desenvolvimento. Quando
+   * desligado, todos os módulos de aprendizado viram no-ops.
+   */
+  hermesLearningLoopEnabled: boolean;
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
   archiveRetentionDays: 30,
   taskExpiryHours: 24,
   hermesAgentV2Enabled: false,
+  hermesLearningLoopEnabled: false,
 };
 
 const KEY = "fm.app-settings";
