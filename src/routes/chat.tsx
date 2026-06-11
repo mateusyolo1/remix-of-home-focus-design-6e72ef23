@@ -223,6 +223,23 @@ function ChatPage() {
   );
 }
 
+function iconForAction(a: RoutedAction) {
+  switch (a.type) {
+    case "create_task":
+      return CheckSquare;
+    case "create_list":
+      return ListChecks;
+    case "create_note":
+      return StickyNote;
+    case "create_block":
+      return CalendarClock;
+    case "start_timer":
+      return TimerIcon;
+    default:
+      return HomeIcon;
+  }
+}
+
 function RoutedBadge({ action }: { action: RoutedAction }) {
   const target: RouteTarget = action._target;
   const styleMap: Record<RouteTarget, string> = {
@@ -231,7 +248,7 @@ function RoutedBadge({ action }: { action: RoutedAction }) {
     home: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20",
     chat: "bg-secondary text-foreground ring-black/5",
   };
-  const Icon = target === "agenda" ? CalendarDays : target === "timer" ? TimerIcon : HomeIcon;
+  const Icon = iconForAction(action);
   return (
     <span
       className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md ring-1 ${styleMap[target]}`}
@@ -245,13 +262,13 @@ function RoutedBadge({ action }: { action: RoutedAction }) {
 function labelFor(a: RoutedAction): string {
   switch (a.type) {
     case "create_task":
-      return a.title;
+      return `${a.title}${a.tag ? ` · ${a.tag}` : ""}`;
     case "create_block":
       return `${a.time}${a.date ? ` (${a.date})` : ""} · ${a.title}`;
     case "create_note":
       return `Nota: ${a.title}`;
     case "create_list":
-      return `${a.title} (${a.items.length})`;
+      return `${a.title} (${a.items.length})${a.tag ? ` · ${a.tag}` : ""}`;
     case "start_timer":
       return `${a.minutes}min${a.title ? ` · ${a.title}` : ""}`;
   }
