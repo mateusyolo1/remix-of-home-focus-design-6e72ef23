@@ -7,11 +7,14 @@ export type ActivityEntry = {
   kind: ActivityKind;
   title: string;
   detail?: string;
+  /** Tag da tarefa, quando aplicável. */
+  tag?: string;
   /** ISO timestamp */
   at: string;
   /** yyyy-mm-dd local */
   date: string;
 };
+
 
 const KEY = "fm.activity-log";
 const EVT = "fm:activity-log";
