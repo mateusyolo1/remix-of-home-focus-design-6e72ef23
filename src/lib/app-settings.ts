@@ -14,11 +14,18 @@ export type AppSettings = {
   archiveRetentionDays: ArchiveRetentionDays;
   /** Após quantas horas uma tarefa sem importância/vínculo expira. */
   taskExpiryHours: number;
+  /**
+   * Feature flag — quando true, ativa recursos novos do Hermes Agent V2
+   * (sugestões proativas, resumo organizado, etc.). Default OFF para
+   * manter o fluxo antigo funcionando.
+   */
+  hermesAgentV2Enabled: boolean;
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
   archiveRetentionDays: 30,
   taskExpiryHours: 24,
+  hermesAgentV2Enabled: false,
 };
 
 const KEY = "fm.app-settings";
