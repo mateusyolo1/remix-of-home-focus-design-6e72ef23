@@ -191,15 +191,22 @@ function PerfilPage() {
                       : d.status === "today"
                       ? "bg-secondary text-foreground ring-1 ring-foreground"
                       : "bg-secondary text-muted-foreground";
+                  const count = activityMap.get(d.key)?.length ?? 0;
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={d.d}
-                      className={["aspect-square rounded-md grid place-items-center text-[11px] font-medium tabular-nums", cls].join(" ")}
+                      onClick={() => setDayOpen(d.key)}
+                      className={["relative aspect-square rounded-md grid place-items-center text-[11px] font-medium tabular-nums active:scale-95 transition-transform", cls].join(" ")}
                     >
                       {d.d}
-                    </div>
+                      {count > 0 && (
+                        <span className="absolute bottom-1 size-1 rounded-full bg-accent" />
+                      )}
+                    </button>
                   );
                 })}
+
               </div>
               <p className="text-[10px] text-muted-foreground mt-3 text-center">
                 Reseta automaticamente todo mês
