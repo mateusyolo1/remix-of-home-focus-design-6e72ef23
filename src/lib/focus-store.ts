@@ -280,7 +280,7 @@ export function useLists() {
       createdAt: new Date().toISOString(),
       tag: input.tag,
     };
-    setLists([l, ...lists]);
+    setLists((prev) => [l, ...prev]);
     const detail = [`${l.items.length} itens`, l.tag ? TASK_TAG_LABEL[l.tag] : null]
       .filter(Boolean)
       .join(" · ");
@@ -290,33 +290,33 @@ export function useLists() {
   const toggleItem = (listId: string, itemId: string) => {
     const list = lists.find((l) => l.id === listId);
     const item = list?.items.find((i) => i.id === itemId);
-    setLists(
-      lists.map((l) =>
+    setLists((prev) =>
+      prev.map((l) =>
         l.id === listId
           ? { ...l, items: l.items.map((i) => (i.id === itemId ? { ...i, done: !i.done } : i)) }
-          : l
-      )
+          : l,
+      ),
     );
     if (item && !item.done)
       logActivity({ kind: "list_item_done", title: item.text, detail: list?.title, tag: list?.tag });
   };
 
   const addItem = (listId: string, text: string) =>
-    setLists(
-      lists.map((l) =>
+    setLists((prev) =>
+      prev.map((l) =>
         l.id === listId
           ? { ...l, items: [...l.items, { id: uid(), text, done: false }] }
-          : l
-      )
+          : l,
+      ),
     );
   const removeItem = (listId: string, itemId: string) =>
-    setLists(
-      lists.map((l) =>
-        l.id === listId ? { ...l, items: l.items.filter((i) => i.id !== itemId) } : l
-      )
+    setLists((prev) =>
+      prev.map((l) =>
+        l.id === listId ? { ...l, items: l.items.filter((i) => i.id !== itemId) } : l,
+      ),
     );
-  const remove = (id: string) => setLists(lists.filter((l) => l.id !== id));
+  const remove = (id: string) => setLists((prev) => prev.filter((l) => l.id !== id));
   const complete = (id: string) =>
-    setLists(lists.map((l) => (l.id === id ? { ...l, completedAt: new Date().toISOString() } : l)));
+    setLists((prev) => prev.map((l) => (l.id === id ? { ...l, completedAt: new Date().toISOString() } : l)));
   return { lists, add, toggleItem, addItem, removeItem, remove, complete, setLists };
 }
