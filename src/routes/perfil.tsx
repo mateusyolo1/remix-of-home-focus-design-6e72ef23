@@ -357,18 +357,31 @@ function LembretesModal({ onClose }: { onClose: () => void }) {
     typeof Notification !== "undefined" ? Notification.permission : "unsupported",
   );
 
+  const inIframe = typeof window !== "undefined" && window.self !== window.top;
+
   const request = async () => {
     if (typeof Notification === "undefined") {
       toast.error("Este navegador não suporta notificações.");
       return;
     }
-    const result = await Notification.requestPermission();
-    setPerm(result);
-    if (result === "granted") {
-      toast.success("Notificações ativadas");
-      new Notification("FocusMind", { body: `Lembrete diário às ${time} configurado.` });
-    } else {
-      toast.error("Permissão negada");
+    if (inIframe) {
+      toast.error("Abra o app em uma aba própria para permitir notificações.");
+      window.open(window.location.href, "_blank", "noopener");
+      return;
+    }
+    try {
+      const result = await Notification.requestPermission();
+      setPerm(result);
+      if (result === "granted") {
+        toast.success("Notificações ativadas");
+        new Notification("FocusMind", { body: `Lembrete diário às ${time} configurado.` });
+      } else if (result === "denied") {
+        toast.error("Permissão negada — habilite no ícone do cadeado do navegador.");
+      } else {
+        toast("Permissão não concedida");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Falha ao solicitar permissão");
     }
   };
 
