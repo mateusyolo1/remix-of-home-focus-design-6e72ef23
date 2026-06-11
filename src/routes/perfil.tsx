@@ -351,6 +351,63 @@ function ModalShell({
   );
 }
 
+function TimeWheel({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [h, m] = value.split(":");
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+  const minutes = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
+  const setH = (nh: string) => onChange(`${nh}:${m ?? "00"}`);
+  const setM = (nm: string) => onChange(`${h ?? "00"}:${nm}`);
+  const Col = ({
+    items,
+    selected,
+    onPick,
+    label,
+  }: {
+    items: string[];
+    selected: string;
+    onPick: (v: string) => void;
+    label: string;
+  }) => (
+    <div className="flex-1 min-w-0">
+      <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground text-center mb-1.5">
+        {label}
+      </div>
+      <div className="h-40 overflow-y-auto rounded-xl bg-secondary ring-1 ring-black/5 p-1 space-y-1 snap-y snap-mandatory">
+        {items.map((it) => {
+          const active = it === selected;
+          return (
+            <button
+              key={it}
+              type="button"
+              onClick={() => onPick(it)}
+              className={[
+                "w-full snap-start rounded-lg py-1.5 text-sm font-semibold tabular-nums transition-colors",
+                active
+                  ? "bg-foreground text-background"
+                  : "text-foreground/80 hover:bg-foreground/5",
+              ].join(" ")}
+            >
+              {it}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+  return (
+    <div className="rounded-2xl bg-card ring-1 ring-black/5 p-3">
+      <div className="flex items-center gap-2">
+        <Col items={hours} selected={h ?? "00"} onPick={setH} label="Hora" />
+        <span className="text-2xl font-light text-muted-foreground -mt-1">:</span>
+        <Col items={minutes} selected={m ?? "00"} onPick={setM} label="Min" />
+      </div>
+      <div className="mt-3 text-center text-2xl font-semibold tabular-nums tracking-tight">
+        {value}
+      </div>
+    </div>
+  );
+}
+
 function LembretesModal({ onClose }: { onClose: () => void }) {
   const [time, setTime] = useState(() => localStorage.getItem(KEY_REMIND) || "08:30");
   const [perm, setPerm] = useState<NotificationPermission | "unsupported">(
