@@ -211,7 +211,7 @@ export const webFetchFn = createServerFn({ method: "POST" })
         }
       }
 
-      const blob = new Blob(chunks);
+      const blob = new Blob(chunks as BlobPart[]);
       const raw = await blob.text();
       const titleMatch = raw.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
       const title = titleMatch ? stripTags(titleMatch[1]).slice(0, 200) : undefined;
