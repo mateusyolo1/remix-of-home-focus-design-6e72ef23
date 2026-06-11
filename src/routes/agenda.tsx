@@ -88,6 +88,8 @@ function AgendaPage() {
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
+  const [dayPreview, setDayPreview] = useState<Date | null>(null);
+  const [blockPreview, setBlockPreview] = useState<Block | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [hasMoreRight, setHasMoreRight] = useState(false);
   const importantDates = useMemo(() => getImportantDates(blocks), [blocks]);
