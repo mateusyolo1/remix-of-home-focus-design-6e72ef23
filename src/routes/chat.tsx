@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PageHeader } from "@/components/PageHeader";
+
 import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Sparkles, StickyNote, ThumbsDown, ThumbsUp, Timer as TimerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
