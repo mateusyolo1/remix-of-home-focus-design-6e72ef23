@@ -187,13 +187,16 @@ function ChatPage() {
               )}
               {m.content}
               {m.routed && m.routed.length > 0 && (
-                <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {m.routed.map((a, j) => (
-                    <li key={j}>
-                      <RoutedBadge action={a} />
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {m.routed.map((a, j) => (
+                      <li key={j}>
+                        <RoutedBadge action={a} />
+                      </li>
+                    ))}
+                  </ul>
+                  <FeedbackBar actions={m.routed} />
+                </>
               )}
             </div>
           ))}
