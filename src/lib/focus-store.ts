@@ -202,9 +202,12 @@ export function useLists() {
       createdAt: new Date().toISOString(),
     };
     setLists([l, ...lists]);
+    logActivity({ kind: "list", title: l.title, detail: `${l.items.length} itens` });
     return l;
   };
-  const toggleItem = (listId: string, itemId: string) =>
+  const toggleItem = (listId: string, itemId: string) => {
+    const list = lists.find((l) => l.id === listId);
+    const item = list?.items.find((i) => i.id === itemId);
     setLists(
       lists.map((l) =>
         l.id === listId
@@ -212,6 +215,9 @@ export function useLists() {
           : l
       )
     );
+    if (item && !item.done) logActivity({ kind: "list_item_done", title: item.text, detail: list?.title });
+  };
+
   const addItem = (listId: string, text: string) =>
     setLists(
       lists.map((l) =>
