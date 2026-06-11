@@ -272,6 +272,14 @@ function PerfilPage() {
           onClose={() => setModal(null)}
         />
       )}
+      {dayOpen && (
+        <DiaModal
+          dateKey={dayOpen}
+          entries={activityMap.get(dayOpen) ?? []}
+          onClose={() => setDayOpen(null)}
+        />
+      )}
+
     </>
   );
 }
