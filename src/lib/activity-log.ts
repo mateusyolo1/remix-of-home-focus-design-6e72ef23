@@ -46,16 +46,23 @@ function write(list: ActivityEntry[]) {
   window.dispatchEvent(new CustomEvent(EVT));
 }
 
-export function logActivity(input: { kind: ActivityKind; title: string; detail?: string }) {
+export function logActivity(input: {
+  kind: ActivityKind;
+  title: string;
+  detail?: string;
+  tag?: string;
+}) {
   const now = new Date();
   const entry: ActivityEntry = {
     id: uid(),
     kind: input.kind,
     title: input.title,
     detail: input.detail,
+    tag: input.tag,
     at: now.toISOString(),
     date: dateKeyLocal(now),
   };
+
   const list = read();
   list.unshift(entry);
   write(list.slice(0, 5000));
