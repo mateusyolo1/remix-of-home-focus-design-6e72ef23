@@ -18,6 +18,15 @@ export function useExecuteActions() {
       try {
         if (a.type === "create_task") {
           const t = addTask(a.title, a.blockTime, a.tag);
+          // Aplica dueAt/reminderAt extraídos pelo Hermes.
+          const due = toEpoch((a as { dueAt?: string | number }).dueAt);
+          const rem = toEpoch((a as { reminderAt?: string | number }).reminderAt);
+          if (due || rem) {
+            updateTask(t.id, {
+              dueAt: due ?? undefined,
+              reminderAt: rem ?? undefined,
+            });
+          }
           recordCreation({ entityId: t.id, entityKind: "task", title: t.title, tag: t.tag });
           toast.success(`Tarefa: ${a.title}`);
         } else if (a.type === "create_block") {
