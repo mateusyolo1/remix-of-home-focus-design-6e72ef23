@@ -145,7 +145,22 @@ function Index() {
 
   const filteredTasks = tasks;
 
-  const todayBlocks = blocks.slice(0, 3);
+  // Blocos agendados para hoje que ainda não estão vinculados a nenhuma tarefa.
+  // Aparecem como "tarefas-agenda" virtuais no topo da lista de Tarefas.
+  const todayDateKey = todayKey;
+  const todayAgendaTasks = useMemo(() => {
+    const linkedTimes = new Set(tasks.map((t) => t.blockTime).filter(Boolean));
+    return blocks.filter((b) => blockDateKey(b) === todayDateKey && !linkedTimes.has(b.time));
+  }, [blocks, tasks, todayDateKey]);
+
+  const todayBlocks = useMemo(
+    () => blocks.filter((b) => blockDateKey(b) === todayDateKey).slice(0, 3),
+    [blocks, todayDateKey],
+  );
+
+  const activeNotes = useMemo(() => quickNotes.filter((n) => !n.archivedAt), [quickNotes]);
+  const archivedNotes = useMemo(() => quickNotes.filter((n) => n.archivedAt), [quickNotes]);
+
   const recentNotes = useMemo(() => {
     if (!mounted) return [] as string[];
     const fromBlocks = Object.entries(noteMap)
@@ -157,9 +172,9 @@ function Index() {
       .slice(-2)
       .reverse()
       .map((x) => x.text.slice(0, 80));
-    const fromQuick = quickNotes.slice(0, 2).map((n) => n.title);
+    const fromQuick = activeNotes.slice(0, 2).map((n) => n.title);
     return [...fromQuick, ...fromBlocks].slice(0, 3);
-  }, [noteMap, quickNotes, mounted]);
+  }, [noteMap, activeNotes, mounted]);
 
   const addQuickNote = () => {
     const v = quickNote.trim();
