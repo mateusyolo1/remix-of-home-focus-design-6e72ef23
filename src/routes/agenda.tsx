@@ -453,7 +453,7 @@ function FullCalendarModal({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl p-3 animate-in slide-in-from-bottom duration-200">
         <div className="flex items-center justify-between px-2 py-1">
@@ -513,7 +513,7 @@ function NewBlockModal({
 
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl p-5 animate-in slide-in-from-bottom duration-200">
         <div className="flex items-center justify-between mb-4">
@@ -677,7 +677,7 @@ function NoteEditor({ block, onClose }: { block: Block; onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={save} />
       <div
         role="dialog"
@@ -873,7 +873,7 @@ function DayPreviewModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[80dvh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-border">
@@ -958,7 +958,7 @@ function BlockPreviewModal({
   const notesText = (block.notes ?? "").replace(/<[^>]+>/g, "").trim();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-md bg-card rounded-t-3xl sm:rounded-3xl ring-1 ring-black/5 shadow-2xl animate-in slide-in-from-bottom duration-200">
         <div className="flex items-center justify-between p-4 border-b border-border">
