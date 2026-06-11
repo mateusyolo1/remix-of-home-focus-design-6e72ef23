@@ -121,6 +121,19 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    import("../lib/appearance").then((m) => m.initAppearance());
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      const theme = (localStorage.getItem("fm-theme") as "light" | "dark" | "system" | null) ?? "system";
+      if (theme === "system") {
+        document.documentElement.classList.toggle("dark", mq.matches);
+      }
+    };
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AppShell />
