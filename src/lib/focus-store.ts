@@ -85,8 +85,9 @@ function write(key: string, value: unknown) {
 }
 
 function useStoreValue<T>(key: string, fallback: T): [T, (v: T) => void] {
-  const [val, setVal] = useState<T>(() => read(key, fallback));
+  const [val, setVal] = useState<T>(fallback);
   useEffect(() => {
+    setVal(read(key, fallback));
     const onChange = (e: Event) => {
       const detail = (e as CustomEvent).detail as { key: string } | undefined;
       if (!detail || detail.key === key) setVal(read(key, fallback));
