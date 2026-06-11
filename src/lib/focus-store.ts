@@ -249,18 +249,18 @@ export function useQuickNotes() {
       ttlDays: input.ttlDays ?? 7,
       createdAt: new Date().toISOString(),
     };
-    setNotes([n, ...notes]);
+    setNotes((prev) => [n, ...prev]);
     logActivity({ kind: "note", title: n.title, detail: n.body?.slice(0, 80) });
     return n;
   };
 
-  const remove = (id: string) => setNotes(notes.filter((n) => n.id !== id));
+  const remove = (id: string) => setNotes((prev) => prev.filter((n) => n.id !== id));
   const update = (id: string, patch: Partial<QuickNote>) =>
-    setNotes(notes.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)));
   const archive = (id: string) =>
-    setNotes(notes.map((n) => (n.id === id ? { ...n, archivedAt: new Date().toISOString() } : n)));
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, archivedAt: new Date().toISOString() } : n)));
   const unarchive = (id: string) =>
-    setNotes(notes.map((n) => (n.id === id ? { ...n, archivedAt: undefined } : n)));
+    setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, archivedAt: undefined } : n)));
   return { notes, add, remove, update, archive, unarchive, setNotes };
 }
 
