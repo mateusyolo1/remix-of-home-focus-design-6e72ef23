@@ -21,7 +21,7 @@ import {
   type Schedule,
   type Shift,
 } from "@/lib/profile-store";
-import { useAgentConfig, MODEL_OPTIONS, type AgentProvider } from "@/lib/agent-store";
+import { useAgentConfig, MODEL_OPTIONS, type AgentProvider, type AgentsConfig, type SubAgentConfig } from "@/lib/agent-store";
 import { searchCity, type GeoResult } from "@/lib/weather";
 import { toast } from "sonner";
 
@@ -540,6 +540,92 @@ function EditarPerfil() {
             Abrir Hermes
           </Link>
         </section>
+
+        {/* Meus Agentes — router */}
+        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+          <div className="flex items-start gap-2">
+            <Sparkles className="size-4 text-accent mt-0.5" />
+            <div>
+              <SectionLabel>Meus Agentes (router por aba)</SectionLabel>
+              <p className="text-xs text-muted-foreground mt-1">
+                O Hermes divide sua fala e envia cada parte para o agente da aba. Ative, escreva instruções e dê palavras-chave para cada um.
+              </p>
+            </div>
+          </div>
+
+          {(["agenda", "timer", "home"] as const).map((key) => {
+            const sub = agent.agents[key];
+            const title =
+              key === "agenda" ? "🗓️ Agente Agenda" : key === "timer" ? "⏱️ Agente Timer" : "🏠 Agente Home";
+            const hint =
+              key === "agenda"
+                ? "Cria blocos com horário/data (reuniões, compromissos)."
+                : key === "timer"
+                  ? "Inicia cronômetros (pomodoro, foco, descansos)."
+                  : "Cria tarefas, listas e notas livres.";
+            const update = (patch: Partial<SubAgentConfig>) => {
+              const next: AgentsConfig = {
+                ...agent.agents,
+                [key]: { ...sub, ...patch },
+              };
+              setAgent({ ...agent, agents: next });
+            };
+            return (
+              <div key={key} className="bg-secondary/60 rounded-xl p-4 ring-1 ring-black/5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">{title}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={sub.enabled}
+                    onClick={() => update({ enabled: !sub.enabled })}
+                    className={[
+                      "relative w-11 h-6 rounded-full transition-colors shrink-0 mt-0.5",
+                      sub.enabled ? "bg-destructive" : "bg-background ring-1 ring-border",
+                    ].join(" ")}
+                  >
+                    <span
+                      className={[
+                        "absolute top-0.5 size-5 rounded-full bg-background shadow transition-transform",
+                        sub.enabled ? "translate-x-5" : "translate-x-0.5",
+                      ].join(" ")}
+                    />
+                  </button>
+                </div>
+                {sub.enabled && (
+                  <>
+                    <Field label="Instruções pessoais (personalidade, regras, exemplos)">
+                      <Textarea
+                        value={sub.prompt}
+                        onChange={(v) => update({ prompt: v })}
+                        placeholder={
+                          key === "agenda"
+                            ? "Ex.: nunca agende depois das 20h; reuniões padrão = 30min…"
+                            : key === "timer"
+                              ? "Ex.: meu pomodoro é 50/10; foco profundo só de manhã…"
+                              : "Ex.: anote ideias com tags; listas de mercado por categoria…"
+                        }
+                        rows={3}
+                      />
+                    </Field>
+                    <Field label="Palavras-chave de roteamento">
+                      <Input
+                        value={sub.keywords}
+                        onChange={(v) => update({ keywords: v })}
+                        placeholder="separadas por vírgula"
+                      />
+                    </Field>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </section>
+
+
 
         {/* Instalar app */}
         <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-3">

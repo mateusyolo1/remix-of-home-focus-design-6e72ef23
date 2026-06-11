@@ -2,11 +2,42 @@ import { useEffect, useState } from "react";
 
 export type AgentProvider = "gemini" | "deepseek";
 
+export type SubAgentConfig = {
+  enabled: boolean;
+  prompt: string;
+  keywords: string;
+};
+
+export type AgentsConfig = {
+  agenda: SubAgentConfig;
+  timer: SubAgentConfig;
+  home: SubAgentConfig;
+};
+
 export type AgentConfig = {
   provider: AgentProvider;
   model: string;
   geminiKey: string;
   deepseekKey: string;
+  agents: AgentsConfig;
+};
+
+export const DEFAULT_AGENTS: AgentsConfig = {
+  agenda: {
+    enabled: true,
+    prompt: "",
+    keywords: "reunião, compromisso, agendar, marcar, às, horário",
+  },
+  timer: {
+    enabled: true,
+    prompt: "",
+    keywords: "foco, pomodoro, cronômetro, descanso, minutos",
+  },
+  home: {
+    enabled: true,
+    prompt: "",
+    keywords: "tarefa, lembrar, comprar, anotar, ideia, lista",
+  },
 };
 
 export const DEFAULT_AGENT: AgentConfig = {
@@ -14,6 +45,7 @@ export const DEFAULT_AGENT: AgentConfig = {
   model: "gemini-2.5-flash",
   geminiKey: "",
   deepseekKey: "",
+  agents: DEFAULT_AGENTS,
 };
 
 export const MODEL_OPTIONS: Record<AgentProvider, { value: string; label: string }[]> = {
@@ -31,11 +63,25 @@ export const MODEL_OPTIONS: Record<AgentProvider, { value: string; label: string
 const KEY = "fm.agent";
 const EVT = "fm:agent";
 
+function mergeAgents(input: Partial<AgentsConfig> | undefined): AgentsConfig {
+  return {
+    agenda: { ...DEFAULT_AGENTS.agenda, ...(input?.agenda ?? {}) },
+    timer: { ...DEFAULT_AGENTS.timer, ...(input?.timer ?? {}) },
+    home: { ...DEFAULT_AGENTS.home, ...(input?.home ?? {}) },
+  };
+}
+
 function read(): AgentConfig {
   if (typeof window === "undefined") return DEFAULT_AGENT;
   try {
     const raw = window.localStorage.getItem(KEY);
-    return raw ? { ...DEFAULT_AGENT, ...JSON.parse(raw) } : DEFAULT_AGENT;
+    if (!raw) return DEFAULT_AGENT;
+    const parsed = JSON.parse(raw) as Partial<AgentConfig>;
+    return {
+      ...DEFAULT_AGENT,
+      ...parsed,
+      agents: mergeAgents(parsed.agents),
+    };
   } catch {
     return DEFAULT_AGENT;
   }

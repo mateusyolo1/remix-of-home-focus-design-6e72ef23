@@ -1,10 +1,12 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { AlertTriangle, Send, Settings2, Sparkles } from "lucide-react";
+import { AlertTriangle, CalendarDays, Home as HomeIcon, Send, Settings2, Sparkles, Timer as TimerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
-import { runAgent, type AgentAction, type ChatMsg } from "@/lib/agent";
-import { useActiveTask, useBlocks, useLists, useQuickNotes, useTasks } from "@/lib/focus-store";
+import { runAgent, type ChatMsg } from "@/lib/agent";
+import type { RouteTarget } from "@/lib/agents/router";
+import type { RoutedAction } from "@/lib/agents/orchestrator";
+import { useExecuteActions } from "@/lib/agents/execute";
 import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { toast } from "sonner";
 
@@ -12,18 +14,18 @@ export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
       { title: "Hermes — Agente IA" },
-      { name: "description", content: "Converse com o Hermes para criar tarefas, blocos, notas e iniciar foco automaticamente." },
+      { name: "description", content: "Converse com o Hermes: ele roteia sua fala para Agenda, Timer e Home." },
     ],
   }),
   component: ChatPage,
 });
 
-type UiMsg = { role: "user" | "assistant"; content: string; actions?: AgentAction[] };
+type UiMsg = { role: "user" | "assistant"; content: string; routed?: RoutedAction[] };
 
 const GREETING: UiMsg = {
   role: "assistant",
   content:
-    "Oi, sou o Hermes. Me peça em linguagem natural: \"crie uma tarefa de comprar pão\", \"agenda reunião amanhã às 14h\", \"lista de compras: arroz, feijão, café\" ou \"foco de 25 minutos\".",
+    "Oi, sou o Hermes. Fale naturalmente — eu divido em partes e mando para a Agenda, Timer ou Home. Ex.: \"amanhã 14h reunião com João, depois 25min de foco e me lembra de comprar pão\".",
 };
 
 function ChatPage() {
@@ -32,14 +34,9 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
-  const { add: addTask } = useTasks();
-  const { add: addBlock } = useBlocks();
-  const { add: addNote } = useQuickNotes();
-  const { add: addList } = useLists();
-  const [, setActive] = useActiveTask();
   const [profile] = useProfile();
+  const execute = useExecuteActions();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -48,45 +45,6 @@ function ChatPage() {
   const hasKey =
     (config.provider === "gemini" && config.geminiKey) ||
     (config.provider === "deepseek" && config.deepseekKey);
-
-  const executeActions = (actions: AgentAction[]) => {
-    for (const a of actions) {
-      try {
-        if (a.type === "create_task") {
-          addTask(a.title, a.blockTime);
-          toast.success(`Tarefa: ${a.title}`);
-        } else if (a.type === "create_block") {
-          addBlock({
-            time: a.time,
-            title: a.title,
-            tag: a.tag ?? "Foco",
-            notes: a.notes ?? "",
-            date: a.date,
-          });
-          toast.success(`Bloco ${a.time}: ${a.title}`);
-        } else if (a.type === "create_note") {
-          addNote({ title: a.title, body: a.body, ttlDays: a.ttlDays });
-          toast.success(`Nota: ${a.title}`);
-        } else if (a.type === "create_list") {
-          addList({ title: a.title, items: a.items });
-          toast.success(`Lista: ${a.title} (${a.items.length})`);
-        } else if (a.type === "start_timer") {
-          setActive({
-            time: new Date().toTimeString().slice(0, 5),
-            title: a.title ?? "Foco",
-            tag: "Foco",
-            goal: "",
-            minutes: a.minutes,
-          });
-          toast.success(`Timer ${a.minutes}min`);
-          navigate({ to: "/timer" });
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error(`Falha ao executar ${a.type}`);
-      }
-    }
-  };
 
   const send = async () => {
     const text = input.trim();
@@ -104,9 +62,9 @@ function ChatPage() {
       const result = await runAgent(config, history, buildProfileContext(profile));
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: result.reply || "✓", actions: result.actions },
+        { role: "assistant", content: result.reply || "✓", routed: result.routed },
       ]);
-      if (result.actions.length) executeActions(result.actions);
+      if (result.routed.length) execute(result.routed);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";
       setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${msg}` }]);
@@ -156,11 +114,11 @@ function ChatPage() {
               </div>
             )}
             {m.content}
-            {m.actions && m.actions.length > 0 && (
-              <ul className="mt-2 space-y-1">
-                {m.actions.map((a, j) => (
-                  <li key={j} className="text-[11px] bg-secondary/60 rounded-md px-2 py-1 inline-block mr-1">
-                    ✓ {labelFor(a)}
+            {m.routed && m.routed.length > 0 && (
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {m.routed.map((a, j) => (
+                  <li key={j}>
+                    <RoutedBadge action={a} />
                   </li>
                 ))}
               </ul>
@@ -169,7 +127,7 @@ function ChatPage() {
         ))}
         {loading && (
           <div className="max-w-[85%] p-4 rounded-2xl bg-card ring-1 ring-black/5 text-sm text-muted-foreground">
-            Hermes está pensando…
+            Hermes está roteando…
           </div>
         )}
       </main>
@@ -186,7 +144,7 @@ function ChatPage() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Peça uma tarefa, bloco, lista ou foco…"
+            placeholder="Fale livre — agenda, timer ou home…"
             className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
             disabled={loading}
           />
@@ -204,17 +162,36 @@ function ChatPage() {
   );
 }
 
-function labelFor(a: AgentAction): string {
+function RoutedBadge({ action }: { action: RoutedAction }) {
+  const target: RouteTarget = action._target;
+  const styleMap: Record<RouteTarget, string> = {
+    agenda: "bg-blue-500/10 text-blue-600 ring-blue-500/20",
+    timer: "bg-orange-500/10 text-orange-600 ring-orange-500/20",
+    home: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20",
+    chat: "bg-secondary text-foreground ring-black/5",
+  };
+  const Icon = target === "agenda" ? CalendarDays : target === "timer" ? TimerIcon : HomeIcon;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md ring-1 ${styleMap[target]}`}
+    >
+      <Icon className="size-3" />
+      {labelFor(action)}
+    </span>
+  );
+}
+
+function labelFor(a: RoutedAction): string {
   switch (a.type) {
     case "create_task":
-      return `Tarefa: ${a.title}`;
+      return a.title;
     case "create_block":
-      return `Bloco ${a.time}${a.date ? ` (${a.date})` : ""}: ${a.title}`;
+      return `${a.time}${a.date ? ` (${a.date})` : ""} · ${a.title}`;
     case "create_note":
       return `Nota: ${a.title}`;
     case "create_list":
-      return `Lista: ${a.title} (${a.items.length})`;
+      return `${a.title} (${a.items.length})`;
     case "start_timer":
-      return `Timer: ${a.minutes}min`;
+      return `${a.minutes}min${a.title ? ` · ${a.title}` : ""}`;
   }
 }

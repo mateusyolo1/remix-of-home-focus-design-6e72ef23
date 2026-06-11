@@ -1,7 +1,10 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { CalendarDays, Home, MessageSquareText, Mic, Timer, User, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useTasks } from "@/lib/focus-store";
+import { useAgentConfig } from "@/lib/agent-store";
+import { runAgent } from "@/lib/agent";
+import { useExecuteActions } from "@/lib/agents/execute";
+import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { toast } from "sonner";
 
 const tabs = [
@@ -38,8 +41,11 @@ export function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const onChat = pathname === "/chat";
   const onHome = pathname === "/";
-  const { add } = useTasks();
+  const [config] = useAgentConfig();
+  const [profile] = useProfile();
+  const execute = useExecuteActions();
   const [recording, setRecording] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const recogRef = useRef<SpeechRecognitionLike | null>(null);
 
   useEffect(() => {
@@ -51,6 +57,35 @@ export function AppShell() {
       }
     };
   }, []);
+
+  const hasKey =
+    (config.provider === "gemini" && config.geminiKey) ||
+    (config.provider === "deepseek" && config.deepseekKey);
+
+  const handleTranscript = async (text: string) => {
+    if (!hasKey) {
+      toast.error("Configure sua API key em Perfil → Agente IA");
+      return;
+    }
+    setProcessing(true);
+    try {
+      const result = await runAgent(
+        config,
+        [{ role: "user", content: text }],
+        buildProfileContext(profile),
+      );
+      if (result.routed.length === 0) {
+        toast(`Nada para executar — "${text}"`);
+      } else {
+        execute(result.routed);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro do agente";
+      toast.error(msg);
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   const startMic = () => {
     const Ctor = getSpeechCtor();
@@ -73,7 +108,7 @@ export function AppShell() {
     r.continuous = false;
     r.onstart = () => {
       setRecording(true);
-      toast("Ouvindo… fale sua tarefa");
+      toast("Ouvindo… fale livremente");
     };
     r.onerror = (e) => {
       setRecording(false);
@@ -82,10 +117,7 @@ export function AppShell() {
     r.onend = () => setRecording(false);
     r.onresult = (e) => {
       const text = e.results?.[0]?.[0]?.transcript?.trim();
-      if (text) {
-        add(text);
-        toast.success(`Tarefa: ${text}`);
-      }
+      if (text) handleTranscript(text);
     };
     recogRef.current = r;
     try {
@@ -129,13 +161,15 @@ export function AppShell() {
                         "grid place-items-center rounded-full transition-all size-12 -mt-3 shadow-lg",
                         recording
                           ? "bg-destructive text-destructive-foreground ring-4 ring-destructive/30 animate-pulse"
-                          : "bg-foreground text-background ring-4 ring-background",
+                          : processing
+                            ? "bg-accent text-accent-foreground ring-4 ring-background animate-pulse"
+                            : "bg-foreground text-background ring-4 ring-background",
                       ].join(" ")}
                     >
                       <Mic className="size-5" />
                     </span>
                     <span className="text-[10px] tracking-wider uppercase font-semibold text-foreground">
-                      {recording ? "Ouvindo" : "Ditar"}
+                      {recording ? "Ouvindo" : processing ? "Roteando" : "Ditar"}
                     </span>
                   </button>
                 </li>
