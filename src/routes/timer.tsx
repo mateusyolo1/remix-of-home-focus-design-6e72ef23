@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Check, ChevronRight, Pause, Play, RotateCcw, SkipForward, Target, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useActiveTask, useBlocks, useTasks, type Block } from "@/lib/focus-store";
+import { logActivity } from "@/lib/activity-log";
 
 export const Route = createFileRoute("/timer")({
   head: () => ({
