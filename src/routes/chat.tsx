@@ -28,6 +28,20 @@ const GREETING: UiMsg = {
     "Oi, sou o Hermes. Fale naturalmente — eu divido em partes e mando para a Agenda, Timer ou Home. Ex.: \"amanhã 14h reunião com João, depois 25min de foco e me lembra de comprar pão\".",
 };
 
+const STORAGE_KEY = "fm.hermes.chat";
+
+function loadMessages(): UiMsg[] {
+  if (typeof window === "undefined") return [GREETING];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [GREETING];
+    const parsed = JSON.parse(raw) as UiMsg[];
+    return Array.isArray(parsed) && parsed.length ? parsed : [GREETING];
+  } catch {
+    return [GREETING];
+  }
+}
+
 function ChatPage() {
   const [config] = useAgentConfig();
   const [messages, setMessages] = useState<UiMsg[]>([GREETING]);
@@ -38,9 +52,35 @@ function ChatPage() {
   const [profile] = useProfile();
   const execute = useExecuteActions();
 
+  // Hydrate from localStorage after mount (avoids SSR mismatch).
+  useEffect(() => {
+    setMessages(loadMessages());
+  }, []);
+
+  // Persist on every change.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+    } catch {
+      /* quota or serialize errors are non-fatal */
+    }
+  }, [messages]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  const clearHistory = () => {
+    setMessages([GREETING]);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
+    toast.success("Conversa limpa");
+  };
+
 
   const hasKey =
     (config.provider === "gemini" && config.geminiKey) ||
