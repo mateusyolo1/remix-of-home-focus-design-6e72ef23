@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { AlertTriangle, CalendarDays, Home as HomeIcon, Send, Settings2, Sparkles, Timer as TimerIcon } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Sparkles, StickyNote, Timer as TimerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type ChatMsg } from "@/lib/agent";
@@ -48,6 +48,7 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const [profile] = useProfile();
   const execute = useExecuteActions();
@@ -68,7 +69,16 @@ function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    // Auto-scroll: rola tanto o container interno quanto a janela (layout flex
+    // não garante container scrollável). requestAnimationFrame garante que o DOM
+    // já pintou a nova mensagem antes de medir scrollHeight.
+    const raf = requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
   }, [messages, loading]);
 
   const clearHistory = () => {
@@ -180,6 +190,7 @@ function ChatPage() {
             Hermes está roteando…
           </div>
         )}
+        <div ref={bottomRef} />
       </main>
 
       <div className="fixed bottom-28 inset-x-0 px-4 z-30">
@@ -212,6 +223,23 @@ function ChatPage() {
   );
 }
 
+function iconForAction(a: RoutedAction) {
+  switch (a.type) {
+    case "create_task":
+      return CheckSquare;
+    case "create_list":
+      return ListChecks;
+    case "create_note":
+      return StickyNote;
+    case "create_block":
+      return CalendarClock;
+    case "start_timer":
+      return TimerIcon;
+    default:
+      return HomeIcon;
+  }
+}
+
 function RoutedBadge({ action }: { action: RoutedAction }) {
   const target: RouteTarget = action._target;
   const styleMap: Record<RouteTarget, string> = {
@@ -220,7 +248,7 @@ function RoutedBadge({ action }: { action: RoutedAction }) {
     home: "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20",
     chat: "bg-secondary text-foreground ring-black/5",
   };
-  const Icon = target === "agenda" ? CalendarDays : target === "timer" ? TimerIcon : HomeIcon;
+  const Icon = iconForAction(action);
   return (
     <span
       className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-md ring-1 ${styleMap[target]}`}
@@ -234,13 +262,13 @@ function RoutedBadge({ action }: { action: RoutedAction }) {
 function labelFor(a: RoutedAction): string {
   switch (a.type) {
     case "create_task":
-      return a.title;
+      return `${a.title}${a.tag ? ` · ${a.tag}` : ""}`;
     case "create_block":
       return `${a.time}${a.date ? ` (${a.date})` : ""} · ${a.title}`;
     case "create_note":
       return `Nota: ${a.title}`;
     case "create_list":
-      return `${a.title} (${a.items.length})`;
+      return `${a.title} (${a.items.length})${a.tag ? ` · ${a.tag}` : ""}`;
     case "start_timer":
       return `${a.minutes}min${a.title ? ` · ${a.title}` : ""}`;
   }
