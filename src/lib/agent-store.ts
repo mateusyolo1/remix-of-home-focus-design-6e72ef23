@@ -48,8 +48,9 @@ function write(v: AgentConfig) {
 }
 
 export function useAgentConfig(): [AgentConfig, (v: AgentConfig) => void] {
-  const [val, setVal] = useState<AgentConfig>(() => read());
+  const [val, setVal] = useState<AgentConfig>(DEFAULT_AGENT);
   useEffect(() => {
+    setVal(read());
     const on = () => setVal(read());
     window.addEventListener(EVT, on);
     window.addEventListener("storage", on);

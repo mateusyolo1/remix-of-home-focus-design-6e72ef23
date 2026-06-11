@@ -105,6 +105,7 @@ function Index() {
 
   const todayBlocks = blocks.slice(0, 3);
   const recentNotes = useMemo(() => {
+    if (!mounted) return [] as string[];
     const fromBlocks = Object.entries(noteMap)
       .map(([time, html]) => ({
         time,
@@ -116,7 +117,7 @@ function Index() {
       .map((x) => x.text.slice(0, 80));
     const fromQuick = quickNotes.slice(0, 2).map((n) => n.title);
     return [...fromQuick, ...fromBlocks].slice(0, 3);
-  }, [noteMap, quickNotes]);
+  }, [noteMap, quickNotes, mounted]);
 
   const addQuickNote = () => {
     const v = quickNote.trim();
