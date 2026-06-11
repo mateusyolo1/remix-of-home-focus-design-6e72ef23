@@ -428,7 +428,7 @@ function EditarPerfil() {
         </section>
 
         {/* Sobre você (dossiê IA) */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section id="sobre" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <div className="flex items-start gap-2">
             <Sparkles className="size-4 text-accent mt-0.5" />
             <div>
