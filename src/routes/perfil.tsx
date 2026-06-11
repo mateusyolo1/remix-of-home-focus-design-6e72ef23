@@ -215,7 +215,7 @@ function PerfilPage() {
               </p>
             </div>
           ) : (
-            <DesempenhoPanel checkins={checkins} presentCount={presentCount} missedCount={missedCount} />
+            <DesempenhoPanel activity={activity} />
           )}
         </section>
 
