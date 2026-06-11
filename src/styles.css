@@ -623,30 +623,16 @@ html[data-palette="liquid"].dark .bg-popover::before {
     accent-color: var(--foreground);
   }
 
-  /* Date/time pickers — neutralize the blue tint of the system UI */
+  /* Date/time pickers — keep accent matching the interface */
   input[type="date"],
   input[type="time"],
   input[type="datetime-local"],
   input[type="month"],
   input[type="week"],
   input[type="color"] {
-    color-scheme: light dark;
     accent-color: var(--foreground);
   }
 
-  input[type="date"]::-webkit-calendar-picker-indicator,
-  input[type="time"]::-webkit-calendar-picker-indicator,
-  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-  input[type="month"]::-webkit-calendar-picker-indicator,
-  input[type="week"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 0.6;
-    filter: grayscale(1);
-  }
-  input[type="date"]::-webkit-calendar-picker-indicator:hover,
-  input[type="time"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
-  }
 
   /* Scrollbars */
   * {
