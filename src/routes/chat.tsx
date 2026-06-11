@@ -126,25 +126,27 @@ function ChatPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <PageHeader eyebrow="Agente" title="Hermes IA" />
+      <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 pb-2 shadow-[0_1px_0_0_hsl(var(--border)/0.4)]">
+        <PageHeader eyebrow="Agente" title="Hermes IA" />
 
-      <div className="px-6 mb-3 flex items-center justify-between gap-2">
-        <Link
-          to="/perfil/editar"
-          className="inline-flex items-center gap-2 text-[11px] uppercase tracking-widest font-semibold text-accent bg-card px-3 py-2 rounded-full ring-1 ring-black/5"
-        >
-          <Settings2 className="size-3.5" />
-          {config.provider === "gemini" ? "Gemini" : "DeepSeek"} · {config.model}
-        </Link>
-        {messages.length > 1 && (
-          <button
-            type="button"
-            onClick={clearHistory}
-            className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground bg-secondary px-3 py-2 rounded-full ring-1 ring-black/5 active:scale-95"
+        <div className="px-6 flex items-center justify-between gap-2">
+          <Link
+            to="/perfil/editar"
+            className="inline-flex items-center gap-2 text-[11px] uppercase tracking-widest font-semibold text-accent bg-card px-3 py-2 rounded-full ring-1 ring-black/5"
           >
-            Limpar
-          </button>
-        )}
+            <Settings2 className="size-3.5" />
+            {config.provider === "gemini" ? "Gemini" : "DeepSeek"} · {config.model}
+          </Link>
+          {messages.length > 1 && (
+            <button
+              type="button"
+              onClick={clearHistory}
+              className="text-[11px] uppercase tracking-widest font-semibold text-muted-foreground bg-secondary px-3 py-2 rounded-full ring-1 ring-black/5 active:scale-95"
+            >
+              Limpar
+            </button>
+          )}
+        </div>
       </div>
 
 
