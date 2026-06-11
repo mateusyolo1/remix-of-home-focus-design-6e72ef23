@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { AlertTriangle, CalendarDays, Home as HomeIcon, Send, Settings2, Sparkles, Timer as TimerIcon } from "lucide-react";
+import { AlertTriangle, CalendarClock, CalendarDays, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Sparkles, StickyNote, Timer as TimerIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type ChatMsg } from "@/lib/agent";
