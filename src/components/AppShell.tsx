@@ -135,7 +135,7 @@ export function AppShell() {
         <Link
           to="/chat"
           aria-label="Abrir agente IA"
-          className="fixed bottom-28 right-5 z-40 size-14 rounded-full bg-foreground text-background shadow-lg shadow-foreground/20 grid place-items-center transition-transform active:scale-90"
+          className="fixed bottom-28 right-5 z-40 size-14 rounded-full bg-foreground text-background shadow-lg shadow-foreground/20 grid place-items-center transition-transform active:scale-90 [body.modal-open_&]:translate-y-32 [body.modal-open_&]:pointer-events-none"
         >
           <Sparkles className="size-5" />
         </Link>
