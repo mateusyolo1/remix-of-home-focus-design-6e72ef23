@@ -4,7 +4,7 @@ import { Bell, BrainCog, ChevronRight, LogOut, Moon, Settings, ShieldCheck, User
 import { useMemo } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
 import { useHermesConfig } from "@/lib/hermes/hermes-config";
-import { INSTALL_STATUS_LABEL } from "@/lib/hermes/hermes-status";
+
 import { toast } from "sonner";
 
 

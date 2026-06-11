@@ -13,7 +13,6 @@ const RunInput = z.object({
 export type SicRunResult = {
   source: "remote_api" | "local_bridge";
   text: string;
-  raw?: unknown;
 };
 
 async function callRemoteSic(input: string): Promise<SicRunResult> {
