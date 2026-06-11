@@ -192,7 +192,7 @@ export function AppShell() {
             const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
 
             // Slot central: na Home vira microfone (transcrição -> tarefa).
-            if (to === "/" && onHome) {
+            if (to === "/" && micSlot) {
               return (
                 <li key="mic" className="flex-1">
                   <button
