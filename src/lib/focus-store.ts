@@ -49,6 +49,12 @@ export type Task = {
   tag?: TaskTag;
   important?: boolean;
   createdAt?: string;
+  /** Prazo da tarefa (ms epoch). */
+  dueAt?: number;
+  /** Lembrete avulso (ms epoch). */
+  reminderAt?: number;
+  /** Minutos antes do prazo para alertar. */
+  notifyBeforeMinutes?: number[];
 };
 
 
