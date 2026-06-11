@@ -244,7 +244,7 @@ function EditarPerfil() {
         </section>
 
         {/* Trabalho */}
-        <section className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
+        <section id="trabalho" className="bg-card rounded-2xl p-5 ring-1 ring-black/5 space-y-4">
           <SectionLabel>Trabalho</SectionLabel>
           <Field label="Função / cargo">
             <Input
