@@ -1,5 +1,6 @@
 import type { AgentConfig, SubAgentConfig } from "@/lib/agent-store";
 import type { AgentAction } from "@/lib/agent";
+import { getHermesLearningContext } from "@/lib/hermes/preference-engine";
 import { callLlm, parseJson } from "./llm";
 
 const BASE = `Você é o AGENTE HOME do FocusMind (PT-BR).
