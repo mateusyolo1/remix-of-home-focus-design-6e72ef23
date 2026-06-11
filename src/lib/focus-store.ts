@@ -124,7 +124,9 @@ function write(key: string, value: unknown) {
   window.dispatchEvent(new CustomEvent(EVT, { detail: { key } }));
 }
 
-function useStoreValue<T>(key: string, fallback: T): [T, (v: T) => void] {
+type StoreSetter<T> = (value: T | ((prev: T) => T)) => void;
+
+function useStoreValue<T>(key: string, fallback: T): [T, StoreSetter<T>] {
   const [val, setVal] = useState<T>(fallback);
   useEffect(() => {
     setVal(read(key, fallback));
@@ -140,7 +142,13 @@ function useStoreValue<T>(key: string, fallback: T): [T, (v: T) => void] {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  const update = (v: T) => write(key, v);
+  const update: StoreSetter<T> = (next) => {
+    const prev = read(key, fallback);
+    const value =
+      typeof next === "function" ? (next as (prev: T) => T)(prev) : next;
+    write(key, value);
+    setVal(value);
+  };
   return [val, update];
 }
 
