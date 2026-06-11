@@ -53,6 +53,10 @@ function PerfilPage() {
   const [modal, setModal] = useState<ModalKind>(null);
   const [silent, setSilent] = useState(false);
   const [tab, setTab] = useState<"historico" | "desempenho">("historico");
+  const [dayOpen, setDayOpen] = useState<string | null>(null);
+  const activity = useActivityLog();
+  const activityMap = useMemo(() => activitiesByDate(activity), [activity]);
+
 
   useEffect(() => {
     setSilent(localStorage.getItem(KEY_SILENT) === "1");
