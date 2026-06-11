@@ -244,7 +244,19 @@ export function useQuickNotes() {
   };
 
   const remove = (id: string) => setNotes(notes.filter((n) => n.id !== id));
-  return { notes, add, remove, setNotes };
+  const update = (id: string, patch: Partial<QuickNote>) =>
+    setNotes(notes.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+  const archive = (id: string) =>
+    setNotes(notes.map((n) => (n.id === id ? { ...n, archivedAt: new Date().toISOString() } : n)));
+  const unarchive = (id: string) =>
+    setNotes(notes.map((n) => (n.id === id ? { ...n, archivedAt: undefined } : n)));
+  return { notes, add, remove, update, archive, unarchive, setNotes };
+}
+
+/** Remove notas arquivadas há mais que a retenção configurada. */
+export function pruneArchivedNotes(notes: QuickNote[], retentionDays: number): QuickNote[] {
+  const cutoff = Date.now() - retentionDays * 86400 * 1000;
+  return notes.filter((n) => !n.archivedAt || new Date(n.archivedAt).getTime() >= cutoff);
 }
 
 export function useLists() {
