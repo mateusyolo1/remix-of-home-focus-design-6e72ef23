@@ -396,17 +396,13 @@ function LembretesModal({ onClose }: { onClose: () => void }) {
       <p className="text-xs text-muted-foreground">
         Defina um horário para receber um aviso diário. Usa notificações do navegador.
       </p>
-      <label className="block space-y-1.5">
+      <div className="space-y-1.5">
         <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Horário
         </span>
-        <input
-          type="time"
-          value={time}
-          onChange={(e) => setTime(e.target.value)}
-          className="w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
-        />
-      </label>
+        <TimeWheel value={time} onChange={setTime} />
+      </div>
+
       <div className="rounded-xl bg-secondary p-3 text-xs text-muted-foreground">
         Permissão de notificações:{" "}
         <strong className="text-foreground">
