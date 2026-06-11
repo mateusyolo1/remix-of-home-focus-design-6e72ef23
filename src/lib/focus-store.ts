@@ -12,12 +12,43 @@ export type ActiveTask = {
 
 export type Subtask = { id: string; text: string; done: boolean };
 
+export type TaskTag =
+  | "trabalho"
+  | "estudo"
+  | "saude"
+  | "casa"
+  | "pessoal"
+  | "outro";
+
+export const TASK_TAGS: TaskTag[] = [
+  "trabalho",
+  "estudo",
+  "saude",
+  "casa",
+  "pessoal",
+  "outro",
+];
+
+export const TASK_TAG_LABEL: Record<TaskTag, string> = {
+  trabalho: "Trabalho",
+  estudo: "Estudo",
+  saude: "Saúde",
+  casa: "Casa",
+  pessoal: "Pessoal",
+  outro: "Outro",
+};
+
+/** Tags consideradas "produtivas" para gerar estatísticas de desempenho. */
+export const PRODUCTIVE_TAGS: TaskTag[] = ["trabalho", "estudo"];
+
 export type Task = {
   id: string;
   title: string;
   done: boolean;
   blockTime?: string; // links to Block.time
+  tag?: TaskTag;
 };
+
 
 export type Block = {
   time: string;
