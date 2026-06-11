@@ -180,25 +180,23 @@ function PerfilPage() {
 
 function HermesAgentCard() {
   const [config] = useHermesConfig();
-  const connected = config.installStatus === "connected";
+  const active = config.enabled;
   return (
     <Link
       to="/hermes"
       className="bg-card rounded-2xl ring-1 ring-black/5 p-4 flex items-center gap-3 hover:bg-secondary/40 transition-colors"
     >
       <span className="size-11 rounded-xl bg-secondary grid place-items-center shrink-0">
-        {connected ? (
+        {active ? (
           <BrainCog className="size-5 text-foreground" />
         ) : (
           <WifiOff className="size-5 text-muted-foreground" />
         )}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm">Hermes Agent</p>
+        <p className="font-semibold text-sm">Agente SIC</p>
         <p className="text-[11px] text-muted-foreground truncate">
-          {config.enabled
-            ? INSTALL_STATUS_LABEL[config.installStatus]
-            : "Configurar instalação no Termux"}
+          {active ? "Ativo — API segura no servidor" : "Desativado — toque para configurar"}
         </p>
       </div>
       <ChevronRight className="size-4 text-muted-foreground" />
