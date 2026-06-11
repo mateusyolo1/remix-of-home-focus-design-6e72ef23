@@ -43,6 +43,9 @@ function Index() {
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
   const [newListItem, setNewListItem] = useState<Record<string, string>>({});
+  const [newListTitle, setNewListTitle] = useState("");
+  const [newListTag, setNewListTag] = useState<TaskTag>("trabalho");
+  const [listTagMenuOpen, setListTagMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
