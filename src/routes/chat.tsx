@@ -69,7 +69,16 @@ function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    // Auto-scroll: rola tanto o container interno quanto a janela (layout flex
+    // não garante container scrollável). requestAnimationFrame garante que o DOM
+    // já pintou a nova mensagem antes de medir scrollHeight.
+    const raf = requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
   }, [messages, loading]);
 
   const clearHistory = () => {
