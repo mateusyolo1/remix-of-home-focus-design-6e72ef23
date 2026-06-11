@@ -1,6 +1,6 @@
 import type { AgentConfig, SubAgentConfig } from "@/lib/agent-store";
 import type { AgentAction } from "@/lib/agent";
-import { getHermesLearningContext } from "@/lib/hermes/preference-engine";
+import { buildAgentContext } from "@/lib/hermes/agent-core";
 import { callLlm, parseJson } from "./llm";
 
 const BASE = `Você é o AGENTE HOME do FocusMind (PT-BR).
@@ -213,7 +213,7 @@ export async function runHome(
   sub: SubAgentConfig,
   profileContext?: string,
 ): Promise<AgentAction[]> {
-  const learned = getHermesLearningContext(segmentText);
+  const learned = buildAgentContext(segmentText);
   const system = `${BASE}${profileContext ? `\n\n${profileContext.trim()}` : ""}${learned ? `\n\n${learned}` : ""}${sub.prompt.trim() ? `\n\nInstruções pessoais do usuário para este agente:\n${sub.prompt.trim()}` : ""}`;
   const text = await callLlm(config, system, [{ role: "user", content: segmentText }], {
     jsonObject: true,

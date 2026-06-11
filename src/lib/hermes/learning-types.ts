@@ -8,7 +8,9 @@ export type MemoryType =
   | "category_rule"
   | "creation"
   | "acceptance"
-  | "feedback";
+  | "feedback"
+  | "tag_suggestion"
+  | "decision";
 
 export type MemorySource =
   | "task"
