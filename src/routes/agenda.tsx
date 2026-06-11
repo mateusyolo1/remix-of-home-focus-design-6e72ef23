@@ -548,15 +548,13 @@ function NewBlockModal({
               className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
             />
           </label>
-          <label className="block">
+          <div>
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Horário</span>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="mt-1 w-full bg-secondary rounded-lg px-3 py-2.5 text-sm outline-none ring-1 ring-black/5 focus:ring-foreground tabular-nums"
-            />
-          </label>
+            <div className="mt-1">
+              <TimePicker value={time} onChange={setTime} className="w-full" />
+            </div>
+          </div>
+
 
           <div>
             <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tag</span>
