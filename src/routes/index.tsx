@@ -9,6 +9,7 @@ import { useActivityLog, focusMinutesOn, streakDays } from "@/lib/activity-log";
 import { useAppSettings } from "@/lib/app-settings";
 import { fetchWeather, type CurrentWeather } from "@/lib/weather";
 import { toast } from "sonner";
+import { setHomeTab } from "@/lib/home-tab-store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
