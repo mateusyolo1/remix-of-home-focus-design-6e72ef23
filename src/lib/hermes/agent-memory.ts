@@ -8,9 +8,8 @@ import {
   getMemories,
   setMemories,
   uid,
-  type HermesMemory as RawMemory,
 } from "./memory-store";
-import { isSensitive } from "./learning-types";
+import { isSensitive, type HermesMemory as RawMemory } from "./learning-types";
 import type { MemorySource, MemoryType } from "./learning-types";
 
 const EVT = "fm.hermes.agent";
