@@ -3,7 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
 import { Archive, ArchiveRestore, ArrowUpRight, Calendar, Check, CheckCircle2, CloudSun, Link2, Mic, MoreVertical, Plus, Star, Target, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, pruneArchivedNotes, pruneExpiredTasks, dateKey, blockDateKey, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
+import { useActiveTask, useBlocks, useLists, useNotes, useQuickNotes, useTasks, pruneArchivedNotes, pruneExpiredTasks, blockDateKey, TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 import { useProfile, useCheckins } from "@/lib/profile-store";
 import { useActivityLog, focusMinutesOn, streakDays } from "@/lib/activity-log";
 import { useAppSettings } from "@/lib/app-settings";
