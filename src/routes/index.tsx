@@ -62,6 +62,11 @@ function Index() {
   useEffect(() => {
     setMounted(true);
     mark();
+    // Limpeza automática: tarefas expiradas + notas arquivadas além da retenção.
+    const prunedTasks = pruneExpiredTasks(tasks, settings.taskExpiryHours);
+    if (prunedTasks.length !== tasks.length) setTasks(prunedTasks);
+    const prunedNotes = pruneArchivedNotes(quickNotes, settings.archiveRetentionDays);
+    if (prunedNotes.length !== quickNotes.length) setQuickNotes(prunedNotes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
