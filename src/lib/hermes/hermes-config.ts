@@ -1,20 +1,15 @@
 import { useEffect, useState } from "react";
-
-// Modo de conexão simplificado: token e URL da VPS vivem no servidor (secrets).
-// O cliente só guarda preferências de UI e, opcionalmente, a URL da bridge local.
-export type HermesConnectionMode = "remote_api" | "local_bridge" | "local_fallback";
-
-export const CONNECTION_MODE_LABEL: Record<HermesConnectionMode, string> = {
-  remote_api: "API remota (recomendado)",
-  local_bridge: "Bridge local (avançado)",
-  local_fallback: "Apenas fallback local",
-};
+import type { HermesConnectionMode, HermesInstallStatus } from "./hermes-status";
 
 export type HermesAgentConfig = {
   enabled: boolean;
+  installStatus: HermesInstallStatus;
   connectionMode: HermesConnectionMode;
-  bridgeUrl?: string; // só usado quando connectionMode === "local_bridge"
+  bridgeUrl?: string;
+  remoteApiUrl?: string;
+  modelName?: string;
   useLocalFallback: boolean;
+  lastDoctorOutput?: string;
   lastConnectionTest?: string;
   lastError?: string;
   updatedAt: string;
@@ -25,7 +20,8 @@ const EVT = "hermes:config";
 
 export const DEFAULT_HERMES_CONFIG: HermesAgentConfig = {
   enabled: false,
-  connectionMode: "remote_api",
+  installStatus: "not_installed",
+  connectionMode: "local_fallback",
   useLocalFallback: true,
   updatedAt: new Date(0).toISOString(),
 };
@@ -35,14 +31,7 @@ export function getHermesConfig(): HermesAgentConfig {
   try {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) return DEFAULT_HERMES_CONFIG;
-    const parsed = JSON.parse(raw) as Partial<HermesAgentConfig>;
-    // Migração: modos antigos viram remote_api / local_fallback
-    const legacy = parsed.connectionMode as string | undefined;
-    const mode: HermesConnectionMode =
-      legacy === "local_bridge" || legacy === "remote_api" || legacy === "local_fallback"
-        ? legacy
-        : "remote_api";
-    return { ...DEFAULT_HERMES_CONFIG, ...parsed, connectionMode: mode };
+    return { ...DEFAULT_HERMES_CONFIG, ...JSON.parse(raw) };
   } catch {
     return DEFAULT_HERMES_CONFIG;
   }
