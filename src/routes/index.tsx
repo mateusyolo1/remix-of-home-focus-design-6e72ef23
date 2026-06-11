@@ -882,6 +882,104 @@ function Index() {
   );
 }
 
+function NoteCard({
+  note,
+  archived,
+  onArchive,
+  onUnarchive,
+  onRemove,
+  onCycleTtl,
+}: {
+  note: import("@/lib/focus-store").QuickNote;
+  archived: boolean;
+  onArchive: () => void;
+  onUnarchive: () => void;
+  onRemove: () => void;
+  onCycleTtl: () => void;
+}) {
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggered = useRef(false);
+
+  const start = () => {
+    if (archived) return;
+    triggered.current = false;
+    timerRef.current = setTimeout(() => {
+      triggered.current = true;
+      onArchive();
+    }, 900);
+  };
+  const cancel = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+  };
+
+  return (
+    <li
+      onMouseDown={start}
+      onMouseUp={cancel}
+      onMouseLeave={cancel}
+      onTouchStart={start}
+      onTouchEnd={cancel}
+      onTouchCancel={cancel}
+      className={[
+        "p-4 bg-card rounded-xl ring-1 ring-black/5 space-y-1 select-none",
+        archived ? "opacity-75" : "",
+      ].join(" ")}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <h4 className="text-base font-semibold leading-tight">{note.title}</h4>
+        <div className="flex items-center gap-1">
+          {archived ? (
+            <button
+              onClick={onUnarchive}
+              aria-label="Restaurar"
+              className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center"
+            >
+              <ArchiveRestore className="size-3.5" />
+            </button>
+          ) : (
+            <button
+              onClick={onArchive}
+              aria-label="Arquivar"
+              className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
+            >
+              <Archive className="size-3.5" />
+            </button>
+          )}
+          <button
+            onClick={onRemove}
+            aria-label="Remover nota"
+            className="size-7 rounded-md text-muted-foreground hover:bg-secondary grid place-items-center opacity-60 hover:opacity-100"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
+      </div>
+      {note.body && (
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{note.body}</p>
+      )}
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCycleTtl();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="text-[10px] font-medium text-muted-foreground/80 px-2 py-1 rounded-md bg-secondary/60 hover:bg-secondary active:scale-95"
+        >
+          Vida útil: {note.ttlDays} {note.ttlDays === 1 ? "dia" : "dias"} ▾
+        </button>
+        {!archived && (
+          <span className="text-[10px] text-muted-foreground/70">segure para arquivar</span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+
 function LinkBlockSheet({
   currentBlockTime,
   onClose,
