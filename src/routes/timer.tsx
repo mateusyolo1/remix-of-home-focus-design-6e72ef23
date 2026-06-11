@@ -81,17 +81,33 @@ function TimerPage() {
     if (active) setActive({ ...active, minutes: m });
   };
 
+  const logElapsed = () => {
+    const planned = active?.minutes ?? 25;
+    const elapsedMin = Math.max(0, planned - minutes - (seconds > 0 ? 0 : 0));
+    if (elapsedMin <= 0) return;
+    logActivity({
+      kind: "focus",
+      title: active?.title ?? "Foco",
+      detail: `${elapsedMin} min`,
+      tag: active?.tag,
+      minutes: elapsedMin,
+    });
+  };
+
   const reset = () => {
     setRunning(false);
+    logElapsed();
     setMinutes(active?.minutes ?? 25);
     setSeconds(0);
   };
 
   const complete = () => {
     setRunning(false);
+    logElapsed();
     setMinutes(0);
     setSeconds(0);
   };
+
 
   const linkedTasks = active ? tasks.filter((t) => t.blockTime === active.time) : [];
 
