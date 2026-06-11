@@ -38,6 +38,7 @@ function Index() {
   const [tab, setTab] = useState<Tab>("Tarefas");
   const [newTask, setNewTask] = useState("");
   const [newTaskTag, setNewTaskTag] = useState<TaskTag>("trabalho");
+  const [tagMenuOpen, setTagMenuOpen] = useState(false);
 
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [quickNote, setQuickNote] = useState("");
