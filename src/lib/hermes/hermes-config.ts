@@ -51,8 +51,9 @@ export function resetHermesConfig() {
 }
 
 export function useHermesConfig(): [HermesAgentConfig, (patch: Partial<HermesAgentConfig>) => void, () => void] {
-  const [val, setVal] = useState<HermesAgentConfig>(() => getHermesConfig());
+  const [val, setVal] = useState<HermesAgentConfig>(DEFAULT_HERMES_CONFIG);
   useEffect(() => {
+    setVal(getHermesConfig());
     const on = () => setVal(getHermesConfig());
     window.addEventListener(EVT, on);
     window.addEventListener("storage", on);
