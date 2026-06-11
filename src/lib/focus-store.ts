@@ -216,11 +216,12 @@ export function pruneExpiredTasks(tasks: Task[], expiryHours: number): Task[] {
 export function useBlocks() {
   const [blocks, setBlocks] = useStoreValue<Block[]>(KEY_BLOCKS, SEED_BLOCKS);
   const add = (b: Omit<Block, "notes"> & { notes?: string }) => {
-    const next = [...blocks, { notes: "", ...b }].sort((a, z) => {
-      const d = (a.date ?? "").localeCompare(z.date ?? "");
-      return d !== 0 ? d : a.time.localeCompare(z.time);
-    });
-    setBlocks(next);
+    setBlocks((prev) =>
+      [...prev, { notes: "", ...b }].sort((a, z) => {
+        const d = (a.date ?? "").localeCompare(z.date ?? "");
+        return d !== 0 ? d : a.time.localeCompare(z.time);
+      }),
+    );
     logActivity({ kind: "block", title: b.title, detail: `${b.time}${b.tag ? " · " + b.tag : ""}` });
   };
   return { blocks, add, setBlocks };
