@@ -40,6 +40,7 @@ function Index() {
   const [weatherError, setWeatherError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("Tarefas");
   const [showArchived, setShowArchived] = useState(false);
+  const [showAgendaTasks, setShowAgendaTasks] = useState(false);
   const [newTask, setNewTask] = useState("");
   const [newTaskTag, setNewTaskTag] = useState<TaskTag>("trabalho");
   const [tagMenuOpen, setTagMenuOpen] = useState(false);
