@@ -74,6 +74,14 @@ R6. TAGS (obrigatório em create_task e create_list)
 R7. IMPORTÂNCIA
 - "important": true apenas se houver palavras claras de urgência ("urgente", "não posso esquecer", "prioritário", "antes de esquecer de novo").
 
+R8. PRAZO E LEMBRETE (apenas em create_task)
+- Quando o usuário disser horário/dia, preencha "dueAt" e/ou "reminderAt" no formato ISO 8601 com fuso local (ex.: "2026-06-11T18:00:00").
+- "me lembra de pagar a conta às 18h" → reminderAt hoje às 18:00.
+- "amanhã às 9h preciso enviar o relatório" → dueAt e reminderAt amanhã às 09:00.
+- "daqui 30 minutos me lembra de beber água" → reminderAt = agora + 30min (calcule a partir do contexto se possível, senão omita).
+- Se NÃO houver horário claro, NÃO invente. Omita os campos.
+- NUNCA preencha dueAt/reminderAt em create_note ou create_list.
+
 === EXEMPLO COMPLETO DE EXTRAÇÃO FIEL ===
 
 Entrada do usuário:
