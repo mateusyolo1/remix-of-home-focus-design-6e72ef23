@@ -305,5 +305,7 @@ export function useLists() {
       )
     );
   const remove = (id: string) => setLists(lists.filter((l) => l.id !== id));
-  return { lists, add, toggleItem, addItem, removeItem, remove, setLists };
+  const complete = (id: string) =>
+    setLists(lists.map((l) => (l.id === id ? { ...l, completedAt: new Date().toISOString() } : l)));
+  return { lists, add, toggleItem, addItem, removeItem, remove, complete, setLists };
 }
