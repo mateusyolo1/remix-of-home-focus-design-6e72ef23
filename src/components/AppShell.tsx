@@ -161,13 +161,15 @@ export function AppShell() {
                         "grid place-items-center rounded-full transition-all size-12 -mt-3 shadow-lg",
                         recording
                           ? "bg-destructive text-destructive-foreground ring-4 ring-destructive/30 animate-pulse"
-                          : "bg-foreground text-background ring-4 ring-background",
+                          : processing
+                            ? "bg-accent text-accent-foreground ring-4 ring-background animate-pulse"
+                            : "bg-foreground text-background ring-4 ring-background",
                       ].join(" ")}
                     >
                       <Mic className="size-5" />
                     </span>
                     <span className="text-[10px] tracking-wider uppercase font-semibold text-foreground">
-                      {recording ? "Ouvindo" : "Ditar"}
+                      {recording ? "Ouvindo" : processing ? "Roteando" : "Ditar"}
                     </span>
                   </button>
                 </li>
