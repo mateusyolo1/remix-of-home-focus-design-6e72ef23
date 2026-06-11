@@ -190,6 +190,7 @@ function ChatPage() {
             Hermes está roteando…
           </div>
         )}
+        <div ref={bottomRef} />
       </main>
 
       <div className="fixed bottom-28 inset-x-0 px-4 z-30">
