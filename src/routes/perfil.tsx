@@ -106,7 +106,7 @@ function PerfilPage() {
       presentCount: present,
       missedCount: missed,
     };
-  }, [checkins]);
+  }, [checkins, activityMap]);
 
   const stats = [
     { label: "Presença", value: `${presentCount}d` },
