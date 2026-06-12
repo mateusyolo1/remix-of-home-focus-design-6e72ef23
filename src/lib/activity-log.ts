@@ -82,16 +82,84 @@ export function logActivity(input: {
   return entry;
 }
 
+const LAST_SEEN_KEY = "fm.last-seen";
+const BACKFILL_KEY = "fm.presence-backfilled";
+
+function markPresenceFor(dateKey: string, title: string) {
+  const list = read();
+  if (list.some((e) => e.kind === "presence" && e.date === dateKey)) return;
+  const now = new Date();
+  const [y, m, d] = dateKey.split("-").map(Number);
+  // Usa meio-dia local para não vazar para outro dia por fuso.
+  const at = new Date(y, (m ?? 1) - 1, d ?? 1, 12, 0, 0).toISOString();
+  const entry: ActivityEntry = {
+    id: uid(),
+    kind: "presence",
+    title,
+    at: dateKey === dateKeyLocal(now) ? now.toISOString() : at,
+    date: dateKey,
+  };
+  list.unshift(entry);
+  write(list.slice(0, 5000));
+}
+
+function daysBetween(fromKey: string, toKey: string): string[] {
+  const [fy, fm, fd] = fromKey.split("-").map(Number);
+  const [ty, tm, td] = toKey.split("-").map(Number);
+  const from = new Date(fy, fm - 1, fd);
+  const to = new Date(ty, tm - 1, td);
+  const out: string[] = [];
+  const cur = new Date(from);
+  while (cur <= to) {
+    out.push(dateKeyLocal(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return out;
+}
+
 /**
  * Marca presença do dia (entrou no app). Idempotente: registra no máximo
- * uma entrada "presence" por dia local.
+ * uma entrada "presence" por dia local. Também preenche dias intermediários
+ * desde a última visita conhecida — se o usuário abriu o app ontem, ontem
+ * também é marcado como presente (mesmo que o rastreio não existisse na época).
  */
 export function markPresenceToday() {
   if (typeof window === "undefined") return;
   const today = dateKeyLocal();
-  const list = read();
-  if (list.some((e) => e.kind === "presence" && e.date === today)) return;
-  logActivity({ kind: "presence", title: "Entrou no app" });
+
+  // Backfill único: na primeira execução após a feature existir, considera
+  // que o usuário esteve no app ontem (ele acabou de abrir agora, então é
+  // razoável). Evita falsos vermelhos imediatamente após o release.
+  try {
+    if (!window.localStorage.getItem(BACKFILL_KEY)) {
+      const y = new Date();
+      y.setDate(y.getDate() - 1);
+      markPresenceFor(dateKeyLocal(y), "Entrou no app");
+      window.localStorage.setItem(BACKFILL_KEY, "1");
+    }
+  } catch {
+    /* noop */
+  }
+
+  // Preenche presenças entre a última visita e hoje.
+  try {
+    const lastSeen = window.localStorage.getItem(LAST_SEEN_KEY);
+    if (lastSeen && lastSeen < today) {
+      for (const k of daysBetween(lastSeen, today)) {
+        markPresenceFor(k, "Entrou no app");
+      }
+    }
+  } catch {
+    /* noop */
+  }
+
+  markPresenceFor(today, "Entrou no app");
+
+  try {
+    window.localStorage.setItem(LAST_SEEN_KEY, today);
+  } catch {
+    /* noop */
+  }
 }
 
 /** Soma minutos de foco registrados em um dia (yyyy-mm-dd). */
