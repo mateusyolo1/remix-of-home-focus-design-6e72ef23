@@ -175,7 +175,6 @@ function AgendaPage() {
           <div className="grid grid-cols-7 gap-1">
             {weekDays.map((d, i) => {
               const isSelected = sameDay(d, selectedDate);
-              const isToday = sameDay(d, new Date());
               const isImportant = importantDates.some((x) => sameDay(x, d));
               const hasBlocks = datesWithBlocks.has(dateKey(d));
               return (
