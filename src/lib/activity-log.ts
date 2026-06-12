@@ -7,7 +7,8 @@ export type ActivityKind =
   | "block"
   | "task_done"
   | "list_item_done"
-  | "focus";
+  | "focus"
+  | "presence";
 
 export type ActivityEntry = {
   id: string;
@@ -81,6 +82,18 @@ export function logActivity(input: {
   return entry;
 }
 
+/**
+ * Marca presença do dia (entrou no app). Idempotente: registra no máximo
+ * uma entrada "presence" por dia local.
+ */
+export function markPresenceToday() {
+  if (typeof window === "undefined") return;
+  const today = dateKeyLocal();
+  const list = read();
+  if (list.some((e) => e.kind === "presence" && e.date === today)) return;
+  logActivity({ kind: "presence", title: "Entrou no app" });
+}
+
 /** Soma minutos de foco registrados em um dia (yyyy-mm-dd). */
 export function focusMinutesOn(list: ActivityEntry[], date: string): number {
   return list
@@ -140,4 +153,5 @@ export const ACTIVITY_LABEL: Record<ActivityKind, string> = {
   list_item_done: "Item concluído",
   block: "Bloco agendado",
   focus: "Sessão de foco",
+  presence: "Presença no app",
 };
