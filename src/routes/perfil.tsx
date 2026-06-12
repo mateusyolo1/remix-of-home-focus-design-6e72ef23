@@ -84,7 +84,9 @@ function PerfilPage() {
       const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const isToday = key === todayK;
       const isPast = d < todayDate;
-      const checked = checkins.has(key);
+      const dayEntries = activityMap.get(key) ?? [];
+      const hasActivity = dayEntries.length > 0;
+      const checked = checkins.has(key) || hasActivity;
       let status: "present" | "missed" | "today" | "future" = "future";
       if (checked) {
         status = "present";
@@ -104,7 +106,7 @@ function PerfilPage() {
       presentCount: present,
       missedCount: missed,
     };
-  }, [checkins]);
+  }, [checkins, activityMap]);
 
   const stats = [
     { label: "Presença", value: `${presentCount}d` },
@@ -195,7 +197,8 @@ function PerfilPage() {
                       : d.status === "today"
                       ? "bg-secondary text-foreground ring-1 ring-foreground"
                       : "bg-secondary text-muted-foreground";
-                  const count = activityMap.get(d.key)?.length ?? 0;
+                  const entries = activityMap.get(d.key) ?? [];
+                  const hasNotifiable = entries.some((e) => e.kind === "block");
                   return (
                     <button
                       type="button"
@@ -204,7 +207,7 @@ function PerfilPage() {
                       className={["relative aspect-square rounded-md grid place-items-center text-[11px] font-medium tabular-nums active:scale-95 transition-transform", cls].join(" ")}
                     >
                       {d.d}
-                      {count > 0 && (
+                      {hasNotifiable && (
                         <span className="absolute bottom-1 size-1 rounded-full bg-accent" />
                       )}
                     </button>
