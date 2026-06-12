@@ -28,13 +28,15 @@ export function useExecuteActions() {
       try {
         if (a.type === "create_task") {
           const t = addTask(a.title, a.blockTime, a.tag);
-          // Aplica dueAt/reminderAt extraídos pelo Hermes.
+          // Aplica dueAt/reminderAt/scheduledFor extraídos pelo Hermes.
           const due = toEpoch((a as { dueAt?: string | number }).dueAt);
           const rem = toEpoch((a as { reminderAt?: string | number }).reminderAt);
-          if (due || rem) {
+          const scheduledFor = (a as { scheduledFor?: string }).scheduledFor;
+          if (due || rem || scheduledFor) {
             updateTask(t.id, {
               dueAt: due ?? undefined,
               reminderAt: rem ?? undefined,
+              scheduledFor: scheduledFor ?? undefined,
             });
           }
           recordCreation({ entityId: t.id, entityKind: "task", title: t.title, tag: t.tag });
