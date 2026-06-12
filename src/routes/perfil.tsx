@@ -694,20 +694,21 @@ function DesempenhoPanel({ activity }: { activity: ActivityEntry[] }) {
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byTag} margin={{ top: 4, right: 4, bottom: 0, left: -28 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+                <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" allowDecimals={false} />
                 <Tooltip
-                  cursor={{ fill: "hsl(var(--secondary))" }}
+                  cursor={{ fill: "color-mix(in oklab, var(--foreground) 8%, transparent)" }}
                   contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    background: "var(--card)",
+                    color: "var(--card-foreground)",
+                    border: "1px solid var(--border)",
                     borderRadius: 8,
                     fontSize: 11,
                   }}
                 />
-                <Bar dataKey="criadas" fill="hsl(var(--muted-foreground))" radius={[4, 4, 0, 0]} name="Criadas" />
-                <Bar dataKey="concluidas" fill="currentColor" className="text-foreground" radius={[4, 4, 0, 0]} name="Concluídas" />
+                <Bar dataKey="criadas" fill="var(--muted-foreground)" radius={[4, 4, 0, 0]} name="Criadas" />
+                <Bar dataKey="concluidas" fill="var(--foreground)" radius={[4, 4, 0, 0]} name="Concluídas" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -721,13 +722,15 @@ function DesempenhoPanel({ activity }: { activity: ActivityEntry[] }) {
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={last14} margin={{ top: 4, right: 8, bottom: 0, left: -28 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+              <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" allowDecimals={false} />
               <Tooltip
+                cursor={{ stroke: "color-mix(in oklab, var(--foreground) 25%, transparent)" }}
                 contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
+                  background: "var(--card)",
+                  color: "var(--card-foreground)",
+                  border: "1px solid var(--border)",
                   borderRadius: 8,
                   fontSize: 11,
                 }}
@@ -735,8 +738,7 @@ function DesempenhoPanel({ activity }: { activity: ActivityEntry[] }) {
               <Line
                 type="monotone"
                 dataKey="concluidas"
-                stroke="currentColor"
-                className="text-foreground"
+                stroke="var(--foreground)"
                 strokeWidth={2}
                 dot={{ r: 3 }}
               />
