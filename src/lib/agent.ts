@@ -13,6 +13,8 @@ export type AgentAction =
       dueAt?: string | number;
       /** ISO ou epoch — momento específico para lembrar. */
       reminderAt?: string | number;
+      /** Dia em que a tarefa deve aparecer no Home (YYYY-MM-DD). */
+      scheduledFor?: string;
     }
   | { type: "create_block"; time: string; title: string; tag?: string; date?: string; notes?: string }
   | { type: "create_note"; title: string; body?: string; ttlDays?: number }
