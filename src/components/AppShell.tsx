@@ -8,6 +8,7 @@ import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { useAlarmRunner } from "@/lib/alarm-runner";
 import { useHermesTracker } from "@/lib/hermes/tracker";
 import { useNotificationSystem } from "@/lib/notifications/use-notification-system";
+import { markPresenceToday } from "@/lib/activity-log";
 import { toast } from "sonner";
 
 const tabs = [
@@ -53,6 +54,21 @@ export function AppShell() {
   useAlarmRunner();
   useHermesTracker();
   useNotificationSystem();
+
+  useEffect(() => {
+    markPresenceToday();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") markPresenceToday();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") markPresenceToday();
+    }, 60_000);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
