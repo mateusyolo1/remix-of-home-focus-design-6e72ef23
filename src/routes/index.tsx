@@ -144,7 +144,20 @@ function Index() {
 
 
 
-  const filteredTasks = tasks;
+  // Mostra somente tarefas para hoje ou anteriores. Tarefas agendadas para
+  // dias futuros (via bloco vinculado com data futura, dueAt futuro ou
+  // scheduledFor futuro) aparecem apenas no dia certo.
+  const filteredTasks = useMemo(() => {
+    const todayMs = new Date(todayKey + "T23:59:59").getTime();
+    return tasks.filter((t) => {
+      const linked = t.blockTime ? blocks.find((b) => b.time === t.blockTime) : null;
+      const linkedDate = linked?.date;
+      if (linkedDate && linkedDate > todayKey) return false;
+      if (t.scheduledFor && t.scheduledFor > todayKey) return false;
+      if (t.dueAt && t.dueAt > todayMs) return false;
+      return true;
+    });
+  }, [tasks, blocks, todayKey]);
 
   // Blocos agendados para hoje que ainda não estão vinculados a nenhuma tarefa.
   // Aparecem como "tarefas-agenda" virtuais no topo da lista de Tarefas.
