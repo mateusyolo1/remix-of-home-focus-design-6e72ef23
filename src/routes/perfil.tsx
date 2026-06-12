@@ -137,7 +137,7 @@ function PerfilPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Perfil" title={profile.name} streak={12} />
+      <PageHeader eyebrow="Perfil" title={profile.name} streak={streakDays(activity)} />
       <main className="px-6 space-y-6">
         <section className="grid grid-cols-3 gap-3">
           {stats.map((s) => (
