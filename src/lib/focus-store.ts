@@ -49,6 +49,8 @@ export type Task = {
   tag?: TaskTag;
   important?: boolean;
   createdAt?: string;
+  /** Data em que a tarefa deve aparecer no Home (YYYY-MM-DD, local). */
+  scheduledFor?: string;
   /** Prazo da tarefa (ms epoch). */
   dueAt?: number;
   /** Lembrete avulso (ms epoch). */
