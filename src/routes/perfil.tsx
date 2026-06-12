@@ -84,7 +84,9 @@ function PerfilPage() {
       const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
       const isToday = key === todayK;
       const isPast = d < todayDate;
-      const checked = checkins.has(key);
+      const dayEntries = activityMap.get(key) ?? [];
+      const hasActivity = dayEntries.length > 0;
+      const checked = checkins.has(key) || hasActivity;
       let status: "present" | "missed" | "today" | "future" = "future";
       if (checked) {
         status = "present";
