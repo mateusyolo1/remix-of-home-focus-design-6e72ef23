@@ -85,7 +85,7 @@ export function logActivity(input: {
 const LAST_SEEN_KEY = "fm.last-seen";
 const BACKFILL_KEY = "fm.presence-backfilled";
 
-function markPresenceFor(dateKey: string, title: string) {
+export function markPresenceFor(dateKey: string, title = "Entrou no app") {
   const list = read();
   if (list.some((e) => e.kind === "presence" && e.date === dateKey)) return;
   const now = new Date();

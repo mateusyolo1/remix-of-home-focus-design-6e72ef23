@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
-import { useActivityLog, activitiesByDate, ACTIVITY_LABEL, type ActivityEntry } from "@/lib/activity-log";
+import { useActivityLog, activitiesByDate, ACTIVITY_LABEL, markPresenceFor, type ActivityEntry } from "@/lib/activity-log";
 import { TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 
 
@@ -783,6 +783,10 @@ function DiaModal({
     });
   }, [dateKey]);
 
+  const isPast = dateKey < todayKey(new Date());
+  const hasPresence = entries.some((e) => e.kind === "presence");
+  const canMarkPresence = isPast && !hasPresence;
+
   const grouped = useMemo(() => {
     const map = new Map<string, ActivityEntry[]>();
     for (const e of entries) {
@@ -795,6 +799,19 @@ function DiaModal({
 
   return (
     <ModalShell title={label} onClose={onClose}>
+      {canMarkPresence && (
+        <button
+          type="button"
+          onClick={() => {
+            markPresenceFor(dateKey);
+            toast.success("Dia marcado como presente");
+            onClose();
+          }}
+          className="w-full mb-3 rounded-lg bg-foreground text-background text-xs font-semibold py-2.5 active:scale-[0.99]"
+        >
+          Marcar como presente
+        </button>
+      )}
       {entries.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           Sem registros neste dia. Tarefas, notas, listas e blocos criados aparecem aqui.
