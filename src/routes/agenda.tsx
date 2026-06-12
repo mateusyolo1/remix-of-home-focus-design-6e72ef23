@@ -212,7 +212,7 @@ function AgendaPage() {
                     {d.getDate()}
                   </span>
                   <span className="flex items-center gap-0.5 mt-0.5 h-1">
-                    {isToday && !isSelected && (
+                    {hasBlocks && !isSelected && (
                       <span
                         className={[
                           "size-1 rounded-full",
@@ -220,13 +220,8 @@ function AgendaPage() {
                         ].join(" ")}
                       />
                     )}
-                    {isImportant && !isToday && !isSelected && (
-                      <span className="size-1 rounded-full bg-destructive" />
-                    )}
-                    {hasBlocks && !isSelected && !isToday && !isImportant && (
-                      <span className="size-1 rounded-full bg-accent" />
-                    )}
                   </span>
+
                 </button>
               );
             })}
