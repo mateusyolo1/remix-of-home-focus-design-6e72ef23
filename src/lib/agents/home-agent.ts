@@ -74,13 +74,16 @@ R6. TAGS (obrigatório em create_task e create_list)
 R7. IMPORTÂNCIA
 - "important": true apenas se houver palavras claras de urgência ("urgente", "não posso esquecer", "prioritário", "antes de esquecer de novo").
 
-R8. PRAZO E LEMBRETE (apenas em create_task)
+R8. PRAZO, LEMBRETE E AGENDAMENTO (apenas em create_task)
 - Quando o usuário disser horário/dia, preencha "dueAt" e/ou "reminderAt" no formato ISO 8601 com fuso local (ex.: "2026-06-11T18:00:00").
-- "me lembra de pagar a conta às 18h" → reminderAt hoje às 18:00.
-- "amanhã às 9h preciso enviar o relatório" → dueAt e reminderAt amanhã às 09:00.
+- SEMPRE que houver dia específico (hoje, amanhã, sexta, "dia 20", "próxima segunda"), preencha "scheduledFor" no formato "YYYY-MM-DD" para que a tarefa só apareça no dia certo no Home. Se não houver dia, omita scheduledFor (vira tarefa de hoje).
+- Se também houver horário, preencha "blockTime" no formato "HH:MM" para vincular à agenda.
+- "me lembra de pagar a conta às 18h" → reminderAt hoje às 18:00, blockTime="18:00".
+- "amanhã às 9h preciso enviar o relatório" → scheduledFor=amanhã, blockTime="09:00", dueAt e reminderAt amanhã às 09:00.
+- "sexta tenho consulta às 14h" → scheduledFor=sexta, blockTime="14:00", dueAt sexta 14:00.
 - "daqui 30 minutos me lembra de beber água" → reminderAt = agora + 30min (calcule a partir do contexto se possível, senão omita).
-- Se NÃO houver horário claro, NÃO invente. Omita os campos.
-- NUNCA preencha dueAt/reminderAt em create_note ou create_list.
+- Se NÃO houver dia/horário claro, NÃO invente. Omita os campos.
+- NUNCA preencha dueAt/reminderAt/scheduledFor em create_note ou create_list.
 
 === EXEMPLO COMPLETO DE EXTRAÇÃO FIEL ===
 
