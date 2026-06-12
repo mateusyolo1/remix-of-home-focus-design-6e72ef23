@@ -45,23 +45,15 @@ const filters = ["Tudo", "Foco", "Reunião", "Pausa", "Ritual"] as const;
 const tagOptions = ["Foco", "Reunião", "Pausa", "Ritual"] as const;
 
 function getImportantDates(blocks: Block[]): Date[] {
-  // Hoje recebe destaque se houver bloco "important". Demais offsets são exemplos
-  // de marcações futuras (poderia vir de uma data real associada por bloco).
-  const now = new Date();
-  const hasImportant = blocks.some((b) => b.priority === "important");
-  const out: Date[] = [];
-  if (hasImportant) {
-    const t = new Date(now);
-    t.setHours(0, 0, 0, 0);
-    out.push(t);
-  }
-  [2, 5, 9, 14].forEach((d) => {
-    const x = new Date(now);
-    x.setDate(now.getDate() + d);
-    x.setHours(0, 0, 0, 0);
-    out.push(x);
+  // Apenas dias que realmente têm um bloco marcado como importante.
+  const keys = new Set<string>();
+  blocks.forEach((b) => {
+    if (b.priority === "important") keys.add(blockDateKey(b));
   });
-  return out;
+  return Array.from(keys).map((k) => {
+    const [y, m, d] = k.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  });
 }
 
 function sameDay(a: Date, b: Date) {
