@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useCheckins, useProfile, todayKey } from "@/lib/profile-store";
-import { useActivityLog, activitiesByDate, ACTIVITY_LABEL, markPresenceFor, type ActivityEntry } from "@/lib/activity-log";
+import { useActivityLog, activitiesByDate, ACTIVITY_LABEL, markPresenceFor, streakDays, type ActivityEntry } from "@/lib/activity-log";
 import { TASK_TAGS, TASK_TAG_LABEL, type TaskTag } from "@/lib/focus-store";
 
 
