@@ -70,11 +70,12 @@ function PerfilPage() {
     toast.success(v ? "Modo silencioso ativado" : "Modo silencioso desativado");
   };
 
-  const { days, monthLabel, presentCount, missedCount } = useMemo(() => {
+  const { days, monthLabel, presentCount, missedCount, leadingBlanks } = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const last = new Date(year, month + 1, 0).getDate();
+    const firstDow = new Date(year, month, 1).getDay(); // 0=Dom..6=Sab
     const todayK = todayKey(now);
     const todayDate = now.getDate();
     let present = 0;
@@ -102,11 +103,12 @@ function PerfilPage() {
     return {
       days,
       monthLabel: now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
-
       presentCount: present,
       missedCount: missed,
+      leadingBlanks: firstDow,
     };
   }, [checkins, activityMap]);
+
 
   const stats = [
     { label: "Presença", value: `${presentCount}d` },
