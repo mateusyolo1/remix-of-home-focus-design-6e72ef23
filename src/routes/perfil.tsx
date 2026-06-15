@@ -70,11 +70,12 @@ function PerfilPage() {
     toast.success(v ? "Modo silencioso ativado" : "Modo silencioso desativado");
   };
 
-  const { days, monthLabel, presentCount, missedCount } = useMemo(() => {
+  const { days, monthLabel, presentCount, missedCount, leadingBlanks } = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const last = new Date(year, month + 1, 0).getDate();
+    const firstDow = new Date(year, month, 1).getDay(); // 0=Dom..6=Sab
     const todayK = todayKey(now);
     const todayDate = now.getDate();
     let present = 0;
@@ -102,11 +103,12 @@ function PerfilPage() {
     return {
       days,
       monthLabel: now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
-
       presentCount: present,
       missedCount: missed,
+      leadingBlanks: firstDow,
     };
   }, [checkins, activityMap]);
+
 
   const stats = [
     { label: "Presença", value: `${presentCount}d` },
@@ -187,7 +189,17 @@ function PerfilPage() {
                   </span>
                 </div>
               </div>
+              <div className="grid grid-cols-7 gap-1.5 mb-1.5">
+                {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map((w) => (
+                  <div key={w} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-center">
+                    {w}
+                  </div>
+                ))}
+              </div>
               <div className="grid grid-cols-7 gap-1.5">
+                {Array.from({ length: leadingBlanks }).map((_, i) => (
+                  <div key={`blank-${i}`} className="aspect-square" />
+                ))}
                 {days.map((d) => {
                   const cls =
                     d.status === "present"
@@ -215,6 +227,7 @@ function PerfilPage() {
                 })}
 
               </div>
+
               <p className="text-[10px] text-muted-foreground mt-3 text-center">
                 Reseta automaticamente todo mês
               </p>

@@ -119,48 +119,20 @@ function daysBetween(fromKey: string, toKey: string): string[] {
 
 /**
  * Marca presença do dia (entrou no app). Idempotente: registra no máximo
- * uma entrada "presence" por dia local. Também preenche dias intermediários
- * desde a última visita conhecida — se o usuário abriu o app ontem, ontem
- * também é marcado como presente (mesmo que o rastreio não existisse na época).
+ * uma entrada "presence" por dia local. NÃO preenche dias passados — se o
+ * usuário não abriu o app, aquele dia conta como falta.
  */
 export function markPresenceToday() {
   if (typeof window === "undefined") return;
   const today = dateKeyLocal();
-
-  // Backfill único: na primeira execução após a feature existir, considera
-  // que o usuário esteve no app ontem (ele acabou de abrir agora, então é
-  // razoável). Evita falsos vermelhos imediatamente após o release.
-  try {
-    if (!window.localStorage.getItem(BACKFILL_KEY)) {
-      const y = new Date();
-      y.setDate(y.getDate() - 1);
-      markPresenceFor(dateKeyLocal(y), "Entrou no app");
-      window.localStorage.setItem(BACKFILL_KEY, "1");
-    }
-  } catch {
-    /* noop */
-  }
-
-  // Preenche presenças entre a última visita e hoje.
-  try {
-    const lastSeen = window.localStorage.getItem(LAST_SEEN_KEY);
-    if (lastSeen && lastSeen < today) {
-      for (const k of daysBetween(lastSeen, today)) {
-        markPresenceFor(k, "Entrou no app");
-      }
-    }
-  } catch {
-    /* noop */
-  }
-
   markPresenceFor(today, "Entrou no app");
-
   try {
     window.localStorage.setItem(LAST_SEEN_KEY, today);
   } catch {
     /* noop */
   }
 }
+
 
 /** Soma minutos de foco registrados em um dia (yyyy-mm-dd). */
 export function focusMinutesOn(list: ActivityEntry[], date: string): number {
