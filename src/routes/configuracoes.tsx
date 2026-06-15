@@ -170,16 +170,18 @@ function ToggleRow({
         aria-checked={value}
         onClick={() => onChange(!value)}
         className={[
-          "relative w-10 h-6 rounded-full transition-colors",
-          value ? "bg-foreground" : "bg-secondary ring-1 ring-black/10",
+          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
+          value ? "bg-foreground" : "bg-muted ring-1 ring-black/10",
         ].join(" ")}
       >
         <span
+          aria-hidden
           className={[
-            "absolute top-0.5 size-5 rounded-full bg-background transition-transform",
-            value ? "translate-x-[18px]" : "translate-x-0.5",
+            "pointer-events-none inline-block h-5 w-5 rounded-full bg-background shadow ring-1 ring-black/10 transition-transform",
+            value ? "translate-x-[22px]" : "translate-x-0.5",
           ].join(" ")}
         />
+
       </button>
     </label>
   );
