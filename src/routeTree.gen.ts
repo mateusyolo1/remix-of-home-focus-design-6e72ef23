@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TimerRouteImport } from './routes/timer'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as HermesAnimRouteImport } from './routes/hermes-anim'
 import { Route as HermesRouteImport } from './routes/hermes'
 import { Route as FocoRouteImport } from './routes/foco'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
@@ -29,6 +30,11 @@ const TimerRoute = TimerRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HermesAnimRoute = HermesAnimRouteImport.update({
+  id: '/hermes-anim',
+  path: '/hermes-anim',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HermesRoute = HermesRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
+  '/hermes-anim': typeof HermesAnimRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
   '/perfil/editar': typeof PerfilEditarRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
+  '/hermes-anim': typeof HermesAnimRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
   '/perfil/editar': typeof PerfilEditarRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/foco': typeof FocoRoute
   '/hermes': typeof HermesRoute
+  '/hermes-anim': typeof HermesAnimRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
   '/perfil_/editar': typeof PerfilEditarRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/foco'
     | '/hermes'
+    | '/hermes-anim'
     | '/perfil'
     | '/timer'
     | '/perfil/editar'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/foco'
     | '/hermes'
+    | '/hermes-anim'
     | '/perfil'
     | '/timer'
     | '/perfil/editar'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/foco'
     | '/hermes'
+    | '/hermes-anim'
     | '/perfil'
     | '/timer'
     | '/perfil_/editar'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   FocoRoute: typeof FocoRoute
   HermesRoute: typeof HermesRoute
+  HermesAnimRoute: typeof HermesAnimRoute
   PerfilRoute: typeof PerfilRoute
   TimerRoute: typeof TimerRoute
   PerfilEditarRoute: typeof PerfilEditarRoute
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hermes-anim': {
+      id: '/hermes-anim'
+      path: '/hermes-anim'
+      fullPath: '/hermes-anim'
+      preLoaderRoute: typeof HermesAnimRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/hermes': {
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   FocoRoute: FocoRoute,
   HermesRoute: HermesRoute,
+  HermesAnimRoute: HermesAnimRoute,
   PerfilRoute: PerfilRoute,
   TimerRoute: TimerRoute,
   PerfilEditarRoute: PerfilEditarRoute,
