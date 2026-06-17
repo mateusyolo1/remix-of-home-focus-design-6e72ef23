@@ -211,17 +211,19 @@ function ChatPage() {
           ))}
           {loading && (
             <div className="flex justify-start items-end gap-2 animate-[hermes-fade_200ms_ease-out]">
-              <div className="size-7 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 grid place-items-center text-[10px] font-bold text-amber-950 shadow-sm ring-1 ring-amber-300/60">
-                <Sparkles className="size-3.5" />
+              <div className="size-7 rounded-full bg-gradient-to-br from-accent/70 to-accent grid place-items-center text-accent-foreground shadow-sm ring-1 ring-accent/40 animate-[hermes-pulse_1.6s_ease-in-out_infinite]">
+                <Sparkles className="size-3.5 animate-[hermes-spin_3s_linear_infinite]" />
               </div>
-              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-amber-50 ring-1 ring-amber-200/60 flex items-center gap-1.5 shadow-sm">
-                <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 0ms infinite ease-in-out" }} />
-                <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 160ms infinite ease-in-out" }} />
-                <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 320ms infinite ease-in-out" }} />
+              <div className="px-3 py-2 rounded-2xl rounded-bl-sm bg-secondary ring-1 ring-black/5 flex items-center gap-1 shadow-sm">
+                <span className="size-1.5 rounded-full bg-accent" style={{ animation: "hermes-dot 1.1s 0ms infinite ease-in-out" }} />
+                <span className="size-1.5 rounded-full bg-accent" style={{ animation: "hermes-dot 1.1s 160ms infinite ease-in-out" }} />
+                <span className="size-1.5 rounded-full bg-accent" style={{ animation: "hermes-dot 1.1s 320ms infinite ease-in-out" }} />
               </div>
               <style>{`
                 @keyframes hermes-fade { from { opacity: 0; transform: translateY(4px);} to { opacity:1; transform: translateY(0);} }
-                @keyframes hermes-dot { 0%,60%,100% { transform: translateY(0); opacity:.4;} 30% { transform: translateY(-4px); opacity:1;} }
+                @keyframes hermes-dot { 0%,60%,100% { transform: translateY(0); opacity:.4;} 30% { transform: translateY(-3px); opacity:1;} }
+                @keyframes hermes-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--accent) / 0.4);} 50% { transform: scale(1.06); box-shadow: 0 0 0 6px hsl(var(--accent) / 0);} }
+                @keyframes hermes-spin { to { transform: rotate(360deg);} }
               `}</style>
             </div>
           )}
