@@ -210,12 +210,14 @@ function ChatPage() {
             </div>
           ))}
           {loading && (
-            <div className="flex justify-start animate-[hermes-fade_200ms_ease-out]">
+            <div className="flex justify-start items-end gap-2 animate-[hermes-fade_200ms_ease-out]">
+              <div className="size-7 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 grid place-items-center text-[10px] font-bold text-amber-950 shadow-sm ring-1 ring-amber-300/60">
+                <Sparkles className="size-3.5" />
+              </div>
               <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-amber-50 ring-1 ring-amber-200/60 flex items-center gap-1.5 shadow-sm">
                 <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 0ms infinite ease-in-out" }} />
                 <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 160ms infinite ease-in-out" }} />
                 <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 320ms infinite ease-in-out" }} />
-                <span className="ml-2 text-[10px] uppercase tracking-widest text-amber-700 font-semibold">Hermes</span>
               </div>
               <style>{`
                 @keyframes hermes-fade { from { opacity: 0; transform: translateY(4px);} to { opacity:1; transform: translateY(0);} }
