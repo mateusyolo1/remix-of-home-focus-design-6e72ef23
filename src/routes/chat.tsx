@@ -210,8 +210,17 @@ function ChatPage() {
             </div>
           ))}
           {loading && (
-            <div className="max-w-[85%] p-4 rounded-2xl bg-card ring-1 ring-black/5 text-sm text-muted-foreground">
-              Hermes está roteando…
+            <div className="flex justify-start animate-[hermes-fade_200ms_ease-out]">
+              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-amber-50 ring-1 ring-amber-200/60 flex items-center gap-1.5 shadow-sm">
+                <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 0ms infinite ease-in-out" }} />
+                <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 160ms infinite ease-in-out" }} />
+                <span className="size-2 rounded-full bg-amber-500" style={{ animation: "hermes-dot 1.1s 320ms infinite ease-in-out" }} />
+                <span className="ml-2 text-[10px] uppercase tracking-widest text-amber-700 font-semibold">Hermes</span>
+              </div>
+              <style>{`
+                @keyframes hermes-fade { from { opacity: 0; transform: translateY(4px);} to { opacity:1; transform: translateY(0);} }
+                @keyframes hermes-dot { 0%,60%,100% { transform: translateY(0); opacity:.4;} 30% { transform: translateY(-4px); opacity:1;} }
+              `}</style>
             </div>
           )}
           <div ref={bottomRef} />
