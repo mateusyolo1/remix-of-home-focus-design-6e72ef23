@@ -214,6 +214,18 @@ function ChatPage() {
                 </div>
               )}
               {m.content}
+              {m.role === "assistant" && m.toolUsed && <ToolBadge tool={m.toolUsed} />}
+              {m.pending && (
+                <PendingCard
+                  pending={m.pending}
+                  resolved={m.pendingResolved}
+                  onResolve={(decision) => {
+                    setMessages((prev) =>
+                      prev.map((msg, idx) => (idx === i ? { ...msg, pendingResolved: decision } : msg)),
+                    );
+                  }}
+                />
+              )}
               {m.routed && m.routed.length > 0 && (
                 <>
                   <ul className="mt-2 flex flex-wrap gap-1.5">
