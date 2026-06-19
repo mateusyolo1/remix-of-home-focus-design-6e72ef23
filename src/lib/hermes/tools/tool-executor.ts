@@ -211,6 +211,21 @@ async function runRequest(req: ToolRequest, input: string): Promise<ToolRunResul
     }
 
     case "notes_read": {
+      // Se o input mencionar "nota sobre/de X", procura similaridade.
+      const aboutMatch = input.match(/\bnota[s]?\s+(sobre|de|do|da|com)\s+(.{3,80})/i);
+      if (aboutMatch) {
+        const matches = findSimilarNotes(aboutMatch[2], { limit: 4 });
+        if (matches.length) {
+          const lines = matches.map(
+            (m) =>
+              `• ${m.note.title} (${Math.round(m.score * 100)}%)${m.note.body ? ` — ${m.note.body.slice(0, 80)}` : ""}`,
+          );
+          return {
+            request: req,
+            context: `Notas semelhantes a "${aboutMatch[2]}":\n${lines.join("\n")}`,
+          };
+        }
+      }
       const notes = listNotes({ recent: 6 });
       if (!notes.length) return { request: req, context: "Nenhuma nota recente." };
       const lines = notes.map(
