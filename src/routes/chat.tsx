@@ -517,4 +517,89 @@ function PendingCard({
   );
 }
 
+const DOWN_REASONS: { value: DownReason; label: string }[] = [
+  { value: "wrong_tool", label: "Ferramenta errada" },
+  { value: "too_long", label: "Muito longo" },
+  { value: "too_formal", label: "Muito formal" },
+  { value: "missed_info", label: "Faltou info" },
+  { value: "wrong_action", label: "Ação errada" },
+  { value: "other", label: "Outro" },
+];
+
+function MessageRating({
+  forInput,
+  tools,
+  rated,
+  onRated,
+}: {
+  forInput: string;
+  tools: string[];
+  rated?: "up" | "down";
+  onRated: (r: "up" | "down") => void;
+}) {
+  const [showReasons, setShowReasons] = useState(false);
+  if (rated === "up") {
+    return <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">✓ Obrigado — Hermes aprendeu.</p>;
+  }
+  if (rated === "down" && !showReasons) {
+    return <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">✗ Anotado, vou ajustar.</p>;
+  }
+  const sendUp = () => {
+    recordRating({ userInput: forInput, tools: tools as never, rating: "up" });
+    toast.success("Feedback registrado");
+    onRated("up");
+  };
+  const sendDown = (reason?: DownReason) => {
+    recordRating({ userInput: forInput, tools: tools as never, rating: "down", reason });
+    toast("Anotado");
+    onRated("down");
+    setShowReasons(false);
+  };
+  return (
+    <div className="mt-2 flex flex-col items-end gap-1.5">
+      {!showReasons ? (
+        <div className="flex gap-1">
+          <button
+            type="button"
+            aria-label="Boa resposta"
+            onClick={sendUp}
+            className="size-6 rounded-md inline-flex items-center justify-center bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 active:scale-95"
+          >
+            <ThumbsUp className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Resposta ruim"
+            onClick={() => setShowReasons(true)}
+            className="size-6 rounded-md inline-flex items-center justify-center bg-destructive/10 text-destructive ring-1 ring-destructive/20 active:scale-95"
+          >
+            <ThumbsDown className="size-3.5" />
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-1 justify-end max-w-full">
+          {DOWN_REASONS.map((r) => (
+            <button
+              key={r.value}
+              type="button"
+              onClick={() => sendDown(r.value)}
+              className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md bg-secondary text-muted-foreground ring-1 ring-black/5 active:scale-95"
+            >
+              {r.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setShowReasons(false)}
+            className="text-[10px] uppercase tracking-wider font-semibold px-2 py-1 rounded-md bg-secondary text-muted-foreground ring-1 ring-black/5"
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 
