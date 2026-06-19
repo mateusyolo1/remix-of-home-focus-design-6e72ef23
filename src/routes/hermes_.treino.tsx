@@ -11,7 +11,7 @@ import {
 } from "@/lib/hermes/training";
 import { useEffect, useState } from "react";
 
-export const Route = createFileRoute("/hermes/treino")({
+export const Route = createFileRoute("/hermes_/treino")({
   head: () => ({
     meta: [
       { title: "Hermes — Treino" },

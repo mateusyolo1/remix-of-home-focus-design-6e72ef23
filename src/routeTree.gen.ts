@@ -21,6 +21,7 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilMemoriaRouteImport } from './routes/perfil_.memoria'
 import { Route as PerfilEditarRouteImport } from './routes/perfil_.editar'
+import { Route as HermesTreinoRouteImport } from './routes/hermes_.treino'
 
 const TimerRoute = TimerRouteImport.update({
   id: '/timer',
@@ -82,6 +83,11 @@ const PerfilEditarRoute = PerfilEditarRouteImport.update({
   path: '/perfil/editar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HermesTreinoRoute = HermesTreinoRouteImport.update({
+  id: '/hermes_/treino',
+  path: '/hermes/treino',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/hermes-anim': typeof HermesAnimRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
+  '/hermes/treino': typeof HermesTreinoRoute
   '/perfil/editar': typeof PerfilEditarRoute
   '/perfil/memoria': typeof PerfilMemoriaRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/hermes-anim': typeof HermesAnimRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
+  '/hermes/treino': typeof HermesTreinoRoute
   '/perfil/editar': typeof PerfilEditarRoute
   '/perfil/memoria': typeof PerfilMemoriaRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/hermes-anim': typeof HermesAnimRoute
   '/perfil': typeof PerfilRoute
   '/timer': typeof TimerRoute
+  '/hermes_/treino': typeof HermesTreinoRoute
   '/perfil_/editar': typeof PerfilEditarRoute
   '/perfil_/memoria': typeof PerfilMemoriaRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/hermes-anim'
     | '/perfil'
     | '/timer'
+    | '/hermes/treino'
     | '/perfil/editar'
     | '/perfil/memoria'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/hermes-anim'
     | '/perfil'
     | '/timer'
+    | '/hermes/treino'
     | '/perfil/editar'
     | '/perfil/memoria'
   id:
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/hermes-anim'
     | '/perfil'
     | '/timer'
+    | '/hermes_/treino'
     | '/perfil_/editar'
     | '/perfil_/memoria'
   fileRoutesById: FileRoutesById
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   HermesAnimRoute: typeof HermesAnimRoute
   PerfilRoute: typeof PerfilRoute
   TimerRoute: typeof TimerRoute
+  HermesTreinoRoute: typeof HermesTreinoRoute
   PerfilEditarRoute: typeof PerfilEditarRoute
   PerfilMemoriaRoute: typeof PerfilMemoriaRoute
 }
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilEditarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hermes_/treino': {
+      id: '/hermes_/treino'
+      path: '/hermes/treino'
+      fullPath: '/hermes/treino'
+      preLoaderRoute: typeof HermesTreinoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -286,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   HermesAnimRoute: HermesAnimRoute,
   PerfilRoute: PerfilRoute,
   TimerRoute: TimerRoute,
+  HermesTreinoRoute: HermesTreinoRoute,
   PerfilEditarRoute: PerfilEditarRoute,
   PerfilMemoriaRoute: PerfilMemoriaRoute,
 }

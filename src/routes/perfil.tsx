@@ -308,27 +308,44 @@ function HermesAgentCard() {
   const [config] = useHermesConfig();
   const connected = config.installStatus === "connected";
   return (
-    <Link
-      to="/hermes"
-      className="bg-card rounded-2xl ring-1 ring-black/5 p-4 flex items-center gap-3 hover:bg-secondary/40 transition-colors"
-    >
-      <span className="size-11 rounded-xl bg-secondary grid place-items-center shrink-0">
-        {connected ? (
+    <div className="space-y-2">
+      <Link
+        to="/hermes"
+        className="bg-card rounded-2xl ring-1 ring-black/5 p-4 flex items-center gap-3 hover:bg-secondary/40 transition-colors"
+      >
+        <span className="size-11 rounded-xl bg-secondary grid place-items-center shrink-0">
+          {connected ? (
+            <BrainCog className="size-5 text-foreground" />
+          ) : (
+            <WifiOff className="size-5 text-muted-foreground" />
+          )}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Hermes Agent</p>
+          <p className="text-[11px] text-muted-foreground truncate">
+            {config.enabled
+              ? INSTALL_STATUS_LABEL[config.installStatus]
+              : "Configurar instalação no Termux"}
+          </p>
+        </div>
+        <ChevronRight className="size-4 text-muted-foreground" />
+      </Link>
+      <Link
+        to="/hermes/treino"
+        className="bg-card rounded-2xl ring-1 ring-black/5 p-4 flex items-center gap-3 hover:bg-secondary/40 transition-colors"
+      >
+        <span className="size-11 rounded-xl bg-secondary grid place-items-center shrink-0">
           <BrainCog className="size-5 text-foreground" />
-        ) : (
-          <WifiOff className="size-5 text-muted-foreground" />
-        )}
-      </span>
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm">Hermes Agent</p>
-        <p className="text-[11px] text-muted-foreground truncate">
-          {config.enabled
-            ? INSTALL_STATUS_LABEL[config.installStatus]
-            : "Configurar instalação no Termux"}
-        </p>
-      </div>
-      <ChevronRight className="size-4 text-muted-foreground" />
-    </Link>
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Treino do Hermes</p>
+          <p className="text-[11px] text-muted-foreground truncate">
+            Padrões aprendidos, tom e auto-confirmações
+          </p>
+        </div>
+        <ChevronRight className="size-4 text-muted-foreground" />
+      </Link>
+    </div>
   );
 }
 
