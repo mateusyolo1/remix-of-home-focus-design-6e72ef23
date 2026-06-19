@@ -395,12 +395,43 @@ async function runRequest(req: ToolRequest, input: string): Promise<ToolRunResul
       };
     }
 
-    case "notify":
+    case "notify": {
+      const intent = parseAlarmIntent(input);
+      if (!intent) {
+        return {
+          request: req,
+          context:
+            "Não consegui identificar o horário. Peça ao usuário para informar a hora (ex.: \"me acorda às 07:30 todos os dias\").",
+          note: "needs_confirmation",
+        };
+      }
+      const repeatLabel: Record<string, string> = {
+        once: "uma vez",
+        daily: "todos os dias",
+        weekday: "seg a sex",
+        weekend: "fim de semana",
+        custom: "dias selecionados",
+      };
+      const pending: PendingMutation = {
+        kind: "create_alarm",
+        time: intent.time,
+        title: intent.label,
+        repeat: intent.repeat ?? "once",
+        label: `Criar alarme "${intent.label}" às ${intent.time} (${repeatLabel[intent.repeat ?? "once"]})?`,
+      };
+      return {
+        request: req,
+        context: `O usuário pediu: ${pending.label}. Confirme brevemente.`,
+        note: "needs_confirmation",
+        pending,
+      };
+    }
+
     case "share":
       return {
         request: req,
         context:
-          "Notificação/compartilhamento ainda não automatizado — oriente o usuário a usar os botões da tela correspondente.",
+          "Compartilhamento ainda não automatizado — oriente o usuário a usar os botões da tela correspondente.",
         note: "needs_confirmation",
       };
   }
