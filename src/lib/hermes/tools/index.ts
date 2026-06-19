@@ -26,3 +26,4 @@ export * from "./calc-tool";
 export * from "./units-tool";
 export * from "./notify-tool";
 export * from "./share-tool";
+export * from "./tool-executor";
