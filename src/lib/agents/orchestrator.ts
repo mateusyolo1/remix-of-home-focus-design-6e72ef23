@@ -69,6 +69,18 @@ async function chatReply(
   if (lastUser) {
     try {
       const chain = await executeToolChain(lastUser);
+      // Aprendizado: anexa tools sugeridas por padrões aprendidos
+      const learnedTools = getToolHintsFor(lastUser);
+      const existing = new Set(chain.map((c) => c.request.tool));
+      for (const t of learnedTools) {
+        if (existing.has(t)) continue;
+        // só anexa se existir um executor seguro (leitura)
+        if (["time", "tasks_read", "agenda_read", "lists_read", "notes_read", "weather", "timer_read"].includes(t)) {
+          // injeta como contexto extra rodando outro turno do executor
+          const extra = await executeToolChain(`${t}: ${lastUser}`).catch(() => []);
+          if (extra.length) chain.push(extra[0]);
+        }
+      }
       if (chain.length) {
         toolUsed = chain[0].request.tool;
         toolsUsed = chain.map((c) => c.request.tool);
@@ -82,8 +94,10 @@ async function chatReply(
       // tool falhou — segue só com chat normal
     }
   }
-  const system = `Você é Hermes, assistente de produtividade do FocusMind (PT-BR). Responda de forma curta, amigável e útil. Não invente ações.${profileContext ? `\n\n${profileContext.trim()}` : ""}${toolContext}`;
+  const tone = getToneContext();
+  const system = `Você é Hermes, assistente de produtividade do FocusMind (PT-BR). Responda de forma curta, amigável e útil. Não invente ações.${profileContext ? `\n\n${profileContext.trim()}` : ""}${tone ? `\n\n${tone}` : ""}${toolContext}`;
   const reply = await callLlm(config, system, history, { temperature: 0.6 });
+  recordResponse({ userInput: lastUser, tools: toolsUsed ?? (toolUsed ? [toolUsed] : []), reply });
   return { reply, toolUsed, toolsUsed, pending };
 }
 
