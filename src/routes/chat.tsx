@@ -149,8 +149,18 @@ function ChatPage() {
           toolUsed: result.toolUsed,
           toolsUsed: result.toolsUsed,
           pending: result.pending,
+          forInput: text,
         },
       ]);
+      // auto-confirm pending se o usuário já confirmou esse tipo várias vezes
+      if (result.pending && shouldAutoConfirm(result.pending.kind)) {
+        const r = runPending(result.pending);
+        if (r.ok) {
+          recordAutoExec(result.pending.kind);
+          toast.success("Feito (auto)");
+          setMessages((prev) => prev.map((m, idx) => idx === prev.length - 1 ? { ...m, pendingResolved: "auto" } : m));
+        }
+      }
       if (result.routed.length) execute(result.routed);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";
