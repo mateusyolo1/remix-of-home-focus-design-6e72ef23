@@ -286,20 +286,27 @@ async function runRequest(req: ToolRequest, input: string): Promise<ToolRunResul
     case "weather": {
       const cityMatch = input.match(/(?:em|de|no|na)\s+([A-Za-zÀ-ÿ\s-]{2,40})/i);
       const city = cityMatch?.[1]?.trim();
-      if (!city) {
+      const r = await getWeather({
+        city,
+        when: "now",
+        useGeolocation: !city,
+      });
+      if ("ok" in r && !r.ok) {
         return {
           request: req,
-          context: "Peça ao usuário a cidade — não tenho geolocalização aqui.",
+          context: `Não consegui o clima${city ? ` de ${city}` : ""} (${r.reason}). Se quiser, peça pra adicionar sua cidade no Perfil.`,
         };
       }
-      const r = await getWeather({ city, when: "now" });
-      if ("ok" in r && !r.ok) {
-        return { request: req, context: `Não consegui o clima de ${city} (${r.reason}).` };
-      }
       const w = r as Exclude<typeof r, { ok: false }>;
+      const srcNote =
+        w.source === "gps"
+          ? " (via geolocalização)"
+          : w.source === "profile"
+            ? " (cidade do perfil)"
+            : "";
       return {
         request: req,
-        context: `Clima em ${w.city.name}: ${Math.round(w.weather.temperature)}°C — ${w.weather.label}.`,
+        context: `Clima em ${w.city.name}${srcNote}: ${Math.round(w.weather.temperature)}°C — ${w.weather.label}.`,
       };
     }
 
