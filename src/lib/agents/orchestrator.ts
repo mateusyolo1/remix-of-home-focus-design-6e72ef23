@@ -5,6 +5,7 @@ import { runAgenda } from "./agenda-agent";
 import { runTimer } from "./timer-agent";
 import { runHome } from "./home-agent";
 import { callLlm } from "./llm";
+import { executeTool } from "@/lib/hermes/tools/tool-executor";
 
 export type RoutedAction = AgentAction & { _target: RouteTarget };
 
