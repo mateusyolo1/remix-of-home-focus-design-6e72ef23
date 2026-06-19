@@ -124,12 +124,14 @@ export async function runOrchestrator(
 
   let reply = "";
   let toolUsed: ToolRequest["tool"] | undefined;
+  let toolsUsed: ToolRequest["tool"][] | undefined;
   let pending: PendingMutation | undefined;
   if (hasChat || onlyChat) {
     try {
       const r = await chatReply(config, history, profileContext);
       reply = r.reply;
       toolUsed = r.toolUsed;
+      toolsUsed = r.toolsUsed;
       pending = r.pending;
     } catch {
       reply = onlyChat ? "Não consegui detectar uma ação." : "";
@@ -144,6 +146,7 @@ export async function runOrchestrator(
     segments,
     routed: grouped,
     toolUsed,
+    toolsUsed,
     pending,
   };
 }
