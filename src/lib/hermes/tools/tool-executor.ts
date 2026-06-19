@@ -174,7 +174,7 @@ export async function executeTool(input: string): Promise<ToolRunResult | null> 
       const w = r as Exclude<typeof r, { ok: false }>;
       return {
         request: req,
-        context: `Clima em ${w.city.name}: ${Math.round(w.weather.temperature)}°C, vento ${Math.round(w.weather.windspeed)}km/h.`,
+        context: `Clima em ${w.city.name}: ${Math.round(w.weather.temperature)}°C — ${w.weather.label}.`,
       };
     }
 
@@ -196,7 +196,7 @@ export async function executeTool(input: string): Promise<ToolRunResult | null> 
       if (error || !result) {
         return { request: req, context: WEB_FAIL_NOTE, note: "web_failed" };
       }
-      const body = result.content.slice(0, 1500);
+      const body = result.text.slice(0, 1500);
       return {
         request: req,
         context: `Conteúdo de ${result.url}${result.truncated ? " (truncado)" : ""}:\n${body}`,
