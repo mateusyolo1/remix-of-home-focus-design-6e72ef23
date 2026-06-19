@@ -32,6 +32,7 @@ type UiMsg = {
   content: string;
   routed?: RoutedAction[];
   toolUsed?: string;
+  toolsUsed?: string[];
   pending?: PendingMutation;
   pendingResolved?: "yes" | "no";
 };
