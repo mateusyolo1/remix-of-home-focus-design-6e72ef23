@@ -250,6 +250,16 @@ function ChatPage() {
                   <FeedbackBar actions={m.routed} />
                 </>
               )}
+              {m.role === "assistant" && m.forInput && (
+                <MessageRating
+                  forInput={m.forInput}
+                  tools={(m.toolsUsed ?? (m.toolUsed ? [m.toolUsed] : [])) as never}
+                  rated={m.rated}
+                  onRated={(r) =>
+                    setMessages((prev) => prev.map((msg, idx) => (idx === i ? { ...msg, rated: r } : msg)))
+                  }
+                />
+              )}
             </div>
           ))}
           {loading && (
