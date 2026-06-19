@@ -10,3 +10,7 @@ export * from "./time-tool";
 export * from "./web-search-tool";
 export * from "./web-fetch-tool";
 export * from "./tool-router";
+export * from "./tasks-tool";
+export * from "./task-mutations";
+export * from "./agenda-tool";
+export * from "./memory-tool";
