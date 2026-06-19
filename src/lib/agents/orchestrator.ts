@@ -51,7 +51,19 @@ async function chatReply(
   history: ChatMsg[],
   profileContext?: string,
 ): Promise<string> {
-  const system = `Você é Hermes, assistente de produtividade do FocusMind (PT-BR). Responda de forma curta, amigável e útil. Não invente ações.${profileContext ? `\n\n${profileContext.trim()}` : ""}`;
+  const lastUser = [...history].reverse().find((m) => m.role === "user")?.content?.trim() ?? "";
+  let toolContext = "";
+  if (lastUser) {
+    try {
+      const res = await executeTool(lastUser);
+      if (res) {
+        toolContext = `\n\n=== CONTEXTO DE FERRAMENTA (${res.request.tool}) ===\n${res.context}\nUse esses dados reais na resposta. Não invente números. Se a ferramenta falhou, diga isso ao usuário.`;
+      }
+    } catch {
+      // tool falhou — segue só com chat normal
+    }
+  }
+  const system = `Você é Hermes, assistente de produtividade do FocusMind (PT-BR). Responda de forma curta, amigável e útil. Não invente ações.${profileContext ? `\n\n${profileContext.trim()}` : ""}${toolContext}`;
   return await callLlm(config, system, history, { temperature: 0.6 });
 }
 
