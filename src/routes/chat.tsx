@@ -474,23 +474,25 @@ function PendingCard({
   onResolve,
 }: {
   pending: PendingMutation;
-  resolved?: "yes" | "no";
+  resolved?: "yes" | "no" | "auto";
   onResolve: (decision: "yes" | "no") => void;
 }) {
   const confirm = () => {
     const r = runPending(pending);
     if (r.ok) toast.success("Feito");
     else toast.error(r.reason ?? "Não foi possível executar");
+    recordConfirmation(pending.kind, "yes");
     onResolve("yes");
   };
   const decline = () => {
     toast("Ok, deixei como estava");
+    recordConfirmation(pending.kind, "no");
     onResolve("no");
   };
   if (resolved) {
     return (
       <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">
-        {resolved === "yes" ? "✓ Confirmado" : "✗ Cancelado"}
+        {resolved === "yes" ? "✓ Confirmado" : resolved === "auto" ? "✓ Auto-executado (aprendido)" : "✗ Cancelado"}
       </p>
     );
   }
