@@ -21,3 +21,8 @@ export * from "./note-mutations";
 export * from "./block-mutations";
 export * from "./timer-tool";
 export * from "./timer-control";
+export * from "./weather-tool";
+export * from "./calc-tool";
+export * from "./units-tool";
+export * from "./notify-tool";
+export * from "./share-tool";

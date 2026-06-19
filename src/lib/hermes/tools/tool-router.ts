@@ -31,7 +31,12 @@ export type ToolRequest =
   | { tool: "note_mutate"; reason: string }
   | { tool: "block_mutate"; reason: string }
   | { tool: "timer_read"; reason: string }
-  | { tool: "timer_control"; reason: string };
+  | { tool: "timer_control"; reason: string }
+  | { tool: "weather"; query?: string; reason: string }
+  | { tool: "calc"; expression: string; reason: string }
+  | { tool: "units"; reason: string }
+  | { tool: "notify"; reason: string }
+  | { tool: "share"; reason: string };
 
 const SEARCH_INTENT_RE =
   /(pesquis[ae]|procur[ae]|verifi(?:que|car)|confir[am]|consult[ae])\b|link\s+oficial|documenta[çc][ãa]o|not[íi]cia|pre[çc]o|cota[çc][ãa]o|vers[ãa]o|clima|tempo\s+hoje|previs[ãa]o/i;
@@ -75,6 +80,21 @@ const TIMER_READ_RE =
 const TIMER_CONTROL_RE =
   /\b(pausa(r)?|retoma(r)?|continua(r)?|para(r)?|encerra(r)?|reseta(r)?|estende(r)?|adiciona(r)?\s+\d+\s*min)\b.*\b(timer|cron[ôo]metro|foco)\b|\b(timer|cron[ôo]metro)\b.*\b(pausa(r)?|para(r)?|reseta(r)?)\b/i;
 
+const WEATHER_RE =
+  /\b(clima|tempo|previs[ãa]o|temperatura|vai chover|chuva hoje)\b/i;
+
+const CALC_RE =
+  /\b(quanto (é|eh|da|d[áa])|calcula(r)?|some|soma|subtrai|multiplica|divide)\b|^[\d\s().,+\-*/x÷]+$/i;
+
+const UNITS_RE =
+  /\b(\d+\s*(ms|seg|segundos?|min|minutos?|h|horas?|dias?)\s+(em|para|→|->)\s*(ms|seg|segundos?|min|minutos?|h|horas?|dias?)|quantos? dias? at[ée]|converte(r)?)\b/i;
+
+const NOTIFY_RE =
+  /\b(me (avisa|lembra|notifica)|notifica(r)? em|alerta(r)? em|toque (um )?alarme)\b/i;
+
+const SHARE_RE =
+  /\b(compartilha(r)?|copia(r)?|copy|exporta(r)? (essa|esta|a))\b/i;
+
 const URL_RE = /\bhttps?:\/\/[^\s)]+/i;
 
 export function decideTool(userInput: string): ToolRequest | null {
@@ -117,6 +137,22 @@ export function decideTool(userInput: string): ToolRequest | null {
   }
   if (MEMORY_RECALL_RE.test(text)) {
     return { tool: "memory_recall", reason: "Pedido para lembrar detectado" };
+  }
+
+  if (NOTIFY_RE.test(text)) {
+    return { tool: "notify", reason: "Pedido de notificação detectado" };
+  }
+  if (SHARE_RE.test(text)) {
+    return { tool: "share", reason: "Intenção de compartilhar detectada" };
+  }
+  if (WEATHER_RE.test(text)) {
+    return { tool: "weather", query: text, reason: "Pergunta sobre clima detectada" };
+  }
+  if (UNITS_RE.test(text)) {
+    return { tool: "units", reason: "Conversão de unidades detectada" };
+  }
+  if (CALC_RE.test(text)) {
+    return { tool: "calc", expression: text, reason: "Expressão aritmética detectada" };
   }
 
   // URL no input → fetch direto
