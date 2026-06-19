@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Shuffle, Sparkles, Split, StickyNote, Tag, ThumbsDown, ThumbsUp, Timer as TimerIcon } from "lucide-react";
+import { AlertTriangle, CalendarClock, Check, CheckSquare, Clock, Cloud, FileSearch, Globe, Hash, Home as HomeIcon, ListChecks, Ruler, Send, Settings2, Shuffle, Sparkles, Split, StickyNote, Tag, ThumbsDown, ThumbsUp, Timer as TimerIcon, Wrench, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type ChatMsg } from "@/lib/agent";
@@ -9,6 +9,12 @@ import type { RoutedAction } from "@/lib/agents/orchestrator";
 import { useExecuteActions } from "@/lib/agents/execute";
 import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { submitAgentFeedback, type AgentFeedbackKind } from "@/lib/hermes/agent-core";
+import type { PendingMutation } from "@/lib/hermes/tools/tool-executor";
+import { completeTask, reopenTask, deleteTask, moveTaskToToday } from "@/lib/hermes/tools/task-mutations";
+import { deleteList, completeList } from "@/lib/hermes/tools/list-mutations";
+import { deleteNote, archiveNote } from "@/lib/hermes/tools/note-mutations";
+import { cancelBlock } from "@/lib/hermes/tools/block-mutations";
+import { pauseTimer, resumeTimer, stopTimer, resetTimer, extendTimer } from "@/lib/hermes/tools/timer-control";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
