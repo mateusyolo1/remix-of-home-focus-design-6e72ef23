@@ -53,18 +53,35 @@ export function decideTool(userInput: string): ToolRequest | null {
   const text = userInput.trim();
   if (!text) return null;
 
-  // 3. URL no input → fetch direto
+  // App-state intents têm prioridade sobre web (são mais específicas).
+  if (TASK_MUTATE_RE.test(text)) {
+    return { tool: "task_mutate", reason: "Intenção de alterar tarefa detectada" };
+  }
+  if (TASKS_READ_RE.test(text)) {
+    return { tool: "tasks_read", reason: "Consulta sobre tarefas detectada" };
+  }
+  if (AGENDA_READ_RE.test(text)) {
+    return { tool: "agenda_read", reason: "Consulta sobre agenda detectada" };
+  }
+  if (MEMORY_SAVE_RE.test(text)) {
+    return { tool: "memory_save", reason: "Pedido para memorizar detectado" };
+  }
+  if (MEMORY_RECALL_RE.test(text)) {
+    return { tool: "memory_recall", reason: "Pedido para lembrar detectado" };
+  }
+
+  // URL no input → fetch direto
   const urlMatch = text.match(URL_RE);
   if (urlMatch && SEARCH_INTENT_RE.test(text.replace(URL_RE, ""))) {
     return { tool: "web_fetch", url: urlMatch[0], reason: "Usuário pediu para abrir a URL" };
   }
 
-  // 1. Data/hora — exige que parser reconheça algo
+  // Data/hora — exige que parser reconheça algo
   if (TIME_INTENT_RE.test(text) && parseRelativeDate(text)) {
     return { tool: "time", reason: "Expressão temporal detectada" };
   }
 
-  // 2. Intenção de pesquisa
+  // Intenção de pesquisa
   if (SEARCH_INTENT_RE.test(text)) {
     return { tool: "web_search", query: text, reason: "Intenção de pesquisa detectada" };
   }
