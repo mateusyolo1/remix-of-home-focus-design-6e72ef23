@@ -146,19 +146,20 @@ export function removeAlarm(id: string): { ok: boolean } {
  */
 export function parseAlarmIntent(input: string): CreateAlarmInput | null {
   const text = input.trim();
+  let hh: string;
+  let mm: string;
   const timeMatch = text.match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
-  if (!timeMatch) {
-    // Aceita "às 7" / "às 19h"
+  if (timeMatch) {
+    hh = String(Number(timeMatch[1])).padStart(2, "0");
+    mm = timeMatch[2].padStart(2, "0");
+  } else {
     const hMatch = text.match(/\b(?:à[s]?|as)\s+(\d{1,2})\s*h?\b/i);
     if (!hMatch) return null;
     const h = Number(hMatch[1]);
     if (h < 0 || h > 23) return null;
-    timeMatch[0] = `${String(h).padStart(2, "0")}:00`;
-    timeMatch[1] = String(h);
-    timeMatch[2] = "00";
+    hh = String(h).padStart(2, "0");
+    mm = "00";
   }
-  const hh = String(Number(timeMatch[1])).padStart(2, "0");
-  const mm = (timeMatch[2] ?? "00").padStart(2, "0");
   const time = `${hh}:${mm}`;
 
   let repeat: AlarmRepeat = "once";
