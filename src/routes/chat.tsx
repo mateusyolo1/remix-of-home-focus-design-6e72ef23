@@ -141,6 +141,7 @@ function ChatPage() {
           content: result.reply || "✓",
           routed: result.routed,
           toolUsed: result.toolUsed,
+          toolsUsed: result.toolsUsed,
           pending: result.pending,
         },
       ]);
