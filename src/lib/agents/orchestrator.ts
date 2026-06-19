@@ -14,6 +14,7 @@ export type OrchestratorResult = AgentResult & {
   segments: Segment[];
   routed: RoutedAction[];
   toolUsed?: ToolRequest["tool"];
+  toolsUsed?: ToolRequest["tool"][];
   pending?: PendingMutation;
 };
 
