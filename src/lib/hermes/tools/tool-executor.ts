@@ -6,7 +6,7 @@
  * via UI (botão Sim/Não no chat).
  */
 
-import { decideTool, type ToolRequest } from "./tool-router";
+import { decideTool, decideToolChain, type ToolRequest } from "./tool-router";
 import { getTimeContext, parseRelativeDate } from "./time-tool";
 import { webSearch, WEB_SEARCH_NOTE, WEB_FAIL_NOTE } from "./web-search-tool";
 import { webFetch } from "./web-fetch-tool";
