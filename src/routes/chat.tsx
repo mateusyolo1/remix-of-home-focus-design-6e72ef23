@@ -27,7 +27,14 @@ export const Route = createFileRoute("/chat")({
   component: ChatPage,
 });
 
-type UiMsg = { role: "user" | "assistant"; content: string; routed?: RoutedAction[] };
+type UiMsg = {
+  role: "user" | "assistant";
+  content: string;
+  routed?: RoutedAction[];
+  toolUsed?: string;
+  pending?: PendingMutation;
+  pendingResolved?: "yes" | "no";
+};
 
 const GREETING: UiMsg = {
   role: "assistant",
