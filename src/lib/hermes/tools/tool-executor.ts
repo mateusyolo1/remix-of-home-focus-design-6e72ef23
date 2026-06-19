@@ -12,12 +12,13 @@ import { webSearch, WEB_SEARCH_NOTE, WEB_FAIL_NOTE } from "./web-search-tool";
 import { webFetch } from "./web-fetch-tool";
 import { listTasks, getTaskStats, getNextTask, findTask } from "./tasks-tool";
 import { listLists, getListStats, getList } from "./lists-tool";
-import { listNotes, getNote } from "./notes-tool";
+import { listNotes, getNote, findSimilarNotes } from "./notes-tool";
 import { listBlocks, getNextBlock } from "./agenda-tool";
 import { recallMemories } from "./memory-tool";
 import { getActiveTimer } from "./timer-tool";
 import { calc } from "./calc-tool";
 import { getWeather } from "./weather-tool";
+import { createAlarm, parseAlarmIntent } from "./notify-tool";
 
 export type PendingMutation =
   | { kind: "complete_task"; query: string; label: string }
@@ -33,7 +34,14 @@ export type PendingMutation =
   | { kind: "timer_resume"; label: string }
   | { kind: "timer_stop"; label: string }
   | { kind: "timer_reset"; label: string }
-  | { kind: "timer_extend"; minutes: number; label: string };
+  | { kind: "timer_extend"; minutes: number; label: string }
+  | {
+      kind: "create_alarm";
+      time: string;
+      title: string;
+      repeat: "once" | "daily" | "weekday" | "weekend" | "custom";
+      label: string;
+    };
 
 export type ToolRunResult = {
   request: ToolRequest;
@@ -210,6 +218,21 @@ async function runRequest(req: ToolRequest, input: string): Promise<ToolRunResul
     }
 
     case "notes_read": {
+      // Se o input mencionar "nota sobre/de X", procura similaridade.
+      const aboutMatch = input.match(/\bnota[s]?\s+(sobre|de|do|da|com)\s+(.{3,80})/i);
+      if (aboutMatch) {
+        const matches = findSimilarNotes(aboutMatch[2], { limit: 4 });
+        if (matches.length) {
+          const lines = matches.map(
+            (m) =>
+              `• ${m.note.title} (${Math.round(m.score * 100)}%)${m.note.body ? ` — ${m.note.body.slice(0, 80)}` : ""}`,
+          );
+          return {
+            request: req,
+            context: `Notas semelhantes a "${aboutMatch[2]}":\n${lines.join("\n")}`,
+          };
+        }
+      }
       const notes = listNotes({ recent: 6 });
       if (!notes.length) return { request: req, context: "Nenhuma nota recente." };
       const lines = notes.map(
@@ -263,20 +286,27 @@ async function runRequest(req: ToolRequest, input: string): Promise<ToolRunResul
     case "weather": {
       const cityMatch = input.match(/(?:em|de|no|na)\s+([A-Za-zÀ-ÿ\s-]{2,40})/i);
       const city = cityMatch?.[1]?.trim();
-      if (!city) {
+      const r = await getWeather({
+        city,
+        when: "now",
+        useGeolocation: !city,
+      });
+      if ("ok" in r && !r.ok) {
         return {
           request: req,
-          context: "Peça ao usuário a cidade — não tenho geolocalização aqui.",
+          context: `Não consegui o clima${city ? ` de ${city}` : ""} (${r.reason}). Se quiser, peça pra adicionar sua cidade no Perfil.`,
         };
       }
-      const r = await getWeather({ city, when: "now" });
-      if ("ok" in r && !r.ok) {
-        return { request: req, context: `Não consegui o clima de ${city} (${r.reason}).` };
-      }
       const w = r as Exclude<typeof r, { ok: false }>;
+      const srcNote =
+        w.source === "gps"
+          ? " (via geolocalização)"
+          : w.source === "profile"
+            ? " (cidade do perfil)"
+            : "";
       return {
         request: req,
-        context: `Clima em ${w.city.name}: ${Math.round(w.weather.temperature)}°C — ${w.weather.label}.`,
+        context: `Clima em ${w.city.name}${srcNote}: ${Math.round(w.weather.temperature)}°C — ${w.weather.label}.`,
       };
     }
 
@@ -365,12 +395,43 @@ async function runRequest(req: ToolRequest, input: string): Promise<ToolRunResul
       };
     }
 
-    case "notify":
+    case "notify": {
+      const intent = parseAlarmIntent(input);
+      if (!intent) {
+        return {
+          request: req,
+          context:
+            "Não consegui identificar o horário. Peça ao usuário para informar a hora (ex.: \"me acorda às 07:30 todos os dias\").",
+          note: "needs_confirmation",
+        };
+      }
+      const repeatLabel: Record<string, string> = {
+        once: "uma vez",
+        daily: "todos os dias",
+        weekday: "seg a sex",
+        weekend: "fim de semana",
+        custom: "dias selecionados",
+      };
+      const pending: PendingMutation = {
+        kind: "create_alarm",
+        time: intent.time,
+        title: intent.label,
+        repeat: intent.repeat ?? "once",
+        label: `Criar alarme "${intent.label}" às ${intent.time} (${repeatLabel[intent.repeat ?? "once"]})?`,
+      };
+      return {
+        request: req,
+        context: `O usuário pediu: ${pending.label}. Confirme brevemente.`,
+        note: "needs_confirmation",
+        pending,
+      };
+    }
+
     case "share":
       return {
         request: req,
         context:
-          "Notificação/compartilhamento ainda não automatizado — oriente o usuário a usar os botões da tela correspondente.",
+          "Compartilhamento ainda não automatizado — oriente o usuário a usar os botões da tela correspondente.",
         note: "needs_confirmation",
       };
   }

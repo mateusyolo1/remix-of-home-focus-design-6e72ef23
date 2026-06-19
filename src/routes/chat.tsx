@@ -15,6 +15,7 @@ import { deleteList, completeList } from "@/lib/hermes/tools/list-mutations";
 import { deleteNote, archiveNote } from "@/lib/hermes/tools/note-mutations";
 import { cancelBlock } from "@/lib/hermes/tools/block-mutations";
 import { pauseTimer, resumeTimer, stopTimer, resetTimer, extendTimer } from "@/lib/hermes/tools/timer-control";
+import { createAlarm } from "@/lib/hermes/tools/notify-tool";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
@@ -435,6 +436,10 @@ function runPending(p: PendingMutation): { ok: boolean; reason?: string } {
     case "timer_stop": return stopTimer();
     case "timer_reset": return resetTimer();
     case "timer_extend": return extendTimer(p.minutes);
+    case "create_alarm": {
+      const r = createAlarm({ label: p.title, time: p.time, repeat: p.repeat });
+      return r.ok ? { ok: true } : { ok: false, reason: r.reason };
+    }
   }
 }
 
