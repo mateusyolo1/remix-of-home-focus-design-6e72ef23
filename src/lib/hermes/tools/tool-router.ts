@@ -210,7 +210,7 @@ export function decideToolChain(userInput: string): ToolRequest[] {
     primary.tool === "notes_read" ||
     primary.tool === "weather" ||
     primary.tool === "web_search";
-  if (hasTime && readSupportsTime && primary.tool !== "time") {
+  if (hasTime && readSupportsTime) {
     chain.push({ tool: "time", reason: "Contexto temporal complementar" });
   }
 
