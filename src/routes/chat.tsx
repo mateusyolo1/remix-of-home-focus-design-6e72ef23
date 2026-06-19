@@ -435,6 +435,10 @@ function runPending(p: PendingMutation): { ok: boolean; reason?: string } {
     case "timer_stop": return stopTimer();
     case "timer_reset": return resetTimer();
     case "timer_extend": return extendTimer(p.minutes);
+    case "create_alarm": {
+      const r = createAlarm({ label: p.title, time: p.time, repeat: p.repeat });
+      return r.ok ? { ok: true } : { ok: false, reason: r.reason };
+    }
   }
 }
 
