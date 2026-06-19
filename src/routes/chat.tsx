@@ -32,6 +32,7 @@ type UiMsg = {
   content: string;
   routed?: RoutedAction[];
   toolUsed?: string;
+  toolsUsed?: string[];
   pending?: PendingMutation;
   pendingResolved?: "yes" | "no";
 };
@@ -140,6 +141,7 @@ function ChatPage() {
           content: result.reply || "✓",
           routed: result.routed,
           toolUsed: result.toolUsed,
+          toolsUsed: result.toolsUsed,
           pending: result.pending,
         },
       ]);
@@ -214,7 +216,11 @@ function ChatPage() {
                 </div>
               )}
               {m.content}
-              {m.role === "assistant" && m.toolUsed && <ToolBadge tool={m.toolUsed} />}
+              {m.role === "assistant" && (m.toolsUsed?.length ? (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {m.toolsUsed.map((t, idx) => <ToolBadge key={`${t}-${idx}`} tool={t} />)}
+                </div>
+              ) : m.toolUsed ? <ToolBadge tool={m.toolUsed} /> : null)}
               {m.pending && (
                 <PendingCard
                   pending={m.pending}

@@ -5,7 +5,7 @@ import { runAgenda } from "./agenda-agent";
 import { runTimer } from "./timer-agent";
 import { runHome } from "./home-agent";
 import { callLlm } from "./llm";
-import { executeTool, type PendingMutation } from "@/lib/hermes/tools/tool-executor";
+import { executeToolChain, type PendingMutation } from "@/lib/hermes/tools/tool-executor";
 import type { ToolRequest } from "@/lib/hermes/tools/tool-router";
 
 export type RoutedAction = AgentAction & { _target: RouteTarget };
@@ -14,6 +14,7 @@ export type OrchestratorResult = AgentResult & {
   segments: Segment[];
   routed: RoutedAction[];
   toolUsed?: ToolRequest["tool"];
+  toolsUsed?: ToolRequest["tool"][];
   pending?: PendingMutation;
 };
 
@@ -53,18 +54,28 @@ async function chatReply(
   config: AgentConfig,
   history: ChatMsg[],
   profileContext?: string,
-): Promise<{ reply: string; toolUsed?: ToolRequest["tool"]; pending?: PendingMutation }> {
+): Promise<{
+  reply: string;
+  toolUsed?: ToolRequest["tool"];
+  toolsUsed?: ToolRequest["tool"][];
+  pending?: PendingMutation;
+}> {
   const lastUser = [...history].reverse().find((m) => m.role === "user")?.content?.trim() ?? "";
   let toolContext = "";
   let toolUsed: ToolRequest["tool"] | undefined;
+  let toolsUsed: ToolRequest["tool"][] | undefined;
   let pending: PendingMutation | undefined;
   if (lastUser) {
     try {
-      const res = await executeTool(lastUser);
-      if (res) {
-        toolUsed = res.request.tool;
-        pending = res.pending;
-        toolContext = `\n\n=== CONTEXTO DE FERRAMENTA (${res.request.tool}) ===\n${res.context}\nUse esses dados reais na resposta. Não invente números. Se a ferramenta falhou, diga isso ao usuário.`;
+      const chain = await executeToolChain(lastUser);
+      if (chain.length) {
+        toolUsed = chain[0].request.tool;
+        toolsUsed = chain.map((c) => c.request.tool);
+        pending = chain[0].pending;
+        const blocks = chain
+          .map((c) => `--- ${c.request.tool} ---\n${c.context}`)
+          .join("\n");
+        toolContext = `\n\n=== CONTEXTO DE FERRAMENTAS ===\n${blocks}\nUse esses dados reais na resposta. Não invente números. Se alguma ferramenta falhou, diga isso ao usuário.`;
       }
     } catch {
       // tool falhou — segue só com chat normal
@@ -72,7 +83,7 @@ async function chatReply(
   }
   const system = `Você é Hermes, assistente de produtividade do FocusMind (PT-BR). Responda de forma curta, amigável e útil. Não invente ações.${profileContext ? `\n\n${profileContext.trim()}` : ""}${toolContext}`;
   const reply = await callLlm(config, system, history, { temperature: 0.6 });
-  return { reply, toolUsed, pending };
+  return { reply, toolUsed, toolsUsed, pending };
 }
 
 export async function runOrchestrator(
@@ -113,12 +124,14 @@ export async function runOrchestrator(
 
   let reply = "";
   let toolUsed: ToolRequest["tool"] | undefined;
+  let toolsUsed: ToolRequest["tool"][] | undefined;
   let pending: PendingMutation | undefined;
   if (hasChat || onlyChat) {
     try {
       const r = await chatReply(config, history, profileContext);
       reply = r.reply;
       toolUsed = r.toolUsed;
+      toolsUsed = r.toolsUsed;
       pending = r.pending;
     } catch {
       reply = onlyChat ? "Não consegui detectar uma ação." : "";
@@ -133,6 +146,7 @@ export async function runOrchestrator(
     segments,
     routed: grouped,
     toolUsed,
+    toolsUsed,
     pending,
   };
 }

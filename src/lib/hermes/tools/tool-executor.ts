@@ -6,7 +6,7 @@
  * via UI (botão Sim/Não no chat).
  */
 
-import { decideTool, type ToolRequest } from "./tool-router";
+import { decideTool, decideToolChain, type ToolRequest } from "./tool-router";
 import { getTimeContext, parseRelativeDate } from "./time-tool";
 import { webSearch, WEB_SEARCH_NOTE, WEB_FAIL_NOTE } from "./web-search-tool";
 import { webFetch } from "./web-fetch-tool";
@@ -123,7 +123,22 @@ function detectTimerControl(input: string): PendingMutation | null {
 export async function executeTool(input: string): Promise<ToolRunResult | null> {
   const req = decideTool(input);
   if (!req) return null;
+  return runRequest(req, input);
+}
 
+/**
+ * Executa a cadeia decidida por `decideToolChain` (até 3 ferramentas).
+ * Roda em paralelo, devolve resultados na ordem original. A primária
+ * (índice 0) carrega `pending` se houver — extras não geram mutações.
+ */
+export async function executeToolChain(input: string): Promise<ToolRunResult[]> {
+  const chain = decideToolChain(input);
+  if (!chain.length) return [];
+  const results = await Promise.all(chain.map((req) => runRequest(req, input)));
+  return results.filter((r): r is ToolRunResult => Boolean(r));
+}
+
+async function runRequest(req: ToolRequest, input: string): Promise<ToolRunResult | null> {
   switch (req.tool) {
     case "time": {
       const ctx = getTimeContext();
