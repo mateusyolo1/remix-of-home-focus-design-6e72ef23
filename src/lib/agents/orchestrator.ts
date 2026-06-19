@@ -7,6 +7,7 @@ import { runHome } from "./home-agent";
 import { callLlm } from "./llm";
 import { executeToolChain, type PendingMutation } from "@/lib/hermes/tools/tool-executor";
 import type { ToolRequest } from "@/lib/hermes/tools/tool-router";
+import { getToneContext, getToolHintsFor, recordResponse } from "@/lib/hermes/training";
 
 export type RoutedAction = AgentAction & { _target: RouteTarget };
 
