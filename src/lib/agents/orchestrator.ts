@@ -5,7 +5,7 @@ import { runAgenda } from "./agenda-agent";
 import { runTimer } from "./timer-agent";
 import { runHome } from "./home-agent";
 import { callLlm } from "./llm";
-import { executeTool, type PendingMutation } from "@/lib/hermes/tools/tool-executor";
+import { executeToolChain, type PendingMutation } from "@/lib/hermes/tools/tool-executor";
 import type { ToolRequest } from "@/lib/hermes/tools/tool-router";
 
 export type RoutedAction = AgentAction & { _target: RouteTarget };
