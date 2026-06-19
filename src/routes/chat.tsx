@@ -36,7 +36,11 @@ type UiMsg = {
   toolUsed?: string;
   toolsUsed?: string[];
   pending?: PendingMutation;
-  pendingResolved?: "yes" | "no";
+  pendingResolved?: "yes" | "no" | "auto";
+  /** Snapshot do input do usuário que originou esta resposta (para training). */
+  forInput?: string;
+  /** Rating registrado pelo usuário. */
+  rated?: "up" | "down";
 };
 
 const GREETING: UiMsg = {
