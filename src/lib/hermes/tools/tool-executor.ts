@@ -34,7 +34,14 @@ export type PendingMutation =
   | { kind: "timer_resume"; label: string }
   | { kind: "timer_stop"; label: string }
   | { kind: "timer_reset"; label: string }
-  | { kind: "timer_extend"; minutes: number; label: string };
+  | { kind: "timer_extend"; minutes: number; label: string }
+  | {
+      kind: "create_alarm";
+      time: string;
+      title: string;
+      repeat: "once" | "daily" | "weekday" | "weekend" | "custom";
+      label: string;
+    };
 
 export type ToolRunResult = {
   request: ToolRequest;
