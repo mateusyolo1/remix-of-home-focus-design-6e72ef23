@@ -15,6 +15,7 @@ import { deleteList, completeList } from "@/lib/hermes/tools/list-mutations";
 import { deleteNote, archiveNote } from "@/lib/hermes/tools/note-mutations";
 import { cancelBlock } from "@/lib/hermes/tools/block-mutations";
 import { pauseTimer, resumeTimer, stopTimer, resetTimer, extendTimer } from "@/lib/hermes/tools/timer-control";
+import { createAlarm } from "@/lib/hermes/tools/notify-tool";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
