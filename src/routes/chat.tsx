@@ -135,7 +135,13 @@ function ChatPage() {
       const result = await runAgent(config, history, buildProfileContext(profile));
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: result.reply || "✓", routed: result.routed },
+        {
+          role: "assistant",
+          content: result.reply || "✓",
+          routed: result.routed,
+          toolUsed: result.toolUsed,
+          pending: result.pending,
+        },
       ]);
       if (result.routed.length) execute(result.routed);
     } catch (err) {
