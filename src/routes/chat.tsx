@@ -380,3 +380,103 @@ function FeedbackBar({ actions }: { actions: RoutedAction[] }) {
   );
 }
 
+const TOOL_META: Record<string, { label: string; Icon: typeof Wrench }> = {
+  time: { label: "tempo", Icon: Clock },
+  tasks_read: { label: "tarefas", Icon: CheckSquare },
+  task_mutate: { label: "tarefa", Icon: CheckSquare },
+  agenda_read: { label: "agenda", Icon: CalendarClock },
+  block_mutate: { label: "agenda", Icon: CalendarClock },
+  lists_read: { label: "listas", Icon: ListChecks },
+  list_mutate: { label: "lista", Icon: ListChecks },
+  notes_read: { label: "notas", Icon: StickyNote },
+  note_mutate: { label: "nota", Icon: StickyNote },
+  timer_read: { label: "timer", Icon: TimerIcon },
+  timer_control: { label: "timer", Icon: TimerIcon },
+  memory_recall: { label: "memória", Icon: Hash },
+  memory_save: { label: "memória", Icon: Hash },
+  calc: { label: "cálculo", Icon: Hash },
+  units: { label: "unidades", Icon: Ruler },
+  weather: { label: "clima", Icon: Cloud },
+  web_search: { label: "busca web", Icon: Globe },
+  web_fetch: { label: "página", Icon: FileSearch },
+  notify: { label: "notificar", Icon: Wrench },
+  share: { label: "compartilhar", Icon: Wrench },
+};
+
+function ToolBadge({ tool }: { tool: string }) {
+  const meta = TOOL_META[tool] ?? { label: tool, Icon: Wrench };
+  const Icon = meta.Icon;
+  return (
+    <div className="mt-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full ring-1 ring-black/5">
+      <Icon className="size-3" /> {meta.label}
+    </div>
+  );
+}
+
+function runPending(p: PendingMutation): { ok: boolean; reason?: string } {
+  switch (p.kind) {
+    case "complete_task": return completeTask(p.query);
+    case "reopen_task": return reopenTask(p.query);
+    case "delete_task": return deleteTask(p.query);
+    case "move_task_today": return moveTaskToToday(p.query);
+    case "delete_list": return deleteList(p.query);
+    case "complete_list": return completeList(p.query);
+    case "delete_note": return deleteNote(p.query);
+    case "archive_note": return archiveNote(p.query);
+    case "cancel_block": return cancelBlock(p.query);
+    case "timer_pause": return pauseTimer();
+    case "timer_resume": return resumeTimer();
+    case "timer_stop": return stopTimer();
+    case "timer_reset": return resetTimer();
+    case "timer_extend": return extendTimer(p.minutes);
+  }
+}
+
+function PendingCard({
+  pending,
+  resolved,
+  onResolve,
+}: {
+  pending: PendingMutation;
+  resolved?: "yes" | "no";
+  onResolve: (decision: "yes" | "no") => void;
+}) {
+  const confirm = () => {
+    const r = runPending(pending);
+    if (r.ok) toast.success("Feito");
+    else toast.error(r.reason ?? "Não foi possível executar");
+    onResolve("yes");
+  };
+  const decline = () => {
+    toast("Ok, deixei como estava");
+    onResolve("no");
+  };
+  if (resolved) {
+    return (
+      <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+        {resolved === "yes" ? "✓ Confirmado" : "✗ Cancelado"}
+      </p>
+    );
+  }
+  return (
+    <div className="mt-3 p-3 rounded-xl bg-secondary/70 ring-1 ring-black/5 flex items-center justify-between gap-2">
+      <span className="text-xs font-medium text-foreground">{pending.label}</span>
+      <div className="flex gap-1.5 shrink-0">
+        <button
+          onClick={confirm}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/30 active:scale-95"
+        >
+          <Check className="size-3.5" /> Sim
+        </button>
+        <button
+          onClick={decline}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-secondary text-muted-foreground ring-1 ring-black/5 active:scale-95"
+        >
+          <X className="size-3.5" /> Não
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
