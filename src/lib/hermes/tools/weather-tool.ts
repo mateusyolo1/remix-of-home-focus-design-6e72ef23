@@ -21,7 +21,13 @@ export async function getWeather(
   const when = input.when ?? "now";
   let city: GeoResult | null = null;
   if (input.lat != null && input.lon != null) {
-    city = { name: input.city ?? "Atual", country: "", lat: input.lat, lon: input.lon };
+    city = {
+      id: 0,
+      name: input.city ?? "Atual",
+      country: "",
+      latitude: input.lat,
+      longitude: input.lon,
+    };
   } else if (input.city) {
     const results = await searchCity(input.city);
     city = results[0] ?? null;
@@ -29,7 +35,7 @@ export async function getWeather(
   } else {
     return { ok: false, reason: "missing city or coords" };
   }
-  const weather = await fetchWeather(city.lat, city.lon);
+  const weather = await fetchWeather(city.latitude, city.longitude);
   if (!weather) return { ok: false, reason: "weather unavailable" };
   return { city, when, weather };
 }
