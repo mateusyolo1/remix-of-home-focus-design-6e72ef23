@@ -12,12 +12,13 @@ import { webSearch, WEB_SEARCH_NOTE, WEB_FAIL_NOTE } from "./web-search-tool";
 import { webFetch } from "./web-fetch-tool";
 import { listTasks, getTaskStats, getNextTask, findTask } from "./tasks-tool";
 import { listLists, getListStats, getList } from "./lists-tool";
-import { listNotes, getNote } from "./notes-tool";
+import { listNotes, getNote, findSimilarNotes } from "./notes-tool";
 import { listBlocks, getNextBlock } from "./agenda-tool";
 import { recallMemories } from "./memory-tool";
 import { getActiveTimer } from "./timer-tool";
 import { calc } from "./calc-tool";
 import { getWeather } from "./weather-tool";
+import { createAlarm, parseAlarmIntent } from "./notify-tool";
 
 export type PendingMutation =
   | { kind: "complete_task"; query: string; label: string }
