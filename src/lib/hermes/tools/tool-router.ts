@@ -178,3 +178,62 @@ export function decideTool(userInput: string): ToolRequest | null {
 
   return null;
 }
+
+/**
+ * Decide uma cadeia de até 3 ferramentas. A primária vem de `decideTool`;
+ * extras são anexadas quando o input combina contexto temporal/clima/busca
+ * com leituras do app. Mutações nunca encadeiam (precisam de confirmação).
+ */
+export function decideToolChain(userInput: string): ToolRequest[] {
+  const primary = decideTool(userInput);
+  if (!primary) return [];
+
+  const chain: ToolRequest[] = [primary];
+  const text = userInput.trim();
+
+  const isMutation =
+    primary.tool === "task_mutate" ||
+    primary.tool === "list_mutate" ||
+    primary.tool === "note_mutate" ||
+    primary.tool === "block_mutate" ||
+    primary.tool === "timer_control" ||
+    primary.tool === "memory_save" ||
+    primary.tool === "notify" ||
+    primary.tool === "share";
+  if (isMutation) return chain;
+
+  const hasTime = TIME_INTENT_RE.test(text) && parseRelativeDate(text) !== null;
+  const readSupportsTime =
+    primary.tool === "tasks_read" ||
+    primary.tool === "agenda_read" ||
+    primary.tool === "lists_read" ||
+    primary.tool === "notes_read" ||
+    primary.tool === "weather" ||
+    primary.tool === "web_search";
+  if (hasTime && readSupportsTime && primary.tool !== "time") {
+    chain.push({ tool: "time", reason: "Contexto temporal complementar" });
+  }
+
+  // Tarefas + agenda no mesmo turno ("o que tenho amanhã?")
+  if (
+    primary.tool === "tasks_read" &&
+    /\b(agenda|reuni[ãa]o|bloco|compromisso)\b/i.test(text)
+  ) {
+    chain.push({ tool: "agenda_read", reason: "Agenda também solicitada" });
+  } else if (
+    primary.tool === "agenda_read" &&
+    /\b(tarefas?|to[\s-]?do|pendentes?)\b/i.test(text)
+  ) {
+    chain.push({ tool: "tasks_read", reason: "Tarefas também solicitadas" });
+  }
+
+  // Clima + agenda ("vai chover amanhã na minha reunião?")
+  if (
+    primary.tool === "weather" &&
+    /\b(agenda|reuni[ãa]o|bloco|compromisso|tarefa)\b/i.test(text)
+  ) {
+    chain.push({ tool: "agenda_read", reason: "Agenda complementar ao clima" });
+  }
+
+  return chain.slice(0, 3);
+}
