@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { AlertTriangle, CalendarClock, CheckSquare, Home as HomeIcon, ListChecks, Send, Settings2, Shuffle, Sparkles, Split, StickyNote, Tag, ThumbsDown, ThumbsUp, Timer as TimerIcon } from "lucide-react";
+import { AlertTriangle, CalendarClock, Check, CheckSquare, Clock, Cloud, FileSearch, Globe, Hash, Home as HomeIcon, ListChecks, Ruler, Send, Settings2, Shuffle, Sparkles, Split, StickyNote, Tag, ThumbsDown, ThumbsUp, Timer as TimerIcon, Wrench, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAgentConfig } from "@/lib/agent-store";
 import { runAgent, type ChatMsg } from "@/lib/agent";
@@ -9,6 +9,12 @@ import type { RoutedAction } from "@/lib/agents/orchestrator";
 import { useExecuteActions } from "@/lib/agents/execute";
 import { buildProfileContext, useProfile } from "@/lib/profile-store";
 import { submitAgentFeedback, type AgentFeedbackKind } from "@/lib/hermes/agent-core";
+import type { PendingMutation } from "@/lib/hermes/tools/tool-executor";
+import { completeTask, reopenTask, deleteTask, moveTaskToToday } from "@/lib/hermes/tools/task-mutations";
+import { deleteList, completeList } from "@/lib/hermes/tools/list-mutations";
+import { deleteNote, archiveNote } from "@/lib/hermes/tools/note-mutations";
+import { cancelBlock } from "@/lib/hermes/tools/block-mutations";
+import { pauseTimer, resumeTimer, stopTimer, resetTimer, extendTimer } from "@/lib/hermes/tools/timer-control";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat")({
@@ -21,7 +27,14 @@ export const Route = createFileRoute("/chat")({
   component: ChatPage,
 });
 
-type UiMsg = { role: "user" | "assistant"; content: string; routed?: RoutedAction[] };
+type UiMsg = {
+  role: "user" | "assistant";
+  content: string;
+  routed?: RoutedAction[];
+  toolUsed?: string;
+  pending?: PendingMutation;
+  pendingResolved?: "yes" | "no";
+};
 
 const GREETING: UiMsg = {
   role: "assistant",
@@ -122,7 +135,13 @@ function ChatPage() {
       const result = await runAgent(config, history, buildProfileContext(profile));
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: result.reply || "✓", routed: result.routed },
+        {
+          role: "assistant",
+          content: result.reply || "✓",
+          routed: result.routed,
+          toolUsed: result.toolUsed,
+          pending: result.pending,
+        },
       ]);
       if (result.routed.length) execute(result.routed);
     } catch (err) {
@@ -195,6 +214,18 @@ function ChatPage() {
                 </div>
               )}
               {m.content}
+              {m.role === "assistant" && m.toolUsed && <ToolBadge tool={m.toolUsed} />}
+              {m.pending && (
+                <PendingCard
+                  pending={m.pending}
+                  resolved={m.pendingResolved}
+                  onResolve={(decision) => {
+                    setMessages((prev) =>
+                      prev.map((msg, idx) => (idx === i ? { ...msg, pendingResolved: decision } : msg)),
+                    );
+                  }}
+                />
+              )}
               {m.routed && m.routed.length > 0 && (
                 <>
                   <ul className="mt-2 flex flex-wrap gap-1.5">
@@ -348,4 +379,104 @@ function FeedbackBar({ actions }: { actions: RoutedAction[] }) {
     </div>
   );
 }
+
+const TOOL_META: Record<string, { label: string; Icon: typeof Wrench }> = {
+  time: { label: "tempo", Icon: Clock },
+  tasks_read: { label: "tarefas", Icon: CheckSquare },
+  task_mutate: { label: "tarefa", Icon: CheckSquare },
+  agenda_read: { label: "agenda", Icon: CalendarClock },
+  block_mutate: { label: "agenda", Icon: CalendarClock },
+  lists_read: { label: "listas", Icon: ListChecks },
+  list_mutate: { label: "lista", Icon: ListChecks },
+  notes_read: { label: "notas", Icon: StickyNote },
+  note_mutate: { label: "nota", Icon: StickyNote },
+  timer_read: { label: "timer", Icon: TimerIcon },
+  timer_control: { label: "timer", Icon: TimerIcon },
+  memory_recall: { label: "memória", Icon: Hash },
+  memory_save: { label: "memória", Icon: Hash },
+  calc: { label: "cálculo", Icon: Hash },
+  units: { label: "unidades", Icon: Ruler },
+  weather: { label: "clima", Icon: Cloud },
+  web_search: { label: "busca web", Icon: Globe },
+  web_fetch: { label: "página", Icon: FileSearch },
+  notify: { label: "notificar", Icon: Wrench },
+  share: { label: "compartilhar", Icon: Wrench },
+};
+
+function ToolBadge({ tool }: { tool: string }) {
+  const meta = TOOL_META[tool] ?? { label: tool, Icon: Wrench };
+  const Icon = meta.Icon;
+  return (
+    <div className="mt-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full ring-1 ring-black/5">
+      <Icon className="size-3" /> {meta.label}
+    </div>
+  );
+}
+
+function runPending(p: PendingMutation): { ok: boolean; reason?: string } {
+  switch (p.kind) {
+    case "complete_task": return completeTask(p.query);
+    case "reopen_task": return reopenTask(p.query);
+    case "delete_task": return deleteTask(p.query);
+    case "move_task_today": return moveTaskToToday(p.query);
+    case "delete_list": return deleteList(p.query);
+    case "complete_list": return completeList(p.query);
+    case "delete_note": return deleteNote(p.query);
+    case "archive_note": return archiveNote(p.query);
+    case "cancel_block": return cancelBlock(p.query);
+    case "timer_pause": return pauseTimer();
+    case "timer_resume": return resumeTimer();
+    case "timer_stop": return stopTimer();
+    case "timer_reset": return resetTimer();
+    case "timer_extend": return extendTimer(p.minutes);
+  }
+}
+
+function PendingCard({
+  pending,
+  resolved,
+  onResolve,
+}: {
+  pending: PendingMutation;
+  resolved?: "yes" | "no";
+  onResolve: (decision: "yes" | "no") => void;
+}) {
+  const confirm = () => {
+    const r = runPending(pending);
+    if (r.ok) toast.success("Feito");
+    else toast.error(r.reason ?? "Não foi possível executar");
+    onResolve("yes");
+  };
+  const decline = () => {
+    toast("Ok, deixei como estava");
+    onResolve("no");
+  };
+  if (resolved) {
+    return (
+      <p className="mt-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+        {resolved === "yes" ? "✓ Confirmado" : "✗ Cancelado"}
+      </p>
+    );
+  }
+  return (
+    <div className="mt-3 p-3 rounded-xl bg-secondary/70 ring-1 ring-black/5 flex items-center justify-between gap-2">
+      <span className="text-xs font-medium text-foreground">{pending.label}</span>
+      <div className="flex gap-1.5 shrink-0">
+        <button
+          onClick={confirm}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 ring-1 ring-emerald-500/30 active:scale-95"
+        >
+          <Check className="size-3.5" /> Sim
+        </button>
+        <button
+          onClick={decline}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-secondary text-muted-foreground ring-1 ring-black/5 active:scale-95"
+        >
+          <X className="size-3.5" /> Não
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
