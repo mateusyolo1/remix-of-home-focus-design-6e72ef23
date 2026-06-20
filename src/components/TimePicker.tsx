@@ -16,7 +16,7 @@ type Props = {
  * Renders as a button showing HH:MM with a clock icon; click opens a popover
  * with two scrollable columns of hour / minute chips.
  */
-export function TimePicker({ value, onChange, className, minuteStep = 5 }: Props) {
+export function TimePicker({ value, onChange, className, buttonClassName, minuteStep = 5 }: Props) {
   const [open, setOpen] = useState(false);
   const [align, setAlign] = useState<"left" | "right">("left");
   const wrapRef = useRef<HTMLDivElement>(null);
