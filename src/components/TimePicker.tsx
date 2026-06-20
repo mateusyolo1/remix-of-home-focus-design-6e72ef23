@@ -49,7 +49,10 @@ export function TimePicker({ value, onChange, className, buttonClassName, minute
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 bg-secondary rounded-lg px-3 py-1.5 text-sm tabular-nums ring-1 ring-black/5 hover:ring-foreground/30 active:scale-[0.99]"
+        className={
+          buttonClassName ??
+          "w-full inline-flex items-center justify-between gap-2 bg-secondary rounded-lg px-3 py-1.5 text-sm tabular-nums ring-1 ring-black/5 hover:ring-foreground/30 active:scale-[0.99]"
+        }
       >
         <span>{value || "—"}</span>
         <Clock className="size-3.5 text-muted-foreground" />
