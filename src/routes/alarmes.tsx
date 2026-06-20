@@ -9,6 +9,7 @@ import {
   type AlarmRepeat,
   type WeekDay,
 } from "@/lib/alarms-store";
+import { TimePicker } from "@/components/TimePicker";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/alarmes")({
