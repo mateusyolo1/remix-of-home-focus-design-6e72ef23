@@ -5,6 +5,8 @@ type Props = {
   value: string;
   onChange: (v: string) => void;
   className?: string;
+  /** Override button classes (e.g. for large display variants). */
+  buttonClassName?: string;
   /** Minute step (default 5). Use 1 for arbitrary minutes. */
   minuteStep?: number;
 };
@@ -14,7 +16,7 @@ type Props = {
  * Renders as a button showing HH:MM with a clock icon; click opens a popover
  * with two scrollable columns of hour / minute chips.
  */
-export function TimePicker({ value, onChange, className, minuteStep = 5 }: Props) {
+export function TimePicker({ value, onChange, className, buttonClassName, minuteStep = 5 }: Props) {
   const [open, setOpen] = useState(false);
   const [align, setAlign] = useState<"left" | "right">("left");
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,10 @@ export function TimePicker({ value, onChange, className, minuteStep = 5 }: Props
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full inline-flex items-center justify-between gap-2 bg-secondary rounded-lg px-3 py-1.5 text-sm tabular-nums ring-1 ring-black/5 hover:ring-foreground/30 active:scale-[0.99]"
+        className={
+          buttonClassName ??
+          "w-full inline-flex items-center justify-between gap-2 bg-secondary rounded-lg px-3 py-1.5 text-sm tabular-nums ring-1 ring-black/5 hover:ring-foreground/30 active:scale-[0.99]"
+        }
       >
         <span>{value || "—"}</span>
         <Clock className="size-3.5 text-muted-foreground" />

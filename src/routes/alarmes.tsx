@@ -9,6 +9,7 @@ import {
   type AlarmRepeat,
   type WeekDay,
 } from "@/lib/alarms-store";
+import { TimePicker } from "@/components/TimePicker";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/alarmes")({
@@ -217,13 +218,15 @@ function AlarmEditor({
 
         <label className="block space-y-1">
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Horário</span>
-          <input
-            type="time"
+          <TimePicker
             value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="w-full bg-secondary rounded-lg px-3 py-3 text-2xl font-medium tabular-nums outline-none ring-1 ring-black/5 focus:ring-foreground"
+            onChange={setTime}
+            minuteStep={1}
+            className="w-full"
+            buttonClassName="w-full inline-flex items-center justify-between gap-2 bg-secondary rounded-lg px-3 py-3 text-2xl font-medium tabular-nums outline-none ring-1 ring-black/5 hover:ring-foreground/30 focus:ring-foreground active:scale-[0.99]"
           />
         </label>
+
 
         <div className="space-y-2">
           <span className="text-[11px] uppercase tracking-widest text-muted-foreground">Repetir</span>
