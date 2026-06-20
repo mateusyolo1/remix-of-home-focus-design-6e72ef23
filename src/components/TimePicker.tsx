@@ -5,6 +5,8 @@ type Props = {
   value: string;
   onChange: (v: string) => void;
   className?: string;
+  /** Override button classes (e.g. for large display variants). */
+  buttonClassName?: string;
   /** Minute step (default 5). Use 1 for arbitrary minutes. */
   minuteStep?: number;
 };
