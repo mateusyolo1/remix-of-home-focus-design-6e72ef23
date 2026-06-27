@@ -129,10 +129,7 @@ export function AlarmOverlay() {
         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground mb-3">
           Alarme tocando
         </p>
-        <h1
-          className="text-[7.5rem] font-normal tracking-tight tabular-nums leading-none mb-4 drop-shadow-[0_4px_24px_rgba(0,0,0,0.25)]"
-          style={{ fontFamily: '"Major Mono Display", ui-monospace, monospace' }}
-        >
+        <h1 className="text-[7.5rem] font-black tracking-tight tabular-nums leading-none mb-4 drop-shadow-[0_4px_24px_rgba(0,0,0,0.18)]">
           {a.time}
         </h1>
         <p className="text-xl font-medium max-w-xs">
