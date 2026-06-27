@@ -26,6 +26,13 @@ export const Route = createFileRoute("/alarmes")({
 function AlarmesPage() {
   const { list, add, update, remove, toggle } = useAlarms();
   const [open, setOpen] = useState(false);
+  const [permLabel, setPermLabel] = useState<string>("default");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPermLabel(Notification.permission);
+    }
+  }, []);
 
   const requestPerm = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
@@ -33,12 +40,25 @@ function AlarmesPage() {
       return;
     }
     const res = await Notification.requestPermission();
+    setPermLabel(res);
     if (res === "granted") toast.success("Notificações habilitadas");
     else toast.error("Permissão negada");
   };
 
-  const permLabel =
-    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "default";
+  const testRing = () => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    emitAlarmRing({
+      id: "test-" + now.getTime(),
+      label: "Alarme de teste",
+      time: `${hh}:${mm}`,
+      enabled: true,
+      repeat: "once",
+      notify: false,
+      days: [],
+    } as Alarm);
+  };
 
   return (
     <>
