@@ -11,6 +11,7 @@ import { useHermesTraining } from "@/lib/hermes/training";
 import { useNotificationSystem } from "@/lib/notifications/use-notification-system";
 import { markPresenceToday } from "@/lib/activity-log";
 import { toast } from "sonner";
+import { AlarmOverlay } from "@/components/AlarmOverlay";
 
 const tabs = [
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
