@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { AlarmClock, BellOff, Moon } from "lucide-react";
+import { AlarmClock, BellOff, ChevronRight, Moon } from "lucide-react";
+
 import { onAlarmRing, type AlarmRingDetail } from "@/lib/alarm-runner";
 import { useAlarms, type Alarm } from "@/lib/alarms-store";
 
@@ -157,15 +158,87 @@ export function AlarmOverlay() {
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={dismiss}
-          className="w-full rounded-full bg-foreground text-background py-4 text-base font-semibold shadow-lg shadow-foreground/20 active:scale-[0.98] transition flex items-center justify-center gap-2"
-        >
-          <BellOff className="size-5" />
-          Parar
-        </button>
+        <SwipeToDismiss onDismiss={dismiss} />
+
       </div>
     </div>
   );
 }
+
+function SwipeToDismiss({ onDismiss }: { onDismiss: () => void }) {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [x, setX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startXRef = useRef(0);
+  const maxRef = useRef(0);
+  const THUMB = 56;
+
+  const measure = () => {
+    const w = trackRef.current?.clientWidth ?? 0;
+    maxRef.current = Math.max(0, w - THUMB - 8);
+  };
+
+  const onDown = (clientX: number) => {
+    measure();
+    setDragging(true);
+    startXRef.current = clientX - x;
+  };
+  const onMove = (clientX: number) => {
+    if (!dragging) return;
+    const next = Math.min(maxRef.current, Math.max(0, clientX - startXRef.current));
+    setX(next);
+  };
+  const onUp = () => {
+    if (!dragging) return;
+    setDragging(false);
+    if (x >= maxRef.current - 4) {
+      setX(maxRef.current);
+      onDismiss();
+    } else {
+      setX(0);
+    }
+  };
+
+  const progress = maxRef.current ? x / maxRef.current : 0;
+
+  return (
+    <div
+      ref={trackRef}
+      className="relative h-16 w-full rounded-full bg-card border border-border overflow-hidden select-none touch-none"
+      onMouseMove={(e) => onMove(e.clientX)}
+      onMouseUp={onUp}
+      onMouseLeave={onUp}
+      onTouchMove={(e) => onMove(e.touches[0].clientX)}
+      onTouchEnd={onUp}
+    >
+      <div
+        className="absolute inset-y-0 left-0 bg-foreground/10"
+        style={{ width: `${x + THUMB}px` }}
+      />
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <span
+          className="text-sm font-medium tracking-wide text-muted-foreground"
+          style={{ opacity: 1 - progress }}
+        >
+          Arraste para parar
+        </span>
+      </div>
+      <div
+        role="button"
+        aria-label="Arraste para parar o alarme"
+        className="absolute top-1 left-1 grid place-items-center rounded-full bg-foreground text-background shadow-lg shadow-foreground/20 cursor-grab active:cursor-grabbing"
+        style={{
+          width: THUMB,
+          height: THUMB,
+          transform: `translateX(${x}px)`,
+          transition: dragging ? "none" : "transform 0.25s ease",
+        }}
+        onMouseDown={(e) => onDown(e.clientX)}
+        onTouchStart={(e) => onDown(e.touches[0].clientX)}
+      >
+        {progress > 0.9 ? <BellOff className="size-5" /> : <ChevronRight className="size-6" />}
+      </div>
+    </div>
+  );
+}
+
