@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { Bell, BellOff, BellRing, ChevronLeft, Plus, Trash2, Volume2, VolumeX, X } from "lucide-react";
-import { useState } from "react";
+import { Bell, BellOff, BellRing, ChevronLeft, Plus, Trash2, Volume2, VolumeX, X, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   describeRepeat,
   useAlarms,
@@ -11,6 +11,7 @@ import {
 } from "@/lib/alarms-store";
 import { TimePicker } from "@/components/TimePicker";
 import { toast } from "sonner";
+import { emitAlarmRing } from "@/lib/alarm-runner";
 
 export const Route = createFileRoute("/alarmes")({
   head: () => ({
@@ -25,6 +26,13 @@ export const Route = createFileRoute("/alarmes")({
 function AlarmesPage() {
   const { list, add, update, remove, toggle } = useAlarms();
   const [open, setOpen] = useState(false);
+  const [permLabel, setPermLabel] = useState<string>("default");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPermLabel(Notification.permission);
+    }
+  }, []);
 
   const requestPerm = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
@@ -32,12 +40,26 @@ function AlarmesPage() {
       return;
     }
     const res = await Notification.requestPermission();
+    setPermLabel(res);
     if (res === "granted") toast.success("Notificações habilitadas");
     else toast.error("Permissão negada");
   };
 
-  const permLabel =
-    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "default";
+  const testRing = () => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    emitAlarmRing({
+      id: "test-" + now.getTime(),
+      label: "Alarme de teste",
+      time: `${hh}:${mm}`,
+      enabled: true,
+      repeat: "once",
+      notify: false,
+      sound: "beep",
+      days: [],
+    } as unknown as Alarm);
+  };
 
   return (
     <>
@@ -76,13 +98,22 @@ function AlarmesPage() {
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Seus alarmes
             </h3>
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-accent px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
-            >
-              <Plus className="size-3.5" /> Novo
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={testRing}
+                className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
+              >
+                <Zap className="size-3.5" /> Testar
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-accent px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
+              >
+                <Plus className="size-3.5" /> Novo
+              </button>
+            </div>
           </div>
 
           {list.length === 0 && (
