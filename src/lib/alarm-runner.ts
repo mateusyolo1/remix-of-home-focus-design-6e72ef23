@@ -1,38 +1,28 @@
 import { useEffect, useRef } from "react";
-import { toast } from "sonner";
 import { shouldFire, useAlarms, type Alarm } from "@/lib/alarms-store";
 
-/** Toca um beep curto usando Web Audio (sem dependência de arquivo). */
-function playBeep() {
+const EVT_RING = "fm:alarm-ring";
+
+export type AlarmRingDetail = { alarm: Alarm; firedAt: string };
+
+export function emitAlarmRing(a: Alarm) {
   if (typeof window === "undefined") return;
-  try {
-    const AudioCtx =
-      window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = 880;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.02);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.2);
-    osc.start();
-    osc.stop(ctx.currentTime + 1.25);
-    setTimeout(() => ctx.close().catch(() => {}), 1600);
-  } catch {
-    /* sem áudio */
-  }
+  window.dispatchEvent(
+    new CustomEvent<AlarmRingDetail>(EVT_RING, {
+      detail: { alarm: a, firedAt: new Date().toISOString() },
+    }),
+  );
+}
+
+export function onAlarmRing(handler: (detail: AlarmRingDetail) => void) {
+  if (typeof window === "undefined") return () => {};
+  const fn = (e: Event) => handler((e as CustomEvent<AlarmRingDetail>).detail);
+  window.addEventListener(EVT_RING, fn as EventListener);
+  return () => window.removeEventListener(EVT_RING, fn as EventListener);
 }
 
 function fire(a: Alarm) {
-  toast(`⏰ ${a.label || "Alarme"}`, {
-    description: a.time,
-    duration: 8000,
-  });
-  if (a.sound) playBeep();
+  emitAlarmRing(a);
   if (a.notify && typeof window !== "undefined" && "Notification" in window) {
     if (Notification.permission === "granted") {
       try {
