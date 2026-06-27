@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
-import { Bell, BellOff, BellRing, ChevronLeft, Plus, Trash2, Volume2, VolumeX, X } from "lucide-react";
-import { useState } from "react";
+import { Bell, BellOff, BellRing, ChevronLeft, Plus, Trash2, Volume2, VolumeX, X, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   describeRepeat,
   useAlarms,
@@ -11,6 +11,7 @@ import {
 } from "@/lib/alarms-store";
 import { TimePicker } from "@/components/TimePicker";
 import { toast } from "sonner";
+import { emitAlarmRing } from "@/lib/alarm-runner";
 
 export const Route = createFileRoute("/alarmes")({
   head: () => ({
