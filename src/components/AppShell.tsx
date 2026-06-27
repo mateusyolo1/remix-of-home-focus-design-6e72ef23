@@ -155,6 +155,7 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans pb-40">
       <Outlet />
+      <AlarmOverlay />
 
       {!onChat && (
         <Link
