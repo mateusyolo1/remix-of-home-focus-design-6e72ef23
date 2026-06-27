@@ -158,14 +158,8 @@ export function AlarmOverlay() {
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={dismiss}
-          className="w-full rounded-full bg-foreground text-background py-4 text-base font-semibold shadow-lg shadow-foreground/20 active:scale-[0.98] transition flex items-center justify-center gap-2"
-        >
-          <BellOff className="size-5" />
-          Parar
-        </button>
+        <SwipeToDismiss onDismiss={dismiss} />
+
       </div>
     </div>
   );
