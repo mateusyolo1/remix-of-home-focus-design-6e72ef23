@@ -56,8 +56,9 @@ function AlarmesPage() {
       enabled: true,
       repeat: "once",
       notify: false,
+      sound: "beep",
       days: [],
-    } as Alarm);
+    } as unknown as Alarm);
   };
 
   return (
