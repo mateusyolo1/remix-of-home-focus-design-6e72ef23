@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { AlarmClock, BellOff, Moon } from "lucide-react";
+import { AlarmClock, BellOff, ChevronRight, Moon } from "lucide-react";
+
 import { onAlarmRing, type AlarmRingDetail } from "@/lib/alarm-runner";
 import { useAlarms, type Alarm } from "@/lib/alarms-store";
 
