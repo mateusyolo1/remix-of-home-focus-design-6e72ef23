@@ -98,13 +98,22 @@ function AlarmesPage() {
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Seus alarmes
             </h3>
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-accent px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
-            >
-              <Plus className="size-3.5" /> Novo
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={testRing}
+                className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
+              >
+                <Zap className="size-3.5" /> Testar
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className="inline-flex items-center gap-1 text-xs font-medium text-accent px-2 py-1 rounded-md hover:bg-secondary active:scale-95"
+              >
+                <Plus className="size-3.5" /> Novo
+              </button>
+            </div>
           </div>
 
           {list.length === 0 && (
