@@ -215,29 +215,46 @@ function SwipeToDismiss({ onDismiss }: { onDismiss: () => void }) {
         className="absolute inset-y-0 left-0 bg-foreground/10"
         style={{ width: `${x + THUMB}px` }}
       />
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* shimmer hint over track when idle */}
+      {!dragging && progress < 0.05 && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+          <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-foreground/10 to-transparent animate-swipe-shimmer" />
+        </div>
+      )}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none gap-2">
         <span
           className="text-sm font-medium tracking-wide text-muted-foreground"
           style={{ opacity: 1 - progress }}
         >
           Arraste para parar
         </span>
+        <ChevronRight
+          className="size-4 text-muted-foreground animate-swipe-hint"
+          style={{ opacity: (1 - progress) * 0.8 }}
+        />
       </div>
       <div
         role="button"
         aria-label="Arraste para parar o alarme"
-        className="absolute top-1 left-1 grid place-items-center rounded-full bg-foreground text-background shadow-lg shadow-foreground/20 cursor-grab active:cursor-grabbing"
+        className={`absolute top-1 left-1 grid place-items-center rounded-full bg-foreground text-background shadow-lg shadow-foreground/20 cursor-grab active:cursor-grabbing ${
+          !dragging && progress < 0.05 ? "animate-pulse" : ""
+        }`}
         style={{
           width: THUMB,
           height: THUMB,
-          transform: `translateX(${x}px)`,
+          transform: `translateX(${x}px) scale(${dragging ? 1.05 : 1})`,
           transition: dragging ? "none" : "transform 0.25s ease",
         }}
         onMouseDown={(e) => onDown(e.clientX)}
         onTouchStart={(e) => onDown(e.touches[0].clientX)}
       >
-        {progress > 0.9 ? <BellOff className="size-5" /> : <ChevronRight className="size-6" />}
+        {progress > 0.9 ? (
+          <BellOff className="size-5" />
+        ) : (
+          <ChevronRight className="size-6 animate-nudge-x" />
+        )}
       </div>
+
     </div>
   );
 }
