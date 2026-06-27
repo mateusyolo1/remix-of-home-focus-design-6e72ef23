@@ -215,9 +215,10 @@ function SwipeToDismiss({ onDismiss }: { onDismiss: () => void }) {
       onTouchEnd={onUp}
     >
       <div
-        className="absolute inset-y-0 left-0 bg-foreground/10"
-        style={{ width: `${x + THUMB}px` }}
+        className="absolute inset-y-0 left-0 bg-gradient-to-r from-foreground/15 via-foreground/10 to-transparent"
+        style={{ width: `${x + THUMB + 24}px` }}
       />
+
       {/* shimmer hint over track when idle */}
       {!dragging && progress < 0.05 && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
